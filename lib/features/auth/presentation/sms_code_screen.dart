@@ -14,9 +14,21 @@ class SmsCodeScreen extends ConsumerStatefulWidget {
 
 class _SmsCodeScreenState extends ConsumerState<SmsCodeScreen> {
   final _controller = TextEditingController();
+  final _focusNode = FocusNode();
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        _focusNode.requestFocus();
+      }
+    });
+  }
 
   @override
   void dispose() {
+    _focusNode.dispose();
     _controller.dispose();
     super.dispose();
   }
@@ -26,6 +38,7 @@ class _SmsCodeScreenState extends ConsumerState<SmsCodeScreen> {
     final authState = ref.watch(smsAuthProvider);
     final code = _controller.text;
     final isComplete = code.length == 6;
+    final from = GoRouter.maybeOf(context)?.state.uri.queryParameters['from'];
 
     return Scaffold(
       appBar: AppBar(
@@ -45,7 +58,10 @@ class _SmsCodeScreenState extends ConsumerState<SmsCodeScreen> {
           children: [
             TextField(
               controller: _controller,
+              focusNode: _focusNode,
+              autofocus: true,
               keyboardType: TextInputType.number,
+              textInputAction: TextInputAction.done,
               maxLength: 6,
               inputFormatters: [FilteringTextInputFormatter.digitsOnly],
               decoration: const InputDecoration(
@@ -72,7 +88,11 @@ class _SmsCodeScreenState extends ConsumerState<SmsCodeScreen> {
                             .read(smsAuthProvider.notifier)
                             .verifyCode(code);
                         if (ok && context.mounted) {
-                          context.go('/profile');
+                          if (from == 'checkout') {
+                            context.go('/cart');
+                          } else {
+                            context.go('/profile');
+                          }
                         }
                       },
               child:

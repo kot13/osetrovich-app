@@ -1,0 +1,249 @@
+openapi: 3.0.3
+info:
+  title: Osetrovich Mobile API
+  description: REST API мобильного приложения osetrovich.ru (фаза cart-checkout)
+  version: 0.5.0
+
+servers:
+  - url: https://api.osetrovich.ru/v1
+    description: Production (будущее)
+  - url: http://localhost:0/mock
+    description: Mock (клиентский мок, не реальный сервер)
+
+tags:
+  - name: auth
+    description: SMS-авторизация и JWT
+  - name: catalog
+    description: Каталог
+  - name: home
+    description: Главная
+  - name: notifications
+    description: Уведомления
+  - name: orders
+    description: Оформление заказов
+  - name: profile
+    description: Профиль пользователя
+
+paths:
+  /orders:
+    post:
+      tags: [orders]
+      summary: Создать заказ
+      operationId: createOrder
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateOrderRequest'
+            example:
+              items:
+                - productId: p1
+                  quantity: 2
+                - productId: p2
+                  quantity: 1
+              deliveryAddress: 'г. Санкт-Петербург, ул. Примерная, д. 1, кв. 10'
+              comment: 'Позвонить за 30 минут'
+      responses:
+        '201':
+          description: Заказ создан
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Order'
+              example:
+                id: ord-1001
+                orderNumber: ORD-1001
+                items:
+                  - productId: p1
+                    name: Сёмга слабосолёная
+                    weightLabel: 500 г
+                    priceRub: 890
+                    quantity: 2
+                    lineTotalRub: 1780
+                  - productId: p2
+                    name: Икра горбуши
+                    weightLabel: 250 г
+                    priceRub: 1200
+                    quantity: 1
+                    lineTotalRub: 1200
+                itemsSubtotalRub: 2980
+                deliveryFeeRub: 0
+                totalRub: 2980
+                deliveryAddress: 'г. Санкт-Петербург, ул. Примерная, д. 1, кв. 10'
+                comment: 'Позвонить за 30 минут'
+                status: pending
+                createdAt: '2026-07-14T18:00:00Z'
+        '400':
+          description: Некорректный запрос или недоступный товар
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                emptyAddress:
+                  value:
+                    code: invalid_request
+                    message: Укажите адрес доставки
+                emptyCart:
+                  value:
+                    code: invalid_request
+                    message: Корзина пуста
+                productUnavailable:
+                  value:
+                    code: product_unavailable
+                    message: Товар недоступен
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  responses:
+    BadRequest:
+      description: Некорректный запрос
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Unauthorized:
+      description: Требуется авторизация
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            code: unauthorized
+            message: Требуется авторизация
+
+  schemas:
+    CreateOrderRequest:
+      type: object
+      required: [items, deliveryAddress]
+      properties:
+        items:
+          type: array
+          minItems: 1
+          items:
+            $ref: '#/components/schemas/OrderLineInput'
+        deliveryAddress:
+          type: string
+          minLength: 1
+          description: Адрес доставки (Санкт-Петербург и ближайший пригород)
+          example: 'г. Санкт-Петербург, Невский пр., д. 1'
+        comment:
+          type: string
+          nullable: true
+          description: Необязательный комментарий к заказу
+
+    OrderLineInput:
+      type: object
+      required: [productId, quantity]
+      properties:
+        productId:
+          type: string
+        quantity:
+          type: integer
+          minimum: 1
+
+    Order:
+      type: object
+      required:
+        - id
+        - orderNumber
+        - items
+        - itemsSubtotalRub
+        - deliveryFeeRub
+        - totalRub
+        - deliveryAddress
+        - status
+        - createdAt
+      properties:
+        id:
+          type: string
+        orderNumber:
+          type: string
+          description: Номер заказа для пользователя
+          example: ORD-1001
+        items:
+          type: array
+          minItems: 1
+          items:
+            $ref: '#/components/schemas/OrderLine'
+        itemsSubtotalRub:
+          type: integer
+          minimum: 0
+          description: Сумма товаров в рублях
+        deliveryFeeRub:
+          type: integer
+          minimum: 0
+          description: Стоимость доставки (0 или 300 в v1)
+        totalRub:
+          type: integer
+          minimum: 0
+          description: Итого к оплате
+        deliveryAddress:
+          type: string
+        comment:
+          type: string
+          nullable: true
+        status:
+          $ref: '#/components/schemas/OrderStatus'
+        createdAt:
+          type: string
+          format: date-time
+
+    OrderLine:
+      type: object
+      required:
+        - productId
+        - name
+        - weightLabel
+        - priceRub
+        - quantity
+        - lineTotalRub
+      properties:
+        productId:
+          type: string
+        name:
+          type: string
+        weightLabel:
+          type: string
+        priceRub:
+          type: integer
+          minimum: 0
+        quantity:
+          type: integer
+          minimum: 1
+        lineTotalRub:
+          type: integer
+          minimum: 0
+
+    OrderStatus:
+      type: string
+      enum:
+        - pending
+      description: Статус заказа (v1 — только pending)
+
+    ErrorResponse:
+      type: object
+      required: [code, message]
+      properties:
+        code:
+          type: string
+          enum:
+            - invalid_request
+            - invalid_code
+            - invalid_email
+            - phone_taken
+            - email_taken
+            - unauthorized
+            - product_unavailable
+        message:
+          type: string

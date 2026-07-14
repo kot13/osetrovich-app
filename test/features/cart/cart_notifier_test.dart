@@ -31,4 +31,18 @@ void main() {
     expect(container.read(cartNotifierProvider), isEmpty);
     expect(container.read(cartDistinctCountProvider), 0);
   });
+
+  test('clear removes all items', () {
+    final container = ProviderContainer();
+    addTearDown(container.dispose);
+
+    final notifier = container.read(cartNotifierProvider.notifier);
+    notifier.increment('p1');
+    notifier.increment('p2');
+
+    notifier.clear();
+
+    expect(container.read(cartNotifierProvider), isEmpty);
+    expect(container.read(cartDistinctCountProvider), 0);
+  });
 }

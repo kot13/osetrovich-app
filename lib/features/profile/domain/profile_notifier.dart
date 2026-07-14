@@ -1,5 +1,5 @@
 import 'package:osetrovich/core/network/providers.dart';
-import 'package:osetrovich/core/network/mock_api_client.dart';
+import 'package:osetrovich/core/network/mock_profile_sync.dart';
 import 'package:osetrovich/features/auth/domain/auth_session.dart';
 import 'package:osetrovich/features/auth/domain/auth_session_provider.dart';
 import 'package:osetrovich/features/profile/data/profile_repository.dart';
@@ -11,20 +11,7 @@ final profileRepositoryProvider = Provider<ProfileRepository>((ref) {
 });
 
 void _syncMockProfile(Ref ref, AuthSession session) {
-  if (!useMockApi) {
-    return;
-  }
-  final client = ref.read(apiClientProvider);
-  if (client is! MockApiClient) {
-    return;
-  }
-  final phone =
-      session.phone.isNotEmpty
-          ? session.phone
-          : MockApiClient.phoneFromAccessToken(session.accessToken);
-  if (phone != null) {
-    client.ensureProfile(phone);
-  }
+  syncMockApiProfile(ref, session);
 }
 
 class ProfileNotifier extends AsyncNotifier<UserProfile?> {

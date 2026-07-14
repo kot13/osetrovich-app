@@ -1,8 +1,8 @@
 openapi: 3.0.3
 info:
   title: Osetrovich Mobile API
-  description: REST API мобильного приложения osetrovich.ru (фаза product-catalog)
-  version: 0.4.0
+  description: REST API мобильного приложения osetrovich.ru (фаза cart-checkout)
+  version: 0.5.0
 
 servers:
   - url: https://api.osetrovich.ru/v1
@@ -19,6 +19,8 @@ tags:
     description: Главная
   - name: notifications
     description: Уведомления
+  - name: orders
+    description: Оформление заказов
   - name: profile
     description: Профиль пользователя
 
@@ -492,6 +494,35 @@ paths:
         '401':
           $ref: '#/components/responses/Unauthorized'
 
+  /orders:
+    post:
+      tags: [orders]
+      summary: Создать заказ
+      operationId: createOrder
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateOrderRequest'
+      responses:
+        '201':
+          description: Заказ создан
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Order'
+        '400':
+          description: Некорректный запрос или недоступный товар
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
 components:
   securitySchemes:
     bearerAuth:
@@ -785,6 +816,105 @@ components:
           type: integer
           minimum: 0
 
+    CreateOrderRequest:
+      type: object
+      required: [items, deliveryAddress]
+      properties:
+        items:
+          type: array
+          minItems: 1
+          items:
+            $ref: '#/components/schemas/OrderLineInput'
+        deliveryAddress:
+          type: string
+          minLength: 1
+        comment:
+          type: string
+          nullable: true
+
+    OrderLineInput:
+      type: object
+      required: [productId, quantity]
+      properties:
+        productId:
+          type: string
+        quantity:
+          type: integer
+          minimum: 1
+
+    Order:
+      type: object
+      required:
+        - id
+        - orderNumber
+        - items
+        - itemsSubtotalRub
+        - deliveryFeeRub
+        - totalRub
+        - deliveryAddress
+        - status
+        - createdAt
+      properties:
+        id:
+          type: string
+        orderNumber:
+          type: string
+        items:
+          type: array
+          minItems: 1
+          items:
+            $ref: '#/components/schemas/OrderLine'
+        itemsSubtotalRub:
+          type: integer
+          minimum: 0
+        deliveryFeeRub:
+          type: integer
+          minimum: 0
+        totalRub:
+          type: integer
+          minimum: 0
+        deliveryAddress:
+          type: string
+        comment:
+          type: string
+          nullable: true
+        status:
+          $ref: '#/components/schemas/OrderStatus'
+        createdAt:
+          type: string
+          format: date-time
+
+    OrderLine:
+      type: object
+      required:
+        - productId
+        - name
+        - weightLabel
+        - priceRub
+        - quantity
+        - lineTotalRub
+      properties:
+        productId:
+          type: string
+        name:
+          type: string
+        weightLabel:
+          type: string
+        priceRub:
+          type: integer
+          minimum: 0
+        quantity:
+          type: integer
+          minimum: 1
+        lineTotalRub:
+          type: integer
+          minimum: 0
+
+    OrderStatus:
+      type: string
+      enum:
+        - pending
+
     ErrorResponse:
       type: object
       required: [code, message]
@@ -798,5 +928,6 @@ components:
             - phone_taken
             - email_taken
             - unauthorized
+            - product_unavailable
         message:
           type: string

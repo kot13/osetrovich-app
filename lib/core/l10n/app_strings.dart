@@ -76,4 +76,30 @@ abstract final class AppStrings {
   static const emailTaken = 'Этот email уже используется';
   static const phoneTaken = 'Этот номер уже используется';
   static const enterPin = 'Введите код';
+
+  static const cartAddressLabel = 'Адрес доставки';
+  static const cartAddressHint =
+      'Укажите адрес в Санкт-Петербурге или ближайшем пригороде';
+  static const cartCommentLabel = 'Комментарий к заказу';
+  static const cartCommentHint = 'Необязательно';
+  static const cartItemsSubtotal = 'Товары';
+  static const cartDeliveryFee = 'Доставка';
+  static const cartTotal = 'Итого';
+  static const cartDeliveryFree = 'Бесплатно';
+  static const cartDeliveryTerms =
+      'После формирования заказа поступит сообщение с его деталями и окончательной суммой.\n'
+      'Доставка от 2000 руб. осуществляется бесплатно по Санкт-Петербургу и ближайшему пригороду.\n'
+      'Доставка до 2000 руб. по Санкт-Петербургу и ближайшему пригороду 300 руб.\n'
+      'Оплата при получении наличными курьеру или банковской картой.';
+  static const cartCheckout = 'Оформить';
+  static const cartOrderSuccess = 'Заказ успешно оформлен';
+  static const cartOrderSuccessDetails =
+      'После формирования заказа вам поступит сообщение с деталями';
+  static const addressRequired = 'Укажите адрес доставки';
+  static const checkoutAuthRequired = 'Войдите, чтобы оформить заказ';
+  static const orderFailed = 'Не удалось оформить заказ. Попробуйте ещё раз';
+  static const productUnavailableInCart =
+      'Некоторые товары недоступны и удалены из корзины';
+  static const cartLoadFailed =
+      'Не удалось загрузить корзину. Попробуйте ещё раз';
 }

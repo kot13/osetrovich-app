@@ -15,6 +15,7 @@ class PhoneInputScreen extends ConsumerStatefulWidget {
 
 class _PhoneInputScreenState extends ConsumerState<PhoneInputScreen> {
   final _controller = TextEditingController();
+  final _focusNode = FocusNode();
   final _maskFormatter = MaskTextInputFormatter.eager(
     mask: '+7 (###) ###-##-##',
     filter: {'#': RegExp(r'[0-9]')},
@@ -25,10 +26,16 @@ class _PhoneInputScreenState extends ConsumerState<PhoneInputScreen> {
   void initState() {
     super.initState();
     _controller.text = _maskFormatter.getMaskedText();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        _focusNode.requestFocus();
+      }
+    });
   }
 
   @override
   void dispose() {
+    _focusNode.dispose();
     _controller.dispose();
     super.dispose();
   }
@@ -38,6 +45,7 @@ class _PhoneInputScreenState extends ConsumerState<PhoneInputScreen> {
     final authState = ref.watch(smsAuthProvider);
     final phone = toE164RussianPhone(_controller.text);
     final isValid = isValidRussianPhone(phone);
+    final from = GoRouter.maybeOf(context)?.state.uri.queryParameters['from'];
 
     return Scaffold(
       appBar: AppBar(title: const Text(AppStrings.authTitle)),
@@ -48,7 +56,10 @@ class _PhoneInputScreenState extends ConsumerState<PhoneInputScreen> {
           children: [
             TextField(
               controller: _controller,
+              focusNode: _focusNode,
+              autofocus: true,
               keyboardType: TextInputType.phone,
+              textInputAction: TextInputAction.done,
               inputFormatters: [_maskFormatter],
               decoration: const InputDecoration(
                 labelText: AppStrings.phoneHint,
@@ -79,7 +90,9 @@ class _PhoneInputScreenState extends ConsumerState<PhoneInputScreen> {
                                 .read(smsAuthProvider.notifier)
                                 .submitPhone();
                         if (ok && context.mounted) {
-                          context.push('/auth/sms');
+                          final query =
+                              from != null ? '?from=$from' : '';
+                          context.push('/auth/sms$query');
                         }
                       },
               child:

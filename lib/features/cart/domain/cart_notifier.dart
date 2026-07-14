@@ -24,6 +24,18 @@ class CartNotifier extends Notifier<Map<String, int>> {
   }
 
   void add(String productId) => increment(productId);
+
+  void remove(String productId) {
+    if (!state.containsKey(productId)) {
+      return;
+    }
+    final next = Map<String, int>.from(state)..remove(productId);
+    state = next;
+  }
+
+  void clear() {
+    state = {};
+  }
 }
 
 final cartNotifierProvider = NotifierProvider<CartNotifier, Map<String, int>>(

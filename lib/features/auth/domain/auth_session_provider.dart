@@ -1,4 +1,5 @@
 import 'package:osetrovich/core/network/mock_api_client.dart';
+import 'package:osetrovich/core/network/mock_profile_sync.dart';
 import 'package:osetrovich/core/network/providers.dart';
 import 'package:osetrovich/features/auth/data/auth_dto.dart';
 import 'package:osetrovich/features/auth/data/auth_repository.dart';
@@ -29,6 +30,7 @@ class AuthSessionNotifier extends Notifier<AuthSession?> {
       expiresAt: AuthSession.neverExpiresAt,
       phone: MockApiClient.phoneFromAccessToken(access) ?? '',
     );
+    syncMockApiProfile(ref, state!);
   }
 
   Future<void> setSession({
@@ -45,6 +47,7 @@ class AuthSessionNotifier extends Notifier<AuthSession?> {
       expiresAt: AuthSession.neverExpiresAt,
       phone: phone,
     );
+    syncMockApiProfile(ref, state!);
   }
 
   Future<void> clearSession() async {

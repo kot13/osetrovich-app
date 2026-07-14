@@ -7,6 +7,7 @@ import 'package:osetrovich/features/home/domain/banner.dart';
 import 'package:osetrovich/features/home/domain/notification_badge.dart';
 import 'package:osetrovich/features/notifications/domain/app_notification.dart';
 import 'package:osetrovich/features/profile/domain/user_profile.dart';
+import 'package:osetrovich/features/cart/domain/order.dart';
 
 abstract class ApiClient {
   Future<SmsRequestResponse> requestSmsCode(String phone);
@@ -56,6 +57,8 @@ abstract class ApiClient {
   Future<ProfilePreferences> updateProfilePreferences({
     required bool pushEnabled,
   });
+
+  Future<Order> createOrder(CreateOrderRequest request);
 }
 
 typedef TokenReader = Future<String?> Function();
@@ -326,6 +329,19 @@ class DioApiClient implements ApiClient {
         data: {'pushEnabled': pushEnabled},
       );
       return ProfilePreferences.fromJson(response.data!);
+    } on Object catch (e) {
+      throw _mapError(e);
+    }
+  }
+
+  @override
+  Future<Order> createOrder(CreateOrderRequest request) async {
+    try {
+      final response = await _dio.post<Map<String, dynamic>>(
+        '/orders',
+        data: request.toJson(),
+      );
+      return Order.fromJson(response.data!);
     } on Object catch (e) {
       throw _mapError(e);
     }

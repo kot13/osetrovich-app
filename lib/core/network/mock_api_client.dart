@@ -7,6 +7,8 @@ import 'package:osetrovich/features/home/domain/banner.dart';
 import 'package:osetrovich/features/home/domain/notification_badge.dart';
 import 'package:osetrovich/features/notifications/domain/app_notification.dart';
 import 'package:osetrovich/features/profile/domain/user_profile.dart';
+import 'package:osetrovich/features/cart/domain/delivery_fee.dart';
+import 'package:osetrovich/features/cart/domain/order.dart';
 
 class MockApiClient implements ApiClient {
   static const validCode = '123456';
@@ -100,6 +102,7 @@ class MockApiClient implements ApiClient {
   ];
 
   late List<AppNotification> _notifications;
+  int _orderSequence = 1000;
 
   @override
   Future<SmsRequestResponse> requestSmsCode(String phone) async {
@@ -436,6 +439,65 @@ class MockApiClient implements ApiClient {
     await Future<void>.delayed(const Duration(milliseconds: 50));
     _profile = _requireProfile().copyWith(pushEnabled: pushEnabled);
     return ProfilePreferences(pushEnabled: pushEnabled);
+  }
+
+  @override
+  Future<Order> createOrder(CreateOrderRequest request) async {
+    await Future<void>.delayed(const Duration(milliseconds: 200));
+    _requireProfile();
+
+    final address = request.deliveryAddress.trim();
+    if (address.isEmpty) {
+      throw ApiException(
+        code: 'INVALID_REQUEST',
+        message: 'Укажите адрес доставки',
+      );
+    }
+
+    if (request.items.isEmpty) {
+      throw ApiException(code: 'INVALID_REQUEST', message: 'Корзина пуста');
+    }
+
+    final orderLines = <OrderLine>[];
+    var itemsSubtotalRub = 0;
+
+    for (final item in request.items) {
+      final detail = _productDetails[item.productId];
+      if (detail == null) {
+        throw ApiException(
+          code: 'PRODUCT_UNAVAILABLE',
+          message: 'Товар недоступен',
+        );
+      }
+      final lineTotalRub = detail.priceRub * item.quantity;
+      itemsSubtotalRub += lineTotalRub;
+      orderLines.add(
+        OrderLine(
+          productId: detail.id,
+          name: detail.name,
+          weightLabel: detail.weightLabel,
+          priceRub: detail.priceRub,
+          quantity: item.quantity,
+          lineTotalRub: lineTotalRub,
+        ),
+      );
+    }
+
+    final deliveryFeeRub = calculateDeliveryFeeRub(itemsSubtotalRub);
+    _orderSequence += 1;
+
+    return Order(
+      id: 'ord-$_orderSequence',
+      orderNumber: 'ORD-$_orderSequence',
+      items: orderLines,
+      itemsSubtotalRub: itemsSubtotalRub,
+      deliveryFeeRub: deliveryFeeRub,
+      totalRub: itemsSubtotalRub + deliveryFeeRub,
+      deliveryAddress: address,
+      comment: request.comment,
+      status: OrderStatus.pending,
+      createdAt: DateTime.now().toUtc(),
+    );
   }
 
   bool _isValidPhone(String phone) => RegExp(r'^\+7\d{10}$').hasMatch(phone);
