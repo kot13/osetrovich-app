@@ -1,3 +1,4 @@
+import 'package:osetrovich/core/network/mock_api_client.dart';
 import 'package:osetrovich/core/network/providers.dart';
 import 'package:osetrovich/features/auth/data/auth_dto.dart';
 import 'package:osetrovich/features/auth/data/auth_repository.dart';
@@ -25,8 +26,8 @@ class AuthSessionNotifier extends Notifier<AuthSession?> {
     state = AuthSession(
       accessToken: access,
       refreshToken: refresh,
-      expiresAt: DateTime.now().add(const Duration(hours: 1)),
-      phone: '',
+      expiresAt: AuthSession.neverExpiresAt,
+      phone: MockApiClient.phoneFromAccessToken(access) ?? '',
     );
   }
 
@@ -41,7 +42,7 @@ class AuthSessionNotifier extends Notifier<AuthSession?> {
     state = AuthSession(
       accessToken: tokens.accessToken,
       refreshToken: tokens.refreshToken,
-      expiresAt: DateTime.now().add(Duration(seconds: tokens.expiresIn)),
+      expiresAt: AuthSession.neverExpiresAt,
       phone: phone,
     );
   }

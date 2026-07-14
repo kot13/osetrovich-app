@@ -19,6 +19,7 @@ abstract final class AppStrings {
   static const continueButton = 'Продолжить';
   static const smsTitle = 'Введите код из СМС';
   static const smsHint = 'Код из СМС';
+  static const pinLoginTitle = 'Введите код для входа';
   static const back = 'Назад';
   static const resendRequest = 'Повторить запрос';
   static const resendInSeconds = 'Повторить через';
@@ -37,4 +38,37 @@ abstract final class AppStrings {
   static const markAllRead = 'Отметить все прочитанным';
   static const notificationsEmpty = 'Уведомлений пока нет';
   static const contactUs = 'Связаться';
+
+  static const profileName = 'Имя';
+  static const profileEmail = 'Email';
+  static const profilePhone = 'Телефон';
+  static const emailVerified = 'Подтверждён';
+  static const emailNotVerified = 'Не подтверждён';
+  static const logout = 'Выйти';
+  static const changePhone = 'Сменить телефон';
+  static const changeEmail = 'Подтвердить email';
+  static const securitySection = 'Безопасность';
+  static const setPin = 'Установить код для входа';
+  static const changePin = 'Сменить код для входа';
+  static const pushNotifications = 'Push-уведомления';
+  static const privacyPolicy = 'Оферта и политика конфиденциальности';
+  static const save = 'Сохранить';
+  static const newPhoneTitle = 'Новый номер телефона';
+  static const newEmailTitle = 'Email';
+  static const emailCodeTitle = 'Код из email';
+  static const pinSetupTitle = 'Код для входа';
+  static const pinConfirmTitle = 'Повторите код';
+  static const pinChangeTitle = 'Смена кода';
+  static const pinCurrentTitle = 'Текущий код';
+  static const pinMismatch = 'Коды не совпадают';
+  static const invalidPin = 'Неверный код';
+  static const pushPermissionDenied =
+      'Разрешите уведомления в настройках устройства';
+  static const openSettings = 'Открыть настройки';
+  static const forgotPin = 'Забыли код?';
+  static const unlockApp = 'Разблокировать';
+  static const invalidEmail = 'Некорректный email';
+  static const emailTaken = 'Этот email уже используется';
+  static const phoneTaken = 'Этот номер уже используется';
+  static const enterPin = 'Введите код';
 }

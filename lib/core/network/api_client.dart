@@ -5,6 +5,7 @@ import 'package:osetrovich/features/catalog/domain/catalog_category.dart';
 import 'package:osetrovich/features/home/domain/banner.dart';
 import 'package:osetrovich/features/home/domain/notification_badge.dart';
 import 'package:osetrovich/features/notifications/domain/app_notification.dart';
+import 'package:osetrovich/features/profile/domain/user_profile.dart';
 
 abstract class ApiClient {
   Future<SmsRequestResponse> requestSmsCode(String phone);
@@ -28,6 +29,24 @@ abstract class ApiClient {
   Future<void> markNotificationRead(String id);
 
   Future<void> markAllNotificationsRead();
+
+  Future<UserProfile> getProfile();
+
+  Future<UserProfile> updateProfile({required String name});
+
+  Future<SmsRequestResponse> requestPhoneChange(String phone);
+
+  Future<UserProfile> verifyPhoneChange(String phone, String code);
+
+  Future<SmsRequestResponse> requestEmailVerification(String email);
+
+  Future<UserProfile> verifyEmail(String email, String code);
+
+  Future<ProfilePreferences> getProfilePreferences();
+
+  Future<ProfilePreferences> updateProfilePreferences({
+    required bool pushEnabled,
+  });
 }
 
 typedef TokenReader = Future<String?> Function();
@@ -163,6 +182,108 @@ class DioApiClient implements ApiClient {
   Future<void> markAllNotificationsRead() async {
     try {
       await _dio.post<void>('/notifications/read-all');
+    } on Object catch (e) {
+      throw _mapError(e);
+    }
+  }
+
+  @override
+  Future<UserProfile> getProfile() async {
+    try {
+      final response = await _dio.get<Map<String, dynamic>>('/profile/me');
+      return UserProfile.fromJson(response.data!);
+    } on Object catch (e) {
+      throw _mapError(e);
+    }
+  }
+
+  @override
+  Future<UserProfile> updateProfile({required String name}) async {
+    try {
+      final response = await _dio.patch<Map<String, dynamic>>(
+        '/profile/me',
+        data: {'name': name},
+      );
+      return UserProfile.fromJson(response.data!);
+    } on Object catch (e) {
+      throw _mapError(e);
+    }
+  }
+
+  @override
+  Future<SmsRequestResponse> requestPhoneChange(String phone) async {
+    try {
+      final response = await _dio.post<Map<String, dynamic>>(
+        '/profile/phone/request',
+        data: {'phone': phone},
+      );
+      return SmsRequestResponse.fromJson(response.data!);
+    } on Object catch (e) {
+      throw _mapError(e);
+    }
+  }
+
+  @override
+  Future<UserProfile> verifyPhoneChange(String phone, String code) async {
+    try {
+      final response = await _dio.post<Map<String, dynamic>>(
+        '/profile/phone/verify',
+        data: {'phone': phone, 'code': code},
+      );
+      return UserProfile.fromJson(response.data!);
+    } on Object catch (e) {
+      throw _mapError(e);
+    }
+  }
+
+  @override
+  Future<SmsRequestResponse> requestEmailVerification(String email) async {
+    try {
+      final response = await _dio.post<Map<String, dynamic>>(
+        '/profile/email/request',
+        data: {'email': email},
+      );
+      return SmsRequestResponse.fromJson(response.data!);
+    } on Object catch (e) {
+      throw _mapError(e);
+    }
+  }
+
+  @override
+  Future<UserProfile> verifyEmail(String email, String code) async {
+    try {
+      final response = await _dio.post<Map<String, dynamic>>(
+        '/profile/email/verify',
+        data: {'email': email, 'code': code},
+      );
+      return UserProfile.fromJson(response.data!);
+    } on Object catch (e) {
+      throw _mapError(e);
+    }
+  }
+
+  @override
+  Future<ProfilePreferences> getProfilePreferences() async {
+    try {
+      final response = await _dio.get<Map<String, dynamic>>(
+        '/profile/preferences',
+      );
+      return ProfilePreferences.fromJson(response.data!);
+    } on Object catch (e) {
+      throw _mapError(e);
+    }
+  }
+
+  @override
+  Future<ProfilePreferences> updateProfilePreferences({
+    required bool pushEnabled,
+  }) async {
+    try {
+      final response = await _dio.patch<Map<String, dynamic>>(
+        '/profile/preferences',
+        data: {'pushEnabled': pushEnabled},
+      );
+      return ProfilePreferences.fromJson(response.data!);
     } on Object catch (e) {
       throw _mapError(e);
     }

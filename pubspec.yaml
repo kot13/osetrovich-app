@@ -16,6 +16,8 @@ dependencies:
   flutter_secure_storage: ^9.2.4
   mask_text_input_formatter: ^2.9.0
   url_launcher: ^6.3.1
+  flutter_svg: ^2.0.17
+  permission_handler: ^11.4.0
 
 dev_dependencies:
   flutter_test:
@@ -38,3 +40,5 @@ flutter:
   assets:
     - assets/images/osetrovich_logo.svg
     - assets/images/osetrovich_logo.png
+    - assets/icons/vk.svg
+    - assets/icons/ok.svg

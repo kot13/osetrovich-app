@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:osetrovich/core/l10n/app_strings.dart';
-import 'package:osetrovich/features/home/presentation/contact_block.dart';
+import 'package:osetrovich/core/widgets/contact_block.dart';
 
 void main() {
   testWidgets('contact block shows phone icon and label', (tester) async {

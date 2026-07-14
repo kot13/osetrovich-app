@@ -53,7 +53,8 @@ void main() {
       MaterialApp(home: Scaffold(body: BannerCarousel(banners: banners))),
     );
 
-    final controller = tester.widget<PageView>(find.byType(PageView)).controller;
+    final controller =
+        tester.widget<PageView>(find.byType(PageView)).controller;
     expect(controller!.viewportFraction, lessThan(1.0));
   });
 }

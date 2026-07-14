@@ -30,8 +30,7 @@ class _BannerCarouselState extends State<BannerCarousel> {
             : widget.banners.length * (_loopItemCount ~/ 2);
     _controller = PageController(
       initialPage: initialPage,
-      viewportFraction:
-          widget.banners.length <= 1 ? 1.0 : _viewportFraction,
+      viewportFraction: widget.banners.length <= 1 ? 1.0 : _viewportFraction,
     );
     _startAutoScroll();
   }

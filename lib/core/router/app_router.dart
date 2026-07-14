@@ -8,6 +8,10 @@ import 'package:osetrovich/features/catalog/presentation/catalog_screen.dart';
 import 'package:osetrovich/features/home/presentation/home_screen.dart';
 import 'package:osetrovich/features/notifications/presentation/notification_detail_screen.dart';
 import 'package:osetrovich/features/notifications/presentation/notifications_list_screen.dart';
+import 'package:osetrovich/features/profile/presentation/change_phone_code_screen.dart';
+import 'package:osetrovich/features/profile/presentation/change_phone_screen.dart';
+import 'package:osetrovich/features/profile/presentation/email_code_screen.dart';
+import 'package:osetrovich/features/profile/presentation/email_verify_screen.dart';
 import 'package:osetrovich/features/profile/presentation/profile_screen.dart';
 import 'package:osetrovich/features/promotions/presentation/promotions_screen.dart';
 import 'package:osetrovich/features/shell/presentation/main_shell.dart';
@@ -28,6 +32,26 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: '/auth/sms',
         parentNavigatorKey: _rootNavigatorKey,
         builder: (context, state) => const SmsCodeScreen(),
+      ),
+      GoRoute(
+        path: '/profile/change-phone',
+        parentNavigatorKey: _rootNavigatorKey,
+        builder: (context, state) => const ChangePhoneScreen(),
+      ),
+      GoRoute(
+        path: '/profile/change-phone/code',
+        parentNavigatorKey: _rootNavigatorKey,
+        builder: (context, state) => const ChangePhoneCodeScreen(),
+      ),
+      GoRoute(
+        path: '/profile/email',
+        parentNavigatorKey: _rootNavigatorKey,
+        builder: (context, state) => const EmailVerifyScreen(),
+      ),
+      GoRoute(
+        path: '/profile/email/code',
+        parentNavigatorKey: _rootNavigatorKey,
+        builder: (context, state) => const EmailCodeScreen(),
       ),
       StatefulShellRoute.indexedStack(
         builder: (context, state, navigationShell) {

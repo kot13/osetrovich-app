@@ -5,13 +5,44 @@ import 'package:osetrovich/features/catalog/domain/catalog_category.dart';
 import 'package:osetrovich/features/home/domain/banner.dart';
 import 'package:osetrovich/features/home/domain/notification_badge.dart';
 import 'package:osetrovich/features/notifications/domain/app_notification.dart';
+import 'package:osetrovich/features/profile/domain/user_profile.dart';
 
 class MockApiClient implements ApiClient {
   static const validCode = '123456';
+  static const takenPhone = '+79999999999';
+  static const takenEmail = 'taken@example.com';
+  static const _accessTokenPhonePrefix = 'mock.access.token.';
+
+  /// Extracts phone embedded in mock access tokens (`mock.access.token.+7...`).
+  static String? phoneFromAccessToken(String accessToken) {
+    if (!accessToken.startsWith(_accessTokenPhonePrefix)) {
+      return null;
+    }
+    final phone = accessToken.substring(_accessTokenPhonePrefix.length);
+    return phone.isEmpty ? null : phone;
+  }
+
+  /// Seeds in-memory profile after session restore (mock state is not persisted).
+  void ensureProfile(String phone) {
+    final normalized = phone.trim();
+    if (normalized.isEmpty) {
+      return;
+    }
+    _profile ??= UserProfile(
+      id: 'u1',
+      name: 'Покупатель',
+      phone: normalized,
+      email: null,
+      emailVerified: false,
+      pushEnabled: true,
+    );
+  }
 
   MockApiClient() {
     _notifications = List<AppNotification>.from(_initialNotifications);
   }
+
+  UserProfile? _profile;
 
   static final List<CatalogCategory> _categories = [
     const CatalogCategory(id: 'all', name: 'Все', sortOrder: 0),
@@ -87,6 +118,7 @@ class MockApiClient implements ApiClient {
     if (code != validCode) {
       throw ApiException(code: 'INVALID_CODE', message: 'Неверный код');
     }
+    ensureProfile(phone);
     return TokenResponse(
       accessToken: 'mock.access.token.$phone',
       refreshToken: 'mock.refresh.token.$phone',
@@ -109,6 +141,7 @@ class MockApiClient implements ApiClient {
   @override
   Future<void> logout() async {
     await Future<void>.delayed(const Duration(milliseconds: 50));
+    _profile = null;
   }
 
   @override
@@ -165,6 +198,105 @@ class MockApiClient implements ApiClient {
   Future<void> markAllNotificationsRead() async {
     await Future<void>.delayed(const Duration(milliseconds: 50));
     _notifications = [for (final n in _notifications) n.copyWith(isRead: true)];
+  }
+
+  UserProfile _requireProfile() {
+    final profile = _profile;
+    if (profile == null) {
+      throw ApiException(
+        code: 'UNAUTHORIZED',
+        message: 'Требуется авторизация',
+      );
+    }
+    return profile;
+  }
+
+  @override
+  Future<UserProfile> getProfile() async {
+    await Future<void>.delayed(const Duration(milliseconds: 100));
+    return _requireProfile();
+  }
+
+  @override
+  Future<UserProfile> updateProfile({required String name}) async {
+    await Future<void>.delayed(const Duration(milliseconds: 100));
+    final trimmed = name.trim();
+    if (trimmed.isEmpty) {
+      throw ApiException(
+        code: 'INVALID_REQUEST',
+        message: 'Имя не может быть пустым',
+      );
+    }
+    _profile = _requireProfile().copyWith(name: trimmed);
+    return _profile!;
+  }
+
+  @override
+  Future<SmsRequestResponse> requestPhoneChange(String phone) async {
+    await Future<void>.delayed(const Duration(milliseconds: 200));
+    if (!_isValidPhone(phone)) {
+      throw ApiException(
+        code: 'INVALID_REQUEST',
+        message: 'Некорректный номер телефона',
+      );
+    }
+    if (phone == takenPhone) {
+      throw ApiException(
+        code: 'PHONE_TAKEN',
+        message: 'Этот номер уже используется',
+      );
+    }
+    return const SmsRequestResponse(retryAfterSeconds: 60);
+  }
+
+  @override
+  Future<UserProfile> verifyPhoneChange(String phone, String code) async {
+    await Future<void>.delayed(const Duration(milliseconds: 200));
+    if (code != validCode) {
+      throw ApiException(code: 'INVALID_CODE', message: 'Неверный код');
+    }
+    _profile = _requireProfile().copyWith(phone: phone);
+    return _profile!;
+  }
+
+  @override
+  Future<SmsRequestResponse> requestEmailVerification(String email) async {
+    await Future<void>.delayed(const Duration(milliseconds: 200));
+    if (!RegExp(r'^[^\s@]+@[^\s@]+\.[^\s@]+$').hasMatch(email)) {
+      throw ApiException(code: 'INVALID_EMAIL', message: 'Некорректный email');
+    }
+    if (email.toLowerCase() == takenEmail) {
+      throw ApiException(
+        code: 'EMAIL_TAKEN',
+        message: 'Этот email уже используется',
+      );
+    }
+    return const SmsRequestResponse(retryAfterSeconds: 60);
+  }
+
+  @override
+  Future<UserProfile> verifyEmail(String email, String code) async {
+    await Future<void>.delayed(const Duration(milliseconds: 200));
+    if (code != validCode) {
+      throw ApiException(code: 'INVALID_CODE', message: 'Неверный код');
+    }
+    _profile = _requireProfile().copyWith(email: email, emailVerified: true);
+    return _profile!;
+  }
+
+  @override
+  Future<ProfilePreferences> getProfilePreferences() async {
+    await Future<void>.delayed(const Duration(milliseconds: 50));
+    return ProfilePreferences(pushEnabled: _requireProfile().pushEnabled);
+  }
+
+  @override
+  Future<ProfilePreferences> updateProfilePreferences({
+    required bool pushEnabled,
+  }) async {
+    await Future<void>.delayed(const Duration(milliseconds: 50));
+    _profile = _requireProfile().copyWith(pushEnabled: pushEnabled);
+    return ProfilePreferences(pushEnabled: pushEnabled);
   }
 
   bool _isValidPhone(String phone) => RegExp(r'^\+7\d{10}$').hasMatch(phone);
