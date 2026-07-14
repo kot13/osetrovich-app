@@ -1,0 +1,87 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:osetrovich/core/network/mock_api_client.dart';
+import 'package:osetrovich/core/network/providers.dart';
+import 'package:osetrovich/core/theme/app_theme.dart';
+import 'package:osetrovich/core/utils/price_formatter.dart';
+import 'package:osetrovich/features/cart/domain/cart_notifier.dart';
+import 'package:osetrovich/features/catalog/presentation/product_detail_screen.dart';
+
+void main() {
+  testWidgets('product detail shows fields and detail bar', (tester) async {
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [apiClientProvider.overrideWithValue(MockApiClient())],
+        child: MaterialApp(
+          theme: AppTheme.light,
+          home: const ProductDetailScreen(productId: 'p-fish-0'),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle(const Duration(seconds: 1));
+
+    expect(find.textContaining('слабосолёная'), findsWidgets);
+    expect(find.textContaining('300 г'), findsOneWidget);
+    expect(find.textContaining('${formatPriceRub(450)} +'), findsOneWidget);
+
+    await tester.tap(find.textContaining(' +').last);
+    await tester.pumpAndSettle();
+
+    expect(find.textContaining('1 ×'), findsOneWidget);
+    expect(find.byIcon(Icons.remove), findsOneWidget);
+  });
+
+  testWidgets('product detail renders inside nested shell scaffold', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [apiClientProvider.overrideWithValue(MockApiClient())],
+        child: MaterialApp(
+          theme: AppTheme.light,
+          home: Scaffold(
+            body: const ProductDetailScreen(productId: 'p-fish-0'),
+            bottomNavigationBar: BottomNavigationBar(
+              items: const [
+                BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
+                BottomNavigationBarItem(
+                  icon: Icon(Icons.grid_view),
+                  label: 'Catalog',
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle(const Duration(seconds: 1));
+
+    expect(find.textContaining('слабосолёная'), findsWidgets);
+    expect(find.byType(AppBar), findsOneWidget);
+    expect(find.textContaining('${formatPriceRub(450)} +'), findsOneWidget);
+  });
+
+  testWidgets('product detail increments via cart notifier', (tester) async {
+    late ProviderContainer container;
+
+    await tester.pumpWidget(
+      UncontrolledProviderScope(
+        container:
+            container = ProviderContainer(
+              overrides: [apiClientProvider.overrideWithValue(MockApiClient())],
+            ),
+        child: MaterialApp(
+          theme: AppTheme.light,
+          home: const ProductDetailScreen(productId: 'p-fish-1'),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle(const Duration(seconds: 1));
+
+    await tester.tap(find.textContaining(' +').last);
+    await tester.pumpAndSettle();
+
+    expect(container.read(cartNotifierProvider)['p-fish-1'], 1);
+  });
+}

@@ -5,6 +5,7 @@ import 'package:osetrovich/features/auth/presentation/phone_input_screen.dart';
 import 'package:osetrovich/features/auth/presentation/sms_code_screen.dart';
 import 'package:osetrovich/features/cart/presentation/cart_screen.dart';
 import 'package:osetrovich/features/catalog/presentation/catalog_screen.dart';
+import 'package:osetrovich/features/catalog/presentation/product_detail_screen.dart';
 import 'package:osetrovich/features/home/presentation/home_screen.dart';
 import 'package:osetrovich/features/notifications/presentation/notification_detail_screen.dart';
 import 'package:osetrovich/features/notifications/presentation/notifications_list_screen.dart';
@@ -87,6 +88,15 @@ final routerProvider = Provider<GoRouter>((ref) {
               GoRoute(
                 path: '/catalog',
                 builder: (context, state) => const CatalogScreen(),
+                routes: [
+                  GoRoute(
+                    path: 'product/:id',
+                    builder: (context, state) {
+                      final id = state.pathParameters['id']!;
+                      return ProductDetailScreen(productId: id);
+                    },
+                  ),
+                ],
               ),
             ],
           ),

@@ -7,7 +7,7 @@ import 'package:osetrovich/features/auth/domain/auth_session_provider.dart';
 import 'package:osetrovich/features/home/data/home_repository.dart';
 import 'package:osetrovich/features/home/presentation/auth_prompt_banner.dart';
 import 'package:osetrovich/features/home/presentation/banner_carousel.dart';
-import 'package:osetrovich/core/widgets/contact_block.dart';
+import 'package:osetrovich/features/home/presentation/home_contact_button.dart';
 import 'package:osetrovich/features/notifications/domain/notifications_notifier.dart';
 
 class HomeScreen extends ConsumerWidget {
@@ -73,7 +73,7 @@ class HomeScreen extends ConsumerWidget {
               data: (banners) => BannerCarousel(banners: banners),
             ),
           ),
-          const ContactBlock(),
+          const HomeContactButton(),
           if (!isAuthenticated) const AuthPromptBanner(),
         ],
       ),

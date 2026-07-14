@@ -1,21 +1,6 @@
-import 'package:osetrovich/core/network/api_client.dart';
-import 'package:osetrovich/core/network/providers.dart';
-import 'package:osetrovich/features/catalog/domain/catalog_category.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
-class CatalogRepository {
-  CatalogRepository(this._apiClient);
-
-  final ApiClient _apiClient;
-
-  Future<List<CatalogCategory>> getCategories() {
-    return _apiClient.getCategories();
-  }
-}
-
-final catalogRepositoryProvider = Provider<CatalogRepository>((ref) {
-  return CatalogRepository(ref.watch(apiClientProvider));
-});
+import 'package:osetrovich/features/catalog/data/catalog_repository.dart';
+import 'package:osetrovich/features/catalog/domain/catalog_category.dart';
 
 class CategoriesNotifier extends AsyncNotifier<List<CatalogCategory>> {
   @override

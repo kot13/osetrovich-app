@@ -32,6 +32,11 @@ abstract final class AppStrings {
       'Не удалось выполнить запрос. Попробуйте ещё раз';
   static const categoriesLoadFailed =
       'Не удалось загрузить категории. Попробуйте ещё раз';
+  static const productsLoadFailed =
+      'Не удалось загрузить товары. Попробуйте ещё раз';
+  static const loadMoreFailed =
+      'Не удалось загрузить ещё товары. Попробуйте ещё раз';
+  static const productNotFound = 'Товар не найден';
   static const retry = 'Повторить';
 
   static const notificationsTitle = 'Уведомления';

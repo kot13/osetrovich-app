@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:osetrovich/core/l10n/app_strings.dart';
+import 'package:osetrovich/features/cart/domain/cart_notifier.dart';
 
-class MainShell extends StatelessWidget {
+class MainShell extends ConsumerWidget {
   const MainShell({super.key, required this.navigationShell});
 
   final StatefulNavigationShell navigationShell;
@@ -15,34 +17,36 @@ class MainShell extends StatelessWidget {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final cartCount = ref.watch(cartDistinctCountProvider);
+
     return Scaffold(
       body: navigationShell,
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: navigationShell.currentIndex,
         onTap: _onTap,
-        items: const [
-          BottomNavigationBarItem(
+        items: [
+          const BottomNavigationBarItem(
             icon: Icon(Icons.home_outlined),
             activeIcon: Icon(Icons.home),
             label: AppStrings.tabHome,
           ),
-          BottomNavigationBarItem(
+          const BottomNavigationBarItem(
             icon: Icon(Icons.grid_view_outlined),
             activeIcon: Icon(Icons.grid_view),
             label: AppStrings.tabCatalog,
           ),
-          BottomNavigationBarItem(
+          const BottomNavigationBarItem(
             icon: Icon(Icons.local_offer_outlined),
             activeIcon: Icon(Icons.local_offer),
             label: AppStrings.tabPromotions,
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.shopping_cart_outlined),
-            activeIcon: Icon(Icons.shopping_cart),
+            icon: _CartIcon(count: cartCount),
+            activeIcon: _CartIcon(count: cartCount, active: true),
             label: AppStrings.tabCart,
           ),
-          BottomNavigationBarItem(
+          const BottomNavigationBarItem(
             icon: Icon(Icons.person_outline),
             activeIcon: Icon(Icons.person),
             label: AppStrings.tabProfile,
@@ -50,5 +54,25 @@ class MainShell extends StatelessWidget {
         ],
       ),
     );
+  }
+}
+
+class _CartIcon extends StatelessWidget {
+  const _CartIcon({required this.count, this.active = false});
+
+  final int count;
+  final bool active;
+
+  @override
+  Widget build(BuildContext context) {
+    final icon = Icon(
+      active ? Icons.shopping_cart : Icons.shopping_cart_outlined,
+    );
+
+    if (count <= 0) {
+      return icon;
+    }
+
+    return Badge(label: Text('$count'), child: icon);
   }
 }

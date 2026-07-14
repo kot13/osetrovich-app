@@ -7,6 +7,7 @@ import 'package:osetrovich/core/network/mock_api_client.dart';
 import 'package:osetrovich/core/network/providers.dart';
 import 'package:osetrovich/core/router/app_router.dart';
 import 'package:osetrovich/core/theme/app_theme.dart';
+import 'package:osetrovich/features/cart/domain/cart_notifier.dart';
 
 Widget _buildTestApp(WidgetRef ref) {
   final router = ref.watch(routerProvider);
@@ -60,4 +61,47 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text(AppStrings.cartEmpty), findsOneWidget);
   });
+
+  testWidgets('cart badge shows distinct sku count', (tester) async {
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          apiClientProvider.overrideWithValue(MockApiClient()),
+          appBootstrapProvider.overrideWith((ref) async {}),
+          cartNotifierProvider.overrideWith(
+            () => _SeededCartNotifier({'p1': 2, 'p2': 1}),
+          ),
+        ],
+        child: const _TestAppHost(),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.byType(Badge), findsOneWidget);
+    expect(find.text('2'), findsOneWidget);
+  });
+
+  testWidgets('cart badge hidden when cart empty', (tester) async {
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          apiClientProvider.overrideWithValue(MockApiClient()),
+          appBootstrapProvider.overrideWith((ref) async {}),
+        ],
+        child: const _TestAppHost(),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.byType(Badge), findsNothing);
+  });
+}
+
+class _SeededCartNotifier extends CartNotifier {
+  _SeededCartNotifier(this._seed);
+
+  final Map<String, int> _seed;
+
+  @override
+  Map<String, int> build() => Map<String, int>.from(_seed);
 }

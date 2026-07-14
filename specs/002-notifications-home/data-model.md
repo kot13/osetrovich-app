@@ -80,7 +80,7 @@ badge пересчитывается без отдельного запроса 
 1. AppBar (колокольчик + badge)
 2. Отступ (`top: 16`)
 3. BannerCarousel (3 баннера, infinite loop, peek, auto-scroll 5 s)
-4. ContactBlock («Связаться»)
+4. `HomeContactButton` («Связаться», серая баннер-кнопка)
 5. AuthPromptBanner (если не авторизован)
 
 ---
@@ -100,7 +100,7 @@ HomeScreen
   ├── watches unreadCountProvider ◄── notificationsNotifierProvider
   ├── push → /home/notifications
   ├── BannerCarousel (3 items, loop, peek, auto-scroll)
-  └── ContactBlock → tel:+78125645548
+  └── HomeContactButton → tel:+78125645548
 
 NotificationsListScreen
   ├── watches notificationsNotifierProvider

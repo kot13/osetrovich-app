@@ -21,5 +21,6 @@ void main() {
 
     expect(find.text(AppStrings.authTitle), findsOneWidget);
     expect(find.text(AppStrings.continueButton), findsOneWidget);
+    expect(find.textContaining('+7'), findsOneWidget);
   });
 }

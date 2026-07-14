@@ -42,30 +42,33 @@ void main() {
     expect(result?.name, 'Покупатель');
   });
 
-  test('profile notifier seeds mock profile from restored session token', () async {
-    final mockClient = MockApiClient();
+  test(
+    'profile notifier seeds mock profile from restored session token',
+    () async {
+      final mockClient = MockApiClient();
 
-    final container = ProviderContainer(
-      overrides: [
-        apiClientProvider.overrideWithValue(mockClient),
-        authSessionProvider.overrideWith(
-          () => _FakeAuthSessionNotifier(
-            AuthSession(
-              accessToken: 'mock.access.token.+79001234567',
-              refreshToken: 'r',
-              expiresAt: DateTime.now().add(const Duration(hours: 1)),
-              phone: '',
+      final container = ProviderContainer(
+        overrides: [
+          apiClientProvider.overrideWithValue(mockClient),
+          authSessionProvider.overrideWith(
+            () => _FakeAuthSessionNotifier(
+              AuthSession(
+                accessToken: 'mock.access.token.+79001234567',
+                refreshToken: 'r',
+                expiresAt: DateTime.now().add(const Duration(hours: 1)),
+                phone: '',
+              ),
             ),
           ),
-        ),
-      ],
-    );
-    addTearDown(container.dispose);
+        ],
+      );
+      addTearDown(container.dispose);
 
-    final result = await container.read(profileNotifierProvider.future);
+      final result = await container.read(profileNotifierProvider.future);
 
-    expect(result?.phone, '+79001234567');
-  });
+      expect(result?.phone, '+79001234567');
+    },
+  );
 
   test('profile notifier returns null when not authenticated', () async {
     final container = ProviderContainer();

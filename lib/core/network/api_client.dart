@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:osetrovich/core/network/api_exception.dart';
 import 'package:osetrovich/features/auth/data/auth_dto.dart';
 import 'package:osetrovich/features/catalog/domain/catalog_category.dart';
+import 'package:osetrovich/features/catalog/domain/product.dart';
 import 'package:osetrovich/features/home/domain/banner.dart';
 import 'package:osetrovich/features/home/domain/notification_badge.dart';
 import 'package:osetrovich/features/notifications/domain/app_notification.dart';
@@ -17,6 +18,14 @@ abstract class ApiClient {
   Future<void> logout();
 
   Future<List<CatalogCategory>> getCategories();
+
+  Future<ProductListPage> getProducts({
+    required String categoryId,
+    required int offset,
+    required int limit,
+  });
+
+  Future<ProductDetail> getProductById(String id);
 
   Future<List<Banner>> getHomeBanners();
 
@@ -114,6 +123,39 @@ class DioApiClient implements ApiClient {
       return items
           .map((e) => CatalogCategory.fromJson(e as Map<String, dynamic>))
           .toList();
+    } on Object catch (e) {
+      throw _mapError(e);
+    }
+  }
+
+  @override
+  Future<ProductListPage> getProducts({
+    required String categoryId,
+    required int offset,
+    required int limit,
+  }) async {
+    try {
+      final response = await _dio.get<Map<String, dynamic>>(
+        '/catalog/products',
+        queryParameters: {
+          'categoryId': categoryId,
+          'offset': offset,
+          'limit': limit,
+        },
+      );
+      return ProductListPage.fromJson(response.data!);
+    } on Object catch (e) {
+      throw _mapError(e);
+    }
+  }
+
+  @override
+  Future<ProductDetail> getProductById(String id) async {
+    try {
+      final response = await _dio.get<Map<String, dynamic>>(
+        '/catalog/products/$id',
+      );
+      return ProductDetail.fromJson(response.data!);
     } on Object catch (e) {
       throw _mapError(e);
     }

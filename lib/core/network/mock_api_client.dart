@@ -2,6 +2,7 @@ import 'package:osetrovich/core/network/api_exception.dart';
 import 'package:osetrovich/core/network/api_client.dart';
 import 'package:osetrovich/features/auth/data/auth_dto.dart';
 import 'package:osetrovich/features/catalog/domain/catalog_category.dart';
+import 'package:osetrovich/features/catalog/domain/product.dart';
 import 'package:osetrovich/features/home/domain/banner.dart';
 import 'package:osetrovich/features/home/domain/notification_badge.dart';
 import 'package:osetrovich/features/notifications/domain/app_notification.dart';
@@ -148,6 +149,144 @@ class MockApiClient implements ApiClient {
   Future<List<CatalogCategory>> getCategories() async {
     await Future<void>.delayed(const Duration(milliseconds: 150));
     return List<CatalogCategory>.from(_categories);
+  }
+
+  static final List<ProductSummary> _products = _buildMockProducts();
+  static final Map<String, ProductDetail> _productDetails = {
+    for (final p in _products) p.id: _toDetail(p),
+  };
+
+  static List<ProductSummary> _buildMockProducts() {
+    final products = <ProductSummary>[];
+    const fishNames = [
+      'Сёмга слабосолёная',
+      'Форель радужная',
+      'Гorbача',
+      'Кета',
+      'Нерка',
+      'Голец',
+      'Минтай',
+      'Треска',
+      'Палтус',
+      'Дорадо',
+    ];
+    for (var i = 0; i < 30; i++) {
+      products.add(
+        ProductSummary(
+          id: 'p-fish-$i',
+          name: '${fishNames[i % fishNames.length]} №${i + 1}',
+          weightLabel: '${300 + (i % 5) * 100} г',
+          priceRub: 450 + i * 30,
+          imageUrl: 'https://picsum.photos/seed/osetrovich-fish$i/400/400',
+          categoryIds: const ['fish'],
+        ),
+      );
+    }
+
+    const categoryProducts = <String, List<String>>{
+      'caviar': [
+        'Красная икра',
+        'Чёрная икра',
+        'Икра кеты',
+        'Икра нерки',
+        'Икра горбуши',
+      ],
+      'crabs': ['Камчатский краб', 'Стригун', 'Колючий краб', 'Краб-ванам'],
+      'seaweed': ['Вакаме', 'Нори', 'Комбу'],
+      'spices': ['Соль морская', 'Перец душистый', 'Лавровый лист'],
+      'sauces': ['Соус терияки', 'Соус соевый', 'Икра тобико'],
+      'shrimp': [
+        'Креветки тигровые',
+        'Креветки северные',
+        'Креветки королевские',
+      ],
+      'mollusks': ['Мидии', 'Гребешок', 'Кальмар'],
+      'canned': ['Лосось в масле', 'Шпроты', 'Тунец'],
+      'for_fish': ['Нож рыболовный', 'Доска для разделки'],
+    };
+
+    for (final entry in categoryProducts.entries) {
+      for (var i = 0; i < entry.value.length; i++) {
+        final name = entry.value[i];
+        products.add(
+          ProductSummary(
+            id: 'p-${entry.key}-$i',
+            name: name,
+            weightLabel: i.isEven ? '500 г' : '1 кг',
+            priceRub: 250 + i * 120,
+            imageUrl:
+                'https://picsum.photos/seed/osetrovich-${entry.key}$i/400/400',
+            categoryIds: [entry.key],
+          ),
+        );
+      }
+    }
+
+    return products;
+  }
+
+  static ProductDetail _toDetail(ProductSummary summary) {
+    final multiImageIds = {'p-fish-0', 'p-caviar-0', 'p-crabs-0'};
+    final imageUrls =
+        multiImageIds.contains(summary.id)
+            ? [
+              summary.imageUrl,
+              'https://picsum.photos/seed/${summary.id}-2/400/400',
+              'https://picsum.photos/seed/${summary.id}-3/400/400',
+            ]
+            : [summary.imageUrl];
+
+    return ProductDetail(
+      id: summary.id,
+      name: summary.name,
+      weightLabel: summary.weightLabel,
+      priceRub: summary.priceRub,
+      imageUrls: imageUrls,
+      description:
+          '${summary.name} — свежая продукция от osetrovich.ru. '
+          'Идеально для праздничного стола и ежедневного меню. '
+          'Хранить при температуре от −2 до +4 °C.',
+      categoryIds: summary.categoryIds,
+    );
+  }
+
+  List<ProductSummary> _filterProducts(String categoryId) {
+    if (categoryId == 'all') {
+      return List<ProductSummary>.from(_products);
+    }
+    return _products.where((p) => p.categoryIds.contains(categoryId)).toList();
+  }
+
+  @override
+  Future<ProductListPage> getProducts({
+    required String categoryId,
+    required int offset,
+    required int limit,
+  }) async {
+    await Future<void>.delayed(const Duration(milliseconds: 120));
+    final clampedLimit = limit.clamp(1, 20);
+    final filtered = _filterProducts(categoryId);
+    final total = filtered.length;
+    final slice = filtered.skip(offset).take(clampedLimit).toList();
+    final hasMore = offset + slice.length < total;
+
+    return ProductListPage(
+      items: slice,
+      total: total,
+      hasMore: hasMore,
+      offset: offset,
+      limit: clampedLimit,
+    );
+  }
+
+  @override
+  Future<ProductDetail> getProductById(String id) async {
+    await Future<void>.delayed(const Duration(milliseconds: 80));
+    final detail = _productDetails[id];
+    if (detail == null) {
+      throw ApiException(code: 'NOT_FOUND', message: 'Товар не найден');
+    }
+    return detail;
   }
 
   @override

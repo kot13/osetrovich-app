@@ -15,10 +15,17 @@ class PhoneInputScreen extends ConsumerStatefulWidget {
 
 class _PhoneInputScreenState extends ConsumerState<PhoneInputScreen> {
   final _controller = TextEditingController();
-  final _maskFormatter = MaskTextInputFormatter(
+  final _maskFormatter = MaskTextInputFormatter.eager(
     mask: '+7 (###) ###-##-##',
     filter: {'#': RegExp(r'[0-9]')},
+    initialText: '+7',
   );
+
+  @override
+  void initState() {
+    super.initState();
+    _controller.text = _maskFormatter.getMaskedText();
+  }
 
   @override
   void dispose() {
