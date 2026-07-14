@@ -1,0 +1,300 @@
+openapi: 3.0.3
+info:
+  title: Osetrovich Mobile API
+  description: REST API мобильного приложения osetrovich.ru (фаза init-app-shell)
+  version: 0.1.0
+
+servers:
+  - url: https://api.osetrovich.ru/v1
+    description: Production (будущее)
+  - url: http://localhost:0/mock
+    description: Mock (клиентский мок, не реальный сервер)
+
+tags:
+  - name: auth
+    description: SMS-авторизация и JWT
+  - name: catalog
+    description: Каталог
+  - name: home
+    description: Главная
+  - name: notifications
+    description: Уведомления
+
+paths:
+  /auth/sms/request:
+    post:
+      tags: [auth]
+      summary: Запросить отправку СМС-кода
+      operationId: requestSmsCode
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SmsRequestBody'
+            example:
+              phone: "+79161234567"
+      responses:
+        '200':
+          description: Код отправлен
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SmsRequestResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '429':
+          description: Слишком частые запросы
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /auth/sms/verify:
+    post:
+      tags: [auth]
+      summary: Подтвердить СМС-код и получить JWT
+      operationId: verifySmsCode
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SmsVerifyBody'
+            example:
+              phone: "+79161234567"
+              code: "123456"
+      responses:
+        '200':
+          description: Успешная авторизация
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenResponse'
+        '400':
+          description: Неверный код или телефон
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                code: INVALID_CODE
+                message: Неверный код
+
+  /auth/refresh:
+    post:
+      tags: [auth]
+      summary: Обновить access token
+      operationId: refreshToken
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RefreshBody'
+      responses:
+        '200':
+          description: Новая пара токенов
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /auth/logout:
+    post:
+      tags: [auth]
+      summary: Выход (инвалидация refresh token)
+      operationId: logout
+      security:
+        - bearerAuth: []
+      responses:
+        '204':
+          description: Успешный выход
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /catalog/categories:
+    get:
+      tags: [catalog]
+      summary: Список категорий для Filter Chips
+      operationId: getCategories
+      responses:
+        '200':
+          description: Категории каталога
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [items]
+                properties:
+                  items:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/CatalogCategory'
+
+  /home/banners:
+    get:
+      tags: [home]
+      summary: Баннеры для главной карусели
+      operationId: getHomeBanners
+      responses:
+        '200':
+          description: Список баннеров
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [items]
+                properties:
+                  items:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Banner'
+
+  /notifications/unread-count:
+    get:
+      tags: [notifications]
+      summary: Количество непрочитанных уведомлений
+      operationId: getUnreadNotificationCount
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Счётчик
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnreadCountResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  responses:
+    BadRequest:
+      description: Некорректный запрос
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Unauthorized:
+      description: Требуется авторизация
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+
+  schemas:
+    SmsRequestBody:
+      type: object
+      required: [phone]
+      properties:
+        phone:
+          type: string
+          description: Телефон E.164, маска +7
+          pattern: '^\+7\d{10}$'
+          example: "+79161234567"
+
+    SmsRequestResponse:
+      type: object
+      required: [retryAfterSeconds]
+      properties:
+        retryAfterSeconds:
+          type: integer
+          description: Интервал до повторного запроса
+          example: 60
+
+    SmsVerifyBody:
+      type: object
+      required: [phone, code]
+      properties:
+        phone:
+          type: string
+          pattern: '^\+7\d{10}$'
+        code:
+          type: string
+          pattern: '^\d{6}$'
+          example: "123456"
+
+    RefreshBody:
+      type: object
+      required: [refresh_token]
+      properties:
+        refresh_token:
+          type: string
+
+    TokenResponse:
+      type: object
+      required: [access_token, refresh_token, expires_in, token_type]
+      properties:
+        access_token:
+          type: string
+          description: JWT access token
+        refresh_token:
+          type: string
+          description: JWT refresh token
+        expires_in:
+          type: integer
+          description: Время жизни access token в секундах
+          example: 3600
+        token_type:
+          type: string
+          enum: [Bearer]
+          example: Bearer
+
+    CatalogCategory:
+      type: object
+      required: [id, name, sortOrder]
+      properties:
+        id:
+          type: string
+          example: fish
+        name:
+          type: string
+          example: Рыба
+        sortOrder:
+          type: integer
+          example: 1
+
+    Banner:
+      type: object
+      required: [id, imageUrl, sortOrder]
+      properties:
+        id:
+          type: string
+        imageUrl:
+          type: string
+          format: uri
+        linkUrl:
+          type: string
+          format: uri
+          nullable: true
+        sortOrder:
+          type: integer
+
+    UnreadCountResponse:
+      type: object
+      required: [count]
+      properties:
+        count:
+          type: integer
+          minimum: 0
+          example: 3
+
+    ErrorResponse:
+      type: object
+      required: [code, message]
+      properties:
+        code:
+          type: string
+          example: INVALID_CODE
+        message:
+          type: string
+          example: Неверный код
