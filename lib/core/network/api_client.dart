@@ -4,6 +4,7 @@ import 'package:osetrovich/features/auth/data/auth_dto.dart';
 import 'package:osetrovich/features/catalog/domain/catalog_category.dart';
 import 'package:osetrovich/features/home/domain/banner.dart';
 import 'package:osetrovich/features/home/domain/notification_badge.dart';
+import 'package:osetrovich/features/notifications/domain/app_notification.dart';
 
 abstract class ApiClient {
   Future<SmsRequestResponse> requestSmsCode(String phone);
@@ -19,6 +20,14 @@ abstract class ApiClient {
   Future<List<Banner>> getHomeBanners();
 
   Future<NotificationBadge> getUnreadNotificationCount();
+
+  Future<List<AppNotification>> getNotifications();
+
+  Future<AppNotification> getNotificationById(String id);
+
+  Future<void> markNotificationRead(String id);
+
+  Future<void> markAllNotificationsRead();
 }
 
 typedef TokenReader = Future<String?> Function();
@@ -111,6 +120,49 @@ class DioApiClient implements ApiClient {
         '/notifications/unread-count',
       );
       return NotificationBadge.fromJson(response.data!);
+    } on Object catch (e) {
+      throw _mapError(e);
+    }
+  }
+
+  @override
+  Future<List<AppNotification>> getNotifications() async {
+    try {
+      final response = await _dio.get<Map<String, dynamic>>('/notifications');
+      final items = response.data!['items'] as List<dynamic>;
+      return items
+          .map((e) => AppNotification.fromJson(e as Map<String, dynamic>))
+          .toList();
+    } on Object catch (e) {
+      throw _mapError(e);
+    }
+  }
+
+  @override
+  Future<AppNotification> getNotificationById(String id) async {
+    try {
+      final response = await _dio.get<Map<String, dynamic>>(
+        '/notifications/$id',
+      );
+      return AppNotification.fromJson(response.data!);
+    } on Object catch (e) {
+      throw _mapError(e);
+    }
+  }
+
+  @override
+  Future<void> markNotificationRead(String id) async {
+    try {
+      await _dio.post<void>('/notifications/$id/read');
+    } on Object catch (e) {
+      throw _mapError(e);
+    }
+  }
+
+  @override
+  Future<void> markAllNotificationsRead() async {
+    try {
+      await _dio.post<void>('/notifications/read-all');
     } on Object catch (e) {
       throw _mapError(e);
     }

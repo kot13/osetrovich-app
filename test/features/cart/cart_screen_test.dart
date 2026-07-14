@@ -9,10 +9,7 @@ void main() {
   testWidgets('cart shows empty state and catalog button', (tester) async {
     await tester.pumpWidget(
       ProviderScope(
-        child: MaterialApp(
-          theme: AppTheme.light,
-          home: const CartScreen(),
-        ),
+        child: MaterialApp(theme: AppTheme.light, home: const CartScreen()),
       ),
     );
 

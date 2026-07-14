@@ -9,10 +9,7 @@ void main() {
   testWidgets('profile guest shows auth required', (tester) async {
     await tester.pumpWidget(
       ProviderScope(
-        child: MaterialApp(
-          theme: AppTheme.light,
-          home: const ProfileScreen(),
-        ),
+        child: MaterialApp(theme: AppTheme.light, home: const ProfileScreen()),
       ),
     );
 

@@ -12,10 +12,7 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [apiClientProvider.overrideWithValue(MockApiClient())],
-        child: MaterialApp(
-          theme: AppTheme.light,
-          home: const CatalogScreen(),
-        ),
+        child: MaterialApp(theme: AppTheme.light, home: const CatalogScreen()),
       ),
     );
     await tester.pumpAndSettle();

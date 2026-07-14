@@ -5,14 +5,12 @@ import 'package:osetrovich/core/theme/app_theme.dart';
 import 'package:osetrovich/features/promotions/presentation/promotions_screen.dart';
 
 void main() {
-  testWidgets('promotions shows nothing found', (tester) async {
+  testWidgets('promotions shows title Акции and nothing found', (tester) async {
     await tester.pumpWidget(
-      MaterialApp(
-        theme: AppTheme.light,
-        home: const PromotionsScreen(),
-      ),
+      MaterialApp(theme: AppTheme.light, home: const PromotionsScreen()),
     );
 
+    expect(find.text(AppStrings.tabPromotions), findsOneWidget);
     expect(find.text(AppStrings.nothingFound), findsOneWidget);
   });
 }

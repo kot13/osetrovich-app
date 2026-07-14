@@ -8,10 +8,4 @@ void main() {
     final banners = await repo.getBanners();
     expect(banners.length, 3);
   });
-
-  test('getUnreadCount returns mock count', () async {
-    final repo = HomeRepository(MockApiClient());
-    final badge = await repo.getUnreadCount();
-    expect(badge.unreadCount, 3);
-  });
 }

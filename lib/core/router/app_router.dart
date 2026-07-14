@@ -6,6 +6,8 @@ import 'package:osetrovich/features/auth/presentation/sms_code_screen.dart';
 import 'package:osetrovich/features/cart/presentation/cart_screen.dart';
 import 'package:osetrovich/features/catalog/presentation/catalog_screen.dart';
 import 'package:osetrovich/features/home/presentation/home_screen.dart';
+import 'package:osetrovich/features/notifications/presentation/notification_detail_screen.dart';
+import 'package:osetrovich/features/notifications/presentation/notifications_list_screen.dart';
 import 'package:osetrovich/features/profile/presentation/profile_screen.dart';
 import 'package:osetrovich/features/promotions/presentation/promotions_screen.dart';
 import 'package:osetrovich/features/shell/presentation/main_shell.dart';
@@ -37,6 +39,22 @@ final routerProvider = Provider<GoRouter>((ref) {
               GoRoute(
                 path: '/home',
                 builder: (context, state) => const HomeScreen(),
+                routes: [
+                  GoRoute(
+                    path: 'notifications',
+                    builder:
+                        (context, state) => const NotificationsListScreen(),
+                    routes: [
+                      GoRoute(
+                        path: ':id',
+                        builder: (context, state) {
+                          final id = state.pathParameters['id']!;
+                          return NotificationDetailScreen(notificationId: id);
+                        },
+                      ),
+                    ],
+                  ),
+                ],
               ),
             ],
           ),

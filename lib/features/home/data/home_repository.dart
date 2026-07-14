@@ -1,7 +1,6 @@
 import 'package:osetrovich/core/network/api_client.dart';
 import 'package:osetrovich/core/network/providers.dart';
 import 'package:osetrovich/features/home/domain/banner.dart';
-import 'package:osetrovich/features/home/domain/notification_badge.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class HomeRepository {
@@ -10,9 +9,6 @@ class HomeRepository {
   final ApiClient _apiClient;
 
   Future<List<Banner>> getBanners() => _apiClient.getHomeBanners();
-
-  Future<NotificationBadge> getUnreadCount() =>
-      _apiClient.getUnreadNotificationCount();
 }
 
 final homeRepositoryProvider = Provider<HomeRepository>((ref) {
@@ -21,10 +17,4 @@ final homeRepositoryProvider = Provider<HomeRepository>((ref) {
 
 final bannersProvider = FutureProvider<List<Banner>>((ref) async {
   return ref.watch(homeRepositoryProvider).getBanners();
-});
-
-final notificationBadgeProvider = FutureProvider<NotificationBadge>((
-  ref,
-) async {
-  return ref.watch(homeRepositoryProvider).getUnreadCount();
 });

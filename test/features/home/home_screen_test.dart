@@ -8,21 +8,21 @@ import 'package:osetrovich/core/theme/app_theme.dart';
 import 'package:osetrovich/features/home/presentation/home_screen.dart';
 
 void main() {
-  testWidgets('home shows notifications and auth prompt when logged out', (
+  testWidgets('home shows notifications badge contact and auth prompt', (
     tester,
   ) async {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [apiClientProvider.overrideWithValue(MockApiClient())],
-        child: MaterialApp(
-          theme: AppTheme.light,
-          home: const HomeScreen(),
-        ),
+        child: MaterialApp(theme: AppTheme.light, home: const HomeScreen()),
       ),
     );
     await tester.pumpAndSettle();
 
     expect(find.byIcon(Icons.notifications_none), findsOneWidget);
+    expect(find.text('3'), findsOneWidget);
+    expect(find.text(AppStrings.contactUs), findsOneWidget);
     expect(find.text(AppStrings.authPrompt), findsOneWidget);
+    expect(find.byType(Padding), findsWidgets);
   });
 }

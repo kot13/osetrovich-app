@@ -1,7 +1,7 @@
 abstract final class AppStrings {
   static const tabHome = 'Главная';
   static const tabCatalog = 'Каталог';
-  static const tabPromotions = 'Акции и новости';
+  static const tabPromotions = 'Акции';
   static const tabCart = 'Корзина';
   static const tabProfile = 'Профиль';
 
@@ -32,4 +32,9 @@ abstract final class AppStrings {
   static const categoriesLoadFailed =
       'Не удалось загрузить категории. Попробуйте ещё раз';
   static const retry = 'Повторить';
+
+  static const notificationsTitle = 'Уведомления';
+  static const markAllRead = 'Отметить все прочитанным';
+  static const notificationsEmpty = 'Уведомлений пока нет';
+  static const contactUs = 'Связаться';
 }
