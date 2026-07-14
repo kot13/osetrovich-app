@@ -8,6 +8,8 @@ import 'package:osetrovich/features/home/domain/notification_badge.dart';
 import 'package:osetrovich/features/notifications/domain/app_notification.dart';
 import 'package:osetrovich/features/profile/domain/user_profile.dart';
 import 'package:osetrovich/features/cart/domain/order.dart';
+import 'package:osetrovich/features/promotions/domain/promotion_article.dart';
+import 'package:osetrovich/features/promotions/domain/promotion_type.dart';
 
 abstract class ApiClient {
   Future<SmsRequestResponse> requestSmsCode(String phone);
@@ -59,6 +61,12 @@ abstract class ApiClient {
   });
 
   Future<Order> createOrder(CreateOrderRequest request);
+
+  Future<List<PromotionArticleSummary>> getPromotionArticles(
+    PromotionType type,
+  );
+
+  Future<PromotionArticleDetail> getPromotionArticleById(String id);
 }
 
 typedef TokenReader = Future<String?> Function();
@@ -342,6 +350,39 @@ class DioApiClient implements ApiClient {
         data: request.toJson(),
       );
       return Order.fromJson(response.data!);
+    } on Object catch (e) {
+      throw _mapError(e);
+    }
+  }
+
+  @override
+  Future<List<PromotionArticleSummary>> getPromotionArticles(
+    PromotionType type,
+  ) async {
+    try {
+      final response = await _dio.get<Map<String, dynamic>>(
+        '/promotions/articles',
+        queryParameters: {'type': type.apiValue},
+      );
+      final items = response.data!['items'] as List<dynamic>;
+      return items
+          .map(
+            (item) =>
+                PromotionArticleSummary.fromJson(item as Map<String, dynamic>),
+          )
+          .toList();
+    } on Object catch (e) {
+      throw _mapError(e);
+    }
+  }
+
+  @override
+  Future<PromotionArticleDetail> getPromotionArticleById(String id) async {
+    try {
+      final response = await _dio.get<Map<String, dynamic>>(
+        '/promotions/articles/$id',
+      );
+      return PromotionArticleDetail.fromJson(response.data!);
     } on Object catch (e) {
       throw _mapError(e);
     }

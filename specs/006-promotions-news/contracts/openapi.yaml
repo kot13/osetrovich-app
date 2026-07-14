@@ -1,0 +1,125 @@
+openapi: 3.0.3
+info:
+  title: Osetrovich Mobile API
+  description: REST API мобильного приложения osetrovich.ru (фаза promotions-news)
+  version: 0.6.0
+
+servers:
+  - url: https://api.osetrovich.ru/v1
+    description: Production (будущее)
+  - url: http://localhost:0/mock
+    description: Mock (клиентский мок, не реальный сервер)
+
+tags:
+  - name: promotions
+    description: Акции и новости
+
+paths:
+  /promotions/articles:
+    get:
+      tags: [promotions]
+      summary: Список опубликованных акций и/или новостей
+      operationId: getPromotionArticles
+      parameters:
+        - name: type
+          in: query
+          required: true
+          schema:
+            $ref: '#/components/schemas/PromotionArticleType'
+          description: Тип материала для Filter Chip
+      responses:
+        '200':
+          description: Список материалов, отсортированный по дате публикации (новые первыми)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PromotionArticlesResponse'
+        '400':
+          description: Некорректный параметр type
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /promotions/articles/{id}:
+    get:
+      tags: [promotions]
+      summary: Деталь акции или новости
+      operationId: getPromotionArticleById
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Полный материал с HTML-телом
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PromotionArticleDetail'
+        '404':
+          description: Материал не найден или снят с публикации
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+components:
+  schemas:
+    PromotionArticleType:
+      type: string
+      enum: [all, promotion, news]
+      description: |
+        all — все материалы (Filter Chip «Все»);
+        promotion — акция (Filter Chip «Акции»);
+        news — новость (Filter Chip «Новости»)
+
+    PromotionArticleSummary:
+      type: object
+      required: [id, type, title, publishedAt, imageUrl]
+      properties:
+        id:
+          type: string
+          example: promo-1
+        type:
+          $ref: '#/components/schemas/PromotionArticleType'
+        title:
+          type: string
+          example: Скидка 15% на икру
+        publishedAt:
+          type: string
+          format: date-time
+          example: '2026-07-10T10:00:00Z'
+        imageUrl:
+          type: string
+          format: uri
+          example: https://picsum.photos/seed/promo1/800/450
+
+    PromotionArticleDetail:
+      allOf:
+        - $ref: '#/components/schemas/PromotionArticleSummary'
+        - type: object
+          required: [bodyHtml]
+          properties:
+            bodyHtml:
+              type: string
+              description: Основной текст с безопасной HTML-разметкой и эмодзи
+              example: '<p>Успейте купить <strong>икру</strong> со скидкой! 🎉</p><ul><li>До 31 июля</li><li>Онлайн и в магазине</li></ul>'
+
+    PromotionArticlesResponse:
+      type: object
+      required: [items]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/PromotionArticleSummary'
+
+    ErrorResponse:
+      type: object
+      required: [message]
+      properties:
+        message:
+          type: string

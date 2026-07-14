@@ -14,6 +14,7 @@ import 'package:osetrovich/features/profile/presentation/change_phone_screen.dar
 import 'package:osetrovich/features/profile/presentation/email_code_screen.dart';
 import 'package:osetrovich/features/profile/presentation/email_verify_screen.dart';
 import 'package:osetrovich/features/profile/presentation/profile_screen.dart';
+import 'package:osetrovich/features/promotions/presentation/promotion_detail_screen.dart';
 import 'package:osetrovich/features/promotions/presentation/promotions_screen.dart';
 import 'package:osetrovich/features/shell/presentation/main_shell.dart';
 
@@ -105,6 +106,15 @@ final routerProvider = Provider<GoRouter>((ref) {
               GoRoute(
                 path: '/promotions',
                 builder: (context, state) => const PromotionsScreen(),
+                routes: [
+                  GoRoute(
+                    path: 'article/:id',
+                    builder: (context, state) {
+                      final id = state.pathParameters['id']!;
+                      return PromotionDetailScreen(articleId: id);
+                    },
+                  ),
+                ],
               ),
             ],
           ),

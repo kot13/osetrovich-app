@@ -9,6 +9,8 @@ import 'package:osetrovich/features/notifications/domain/app_notification.dart';
 import 'package:osetrovich/features/profile/domain/user_profile.dart';
 import 'package:osetrovich/features/cart/domain/delivery_fee.dart';
 import 'package:osetrovich/features/cart/domain/order.dart';
+import 'package:osetrovich/features/promotions/domain/promotion_article.dart';
+import 'package:osetrovich/features/promotions/domain/promotion_type.dart';
 
 class MockApiClient implements ApiClient {
   static const validCode = '123456';
@@ -100,6 +102,116 @@ class MockApiClient implements ApiClient {
       isRead: true,
     ),
   ];
+
+  static final Map<String, PromotionArticleDetail> _promotionArticles = {
+    'promo-1': PromotionArticleDetail(
+      id: 'promo-1',
+      type: PromotionType.promotion,
+      title: 'Скидка 15% на красную икру',
+      publishedAt: DateTime.utc(2026, 7, 14, 9),
+      imageUrl: 'https://picsum.photos/seed/promo1/800/450',
+      bodyHtml:
+          '<p>Успейте купить <strong>красную икру</strong> со скидкой! 🎉</p>'
+          '<ul><li>До 31 июля</li><li>Онлайн и в магазине</li></ul>'
+          '<p><a href="https://osetrovich.ru">Подробнее на сайте</a></p>',
+    ),
+    'promo-2': PromotionArticleDetail(
+      id: 'promo-2',
+      type: PromotionType.promotion,
+      title: 'Акция выходного дня на рыбу',
+      publishedAt: DateTime.utc(2026, 7, 12, 8),
+      imageUrl: 'https://picsum.photos/seed/promo2/800/450',
+      bodyHtml:
+          '<p>Скидки на свежую рыбу в <em>субботу и воскресенье</em>.</p>',
+    ),
+    'promo-3': PromotionArticleDetail(
+      id: 'promo-3',
+      type: PromotionType.promotion,
+      title: '2+1 на креветки',
+      publishedAt: DateTime.utc(2026, 7, 10, 12),
+      imageUrl: 'https://picsum.photos/seed/promo3/800/450',
+      bodyHtml: '<p>Купите две упаковки креветок — третья в подарок.</p>',
+    ),
+    'promo-4': PromotionArticleDetail(
+      id: 'promo-4',
+      type: PromotionType.promotion,
+      title: 'Бесплатная доставка от 3000 ₽',
+      publishedAt: DateTime.utc(2026, 7, 8, 10),
+      imageUrl: 'https://picsum.photos/seed/promo4/800/450',
+      bodyHtml:
+          '<p>Оформите заказ от 3000 ₽ и получите бесплатную доставку.</p>',
+    ),
+    'promo-5': PromotionArticleDetail(
+      id: 'promo-5',
+      type: PromotionType.promotion,
+      title: 'Скидка на крабов',
+      publishedAt: DateTime.utc(2026, 7, 5, 11),
+      imageUrl: 'https://invalid.example/broken-image.png',
+      bodyHtml: '<p>Камчатский краб по специальной цене.</p>',
+    ),
+    'promo-script': PromotionArticleDetail(
+      id: 'promo-script',
+      type: PromotionType.promotion,
+      title: 'Тест безопасности HTML',
+      publishedAt: DateTime.utc(2026, 7, 4, 9),
+      imageUrl: 'https://picsum.photos/seed/promoscript/800/450',
+      bodyHtml:
+          '<p>Безопасный текст</p><script>alert("xss")</script><p>После скрипта</p>',
+    ),
+    'news-1': PromotionArticleDetail(
+      id: 'news-1',
+      type: PromotionType.news,
+      title: 'Новая поставка камчатского краба',
+      publishedAt: DateTime.utc(2026, 7, 13, 14),
+      imageUrl: 'https://picsum.photos/seed/news1/800/450',
+      bodyHtml:
+          '<p>На склад поступил свежий <strong>камчатский краб</strong>. 🦀</p>'
+          '<ol><li>Доступен в каталоге</li><li>Доставка по СПб</li></ol>',
+    ),
+    'news-2': PromotionArticleDetail(
+      id: 'news-2',
+      type: PromotionType.news,
+      title: 'Открытие сезона икры',
+      publishedAt: DateTime.utc(2026, 7, 11, 10),
+      imageUrl: 'https://picsum.photos/seed/news2/800/450',
+      bodyHtml: '<p>Начался сезон продажи красной икры нового урожая.</p>',
+    ),
+    'news-3': PromotionArticleDetail(
+      id: 'news-3',
+      type: PromotionType.news,
+      title: 'Расширение ассортимента соусов',
+      publishedAt: DateTime.utc(2026, 7, 9, 16),
+      imageUrl: 'https://picsum.photos/seed/news3/800/450',
+      bodyHtml: '<p>Добавлены новые соусы для морепродуктов.</p>',
+    ),
+    'news-4': PromotionArticleDetail(
+      id: 'news-4',
+      type: PromotionType.news,
+      title: 'График работы в праздники',
+      publishedAt: DateTime.utc(2026, 7, 7, 9),
+      imageUrl: 'https://picsum.photos/seed/news4/800/450',
+      bodyHtml: '<p>Магазин работает без выходных с 9:00 до 21:00.</p>',
+    ),
+    'unpublished-demo': PromotionArticleDetail(
+      id: 'unpublished-demo',
+      type: PromotionType.promotion,
+      title: 'Снятая с публикации акция',
+      publishedAt: DateTime.utc(2026, 6, 1, 9),
+      imageUrl: 'https://picsum.photos/seed/unpub/800/450',
+      bodyHtml: '<p>Этот материал не должен быть в ленте.</p>',
+    ),
+  };
+
+  static const _publishedPromotionIds = {
+    'promo-1',
+    'promo-2',
+    'promo-3',
+    'promo-4',
+    'promo-5',
+    'promo-script',
+  };
+
+  static const _publishedNewsIds = {'news-1', 'news-2', 'news-3', 'news-4'};
 
   late List<AppNotification> _notifications;
   int _orderSequence = 1000;
@@ -498,6 +610,53 @@ class MockApiClient implements ApiClient {
       status: OrderStatus.pending,
       createdAt: DateTime.now().toUtc(),
     );
+  }
+
+  @override
+  Future<List<PromotionArticleSummary>> getPromotionArticles(
+    PromotionType type,
+  ) async {
+    await Future<void>.delayed(const Duration(milliseconds: 100));
+    final publishedIds = switch (type) {
+      PromotionType.all => {
+        ..._publishedPromotionIds,
+        ..._publishedNewsIds,
+      },
+      PromotionType.promotion => _publishedPromotionIds,
+      PromotionType.news => _publishedNewsIds,
+    };
+
+    final items =
+        publishedIds
+            .map((id) => _promotionArticles[id]!)
+            .map(
+              (detail) => PromotionArticleSummary(
+                id: detail.id,
+                type: detail.type,
+                title: detail.title,
+                publishedAt: detail.publishedAt,
+                imageUrl: detail.imageUrl,
+              ),
+            )
+            .toList()
+          ..sort((a, b) => b.publishedAt.compareTo(a.publishedAt));
+
+    return items;
+  }
+
+  @override
+  Future<PromotionArticleDetail> getPromotionArticleById(String id) async {
+    await Future<void>.delayed(const Duration(milliseconds: 80));
+    final detail = _promotionArticles[id];
+    if (detail == null || !_isPublishedArticle(id)) {
+      throw ApiException(code: 'NOT_FOUND', message: 'Материал недоступен');
+    }
+    return detail;
+  }
+
+  bool _isPublishedArticle(String id) {
+    return _publishedPromotionIds.contains(id) ||
+        _publishedNewsIds.contains(id);
   }
 
   bool _isValidPhone(String phone) => RegExp(r'^\+7\d{10}$').hasMatch(phone);

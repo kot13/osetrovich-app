@@ -102,4 +102,13 @@ abstract final class AppStrings {
       'Некоторые товары недоступны и удалены из корзины';
   static const cartLoadFailed =
       'Не удалось загрузить корзину. Попробуйте ещё раз';
+
+  static const chipPromotions = 'Акции';
+  static const chipNews = 'Новости';
+  static const chipAll = 'Все';
+  static const typePromotion = 'Акция';
+  static const typeNews = 'Новость';
+  static const articlesLoadFailed =
+      'Не удалось загрузить материалы. Попробуйте ещё раз';
+  static const articleNotFound = 'Материал недоступен';
 }
