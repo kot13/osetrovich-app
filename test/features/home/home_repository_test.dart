@@ -6,6 +6,6 @@ void main() {
   test('getBanners returns mock banners', () async {
     final repo = HomeRepository(MockApiClient());
     final banners = await repo.getBanners();
-    expect(banners.length, 3);
+    expect(banners.length, 4);
   });
 }

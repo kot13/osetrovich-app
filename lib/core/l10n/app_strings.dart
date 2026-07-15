@@ -111,4 +111,29 @@ abstract final class AppStrings {
   static const articlesLoadFailed =
       'Не удалось загрузить материалы. Попробуйте ещё раз';
   static const articleNotFound = 'Материал недоступен';
+
+  static const homeWeeklyProductsTitle = 'Товары недели';
+  static const homeOrderHistoryTitle = 'История заказов';
+  static const homeOrderStatusAccepted = 'Принят';
+  static const homeOrderStatusProcessing = 'В обработке';
+  static const homeOrderStatusAssembly = 'Сборка';
+  static const homeOrderStatusDelivery = 'Доставка';
+  static const homeOrderStatusCompleted = 'Выполнено';
+  static const homeContactOperator = 'Связаться с оператором';
+  static const homeOrderRatingPrompt =
+      'Пожалуйста, оцените ваш заказ, это поможет нам стать лучше!';
+  static const homeOrderRate = 'Оценить';
+  static const homeOrderSkipRating = 'Пропустить';
+  static const homeRepeatOrder = 'Повторить заказ';
+  static const homeOrderRatingTitle = 'Оценка заказа';
+  static const homeOrderRatingSubmit = 'Отправить';
+  static const homeOrderRatingCancel = 'Отмена';
+  static const homeOrderRatingCommentHint = 'Комментарий (необязательно)';
+  static const homeRepeatOrderPartial =
+      'Некоторые товары недоступны и не добавлены в корзину';
+  static const homeRepeatOrderFailed =
+      'Не удалось повторить заказ: товары недоступны';
+  static const homeBannerLinkFailed = 'Не удалось открыть ссылку';
+  static const homeLoadError = 'Не удалось загрузить данные';
+  static const homeRetry = 'Повторить';
 }

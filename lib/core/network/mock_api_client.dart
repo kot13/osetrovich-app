@@ -13,9 +13,17 @@ import 'package:osetrovich/features/promotions/domain/promotion_article.dart';
 import 'package:osetrovich/features/promotions/domain/promotion_type.dart';
 
 class MockApiClient implements ApiClient {
+  /// Mock presets for manual QA (quickstart):
+  /// - +79001111111 — текущий заказ в статусе «Доставка»
+  /// - +79002222222 — выполненный заказ, оценка не дана (pending)
+  /// - +79003333333 — выполненный заказ, оценка пропущена (repeat ready)
+  /// Обычный вход → заказ появляется после createOrder (checkout).
   static const validCode = '123456';
   static const takenPhone = '+79999999999';
   static const takenEmail = 'taken@example.com';
+  static const demoPhoneDelivery = '+79001111111';
+  static const demoPhoneRatingPending = '+79002222222';
+  static const demoPhoneRatingSkipped = '+79003333333';
   static const _accessTokenPhonePrefix = 'mock.access.token.';
 
   /// Extracts phone embedded in mock access tokens (`mock.access.token.+7...`).
@@ -33,15 +41,19 @@ class MockApiClient implements ApiClient {
     if (normalized.isEmpty) {
       return;
     }
-    _profile ??= UserProfile(
-      id: 'u1',
+    _profile = UserProfile(
+      id: _userIdForPhone(normalized),
       name: 'Покупатель',
       phone: normalized,
       email: null,
       emailVerified: false,
       pushEnabled: true,
     );
+    _seedDemoOrdersIfNeeded(normalized);
   }
+
+  static String _userIdForPhone(String phone) =>
+      'u-${phone.replaceAll(RegExp(r'\D'), '')}';
 
   MockApiClient() {
     _notifications = List<AppNotification>.from(_initialNotifications);
@@ -215,6 +227,7 @@ class MockApiClient implements ApiClient {
 
   late List<AppNotification> _notifications;
   int _orderSequence = 1000;
+  final Map<String, List<CurrentOrder>> _ordersByUserId = {};
 
   @override
   Future<SmsRequestResponse> requestSmsCode(String phone) async {
@@ -407,11 +420,131 @@ class MockApiClient implements ApiClient {
   @override
   Future<List<Banner>> getHomeBanners() async {
     await Future<void>.delayed(const Duration(milliseconds: 100));
-    return const [
-      Banner(id: '1', imageUrl: '', sortOrder: 0),
-      Banner(id: '2', imageUrl: '', sortOrder: 1),
-      Banner(id: '3', imageUrl: '', sortOrder: 2),
+    return [
+      Banner(
+        id: 'banner-1',
+        imageUrl: 'https://picsum.photos/seed/osetrovich-banner1/800/360',
+        sortOrder: 0,
+        link: const BannerLink(
+          type: BannerLinkType.external,
+          url: 'https://osetrovich.ru',
+        ),
+      ),
+      Banner(
+        id: 'banner-2',
+        imageUrl: 'https://picsum.photos/seed/osetrovich-banner2/800/360',
+        sortOrder: 1,
+        link: const BannerLink(
+          type: BannerLinkType.promotion,
+          targetId: 'promo-1',
+        ),
+      ),
+      Banner(
+        id: 'banner-3',
+        imageUrl: 'https://picsum.photos/seed/osetrovich-banner3/800/360',
+        sortOrder: 2,
+        link: const BannerLink(
+          type: BannerLinkType.product,
+          targetId: 'p-fish-0',
+        ),
+      ),
+      Banner(
+        id: 'banner-4',
+        imageUrl: 'https://picsum.photos/seed/osetrovich-banner4/800/360',
+        sortOrder: 3,
+        link: const BannerLink(type: BannerLinkType.news, targetId: 'news-1'),
+      ),
     ];
+  }
+
+  @override
+  Future<List<ProductSummary>> getWeeklyProducts() async {
+    await Future<void>.delayed(const Duration(milliseconds: 100));
+    const weeklyIds = [
+      'p-fish-0',
+      'p-fish-1',
+      'p-caviar-0',
+      'p-crabs-0',
+      'p-shrimp-0',
+      'p-sauces-0',
+      'p-mollusks-0',
+      'p-canned-0',
+    ];
+    return [
+      for (final id in weeklyIds)
+        for (final product in _products)
+          if (product.id == id) product,
+    ];
+  }
+
+  @override
+  Future<CurrentOrder?> getCurrentOrder() async {
+    await Future<void>.delayed(const Duration(milliseconds: 100));
+    final profile = _requireProfile();
+    final orders = _ordersByUserId[profile.id];
+    if (orders == null || orders.isEmpty) {
+      return null;
+    }
+    return orders.last;
+  }
+
+  @override
+  Future<CurrentOrder> submitOrderRating(
+    String orderId,
+    SubmitOrderRatingRequest request,
+  ) async {
+    await Future<void>.delayed(const Duration(milliseconds: 100));
+    final profile = _requireProfile();
+    final order = _findOrder(profile.id, orderId);
+    if (order.status != OrderStatus.completed) {
+      throw ApiException(
+        code: 'INVALID_REQUEST',
+        message: 'Оценка доступна только для выполненного заказа',
+      );
+    }
+    if (order.ratingState != OrderRatingState.pending) {
+      throw ApiException(
+        code: 'RATING_ALREADY_SET',
+        message: 'Оценка уже отправлена или пропущена',
+      );
+    }
+    if (request.stars < 1 || request.stars > 5) {
+      throw ApiException(
+        code: 'INVALID_REQUEST',
+        message: 'Оценка должна быть от 1 до 5',
+      );
+    }
+    final updated = order.copyWith(
+      ratingState: OrderRatingState.submitted,
+      ratingStars: request.stars,
+    );
+    _replaceOrder(profile.id, updated);
+    return updated;
+  }
+
+  @override
+  Future<CurrentOrder> skipOrderRating(String orderId) async {
+    await Future<void>.delayed(const Duration(milliseconds: 100));
+    final profile = _requireProfile();
+    final order = _findOrder(profile.id, orderId);
+    if (order.status != OrderStatus.completed) {
+      throw ApiException(
+        code: 'INVALID_REQUEST',
+        message: 'Пропуск оценки доступен только для выполненного заказа',
+      );
+    }
+    if (order.ratingState != OrderRatingState.pending) {
+      throw ApiException(
+        code: 'RATING_ALREADY_SET',
+        message: 'Оценка уже отправлена или пропущена',
+      );
+    }
+    final updated = order.copyWith(
+      ratingState: OrderRatingState.skipped,
+      clearRatingStars: true,
+    );
+    _replaceOrder(profile.id, updated);
+    return updated;
   }
 
   @override
@@ -597,8 +730,9 @@ class MockApiClient implements ApiClient {
 
     final deliveryFeeRub = calculateDeliveryFeeRub(itemsSubtotalRub);
     _orderSequence += 1;
+    final profile = _requireProfile();
 
-    return Order(
+    final currentOrder = CurrentOrder(
       id: 'ord-$_orderSequence',
       orderNumber: 'ORD-$_orderSequence',
       items: orderLines,
@@ -607,9 +741,13 @@ class MockApiClient implements ApiClient {
       totalRub: itemsSubtotalRub + deliveryFeeRub,
       deliveryAddress: address,
       comment: request.comment,
-      status: OrderStatus.pending,
+      status: OrderStatus.accepted,
       createdAt: DateTime.now().toUtc(),
+      ratingState: OrderRatingState.notApplicable,
     );
+
+    _ordersByUserId.putIfAbsent(profile.id, () => []).add(currentOrder);
+    return currentOrder;
   }
 
   @override
@@ -657,6 +795,111 @@ class MockApiClient implements ApiClient {
   bool _isPublishedArticle(String id) {
     return _publishedPromotionIds.contains(id) ||
         _publishedNewsIds.contains(id);
+  }
+
+  void _seedDemoOrdersIfNeeded(String phone) {
+    final profile = _profile;
+    if (profile == null) {
+      return;
+    }
+    if (_ordersByUserId.containsKey(profile.id)) {
+      return;
+    }
+
+    CurrentOrder? demo;
+    if (phone == demoPhoneDelivery) {
+      demo = _buildDemoOrder(
+        id: 'ord-demo-delivery',
+        number: 'ORD-DEMO-1',
+        status: OrderStatus.delivery,
+        ratingState: OrderRatingState.notApplicable,
+      );
+    } else if (phone == demoPhoneRatingPending) {
+      demo = _buildDemoOrder(
+        id: 'ord-demo-rating',
+        number: 'ORD-DEMO-2',
+        status: OrderStatus.completed,
+        ratingState: OrderRatingState.pending,
+      );
+    } else if (phone == demoPhoneRatingSkipped) {
+      demo = _buildDemoOrder(
+        id: 'ord-demo-repeat',
+        number: 'ORD-DEMO-3',
+        status: OrderStatus.completed,
+        ratingState: OrderRatingState.skipped,
+      );
+    }
+
+    if (demo != null) {
+      _ordersByUserId[profile.id] = [demo];
+    }
+  }
+
+  CurrentOrder _buildDemoOrder({
+    required String id,
+    required String number,
+    required OrderStatus status,
+    required OrderRatingState ratingState,
+  }) {
+    final fish = _productDetails['p-fish-0']!;
+    final caviar = _productDetails['p-caviar-0']!;
+    final lines = [
+      OrderLine(
+        productId: fish.id,
+        name: fish.name,
+        weightLabel: fish.weightLabel,
+        priceRub: fish.priceRub,
+        quantity: 1,
+        lineTotalRub: fish.priceRub,
+      ),
+      OrderLine(
+        productId: caviar.id,
+        name: caviar.name,
+        weightLabel: caviar.weightLabel,
+        priceRub: caviar.priceRub,
+        quantity: 2,
+        lineTotalRub: caviar.priceRub * 2,
+      ),
+    ];
+    final subtotal = fish.priceRub + caviar.priceRub * 2;
+    final delivery = calculateDeliveryFeeRub(subtotal);
+    return CurrentOrder(
+      id: id,
+      orderNumber: number,
+      items: lines,
+      itemsSubtotalRub: subtotal,
+      deliveryFeeRub: delivery,
+      totalRub: subtotal + delivery,
+      deliveryAddress: 'г. Санкт-Петербург, Невский пр., д. 1',
+      status: status,
+      createdAt: DateTime.utc(2026, 7, 14, 12),
+      ratingState: ratingState,
+    );
+  }
+
+  CurrentOrder _findOrder(String userId, String orderId) {
+    final orders = _ordersByUserId[userId];
+    if (orders == null) {
+      throw ApiException(code: 'NOT_FOUND', message: 'Заказ не найден');
+    }
+    for (final order in orders) {
+      if (order.id == orderId) {
+        return order;
+      }
+    }
+    throw ApiException(code: 'NOT_FOUND', message: 'Заказ не найден');
+  }
+
+  void _replaceOrder(String userId, CurrentOrder updated) {
+    final orders = _ordersByUserId[userId];
+    if (orders == null) {
+      throw ApiException(code: 'NOT_FOUND', message: 'Заказ не найден');
+    }
+    final index = orders.indexWhere((o) => o.id == updated.id);
+    if (index == -1) {
+      throw ApiException(code: 'NOT_FOUND', message: 'Заказ не найден');
+    }
+    orders[index] = updated;
   }
 
   bool _isValidPhone(String phone) => RegExp(r'^\+7\d{10}$').hasMatch(phone);

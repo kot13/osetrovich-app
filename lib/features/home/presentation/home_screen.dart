@@ -4,10 +4,13 @@ import 'package:go_router/go_router.dart';
 import 'package:osetrovich/core/l10n/app_strings.dart';
 import 'package:osetrovich/core/widgets/loading_indicator.dart';
 import 'package:osetrovich/features/auth/domain/auth_session_provider.dart';
+import 'package:osetrovich/features/cart/data/order_repository.dart';
 import 'package:osetrovich/features/home/data/home_repository.dart';
 import 'package:osetrovich/features/home/presentation/auth_prompt_banner.dart';
 import 'package:osetrovich/features/home/presentation/banner_carousel.dart';
 import 'package:osetrovich/features/home/presentation/home_contact_button.dart';
+import 'package:osetrovich/features/home/presentation/home_order_history_section.dart';
+import 'package:osetrovich/features/home/presentation/home_weekly_products_section.dart';
 import 'package:osetrovich/features/notifications/domain/notifications_notifier.dart';
 
 class HomeScreen extends ConsumerWidget {
@@ -17,6 +20,7 @@ class HomeScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     ref.watch(notificationsNotifierProvider);
     final bannersAsync = ref.watch(bannersProvider);
+    final currentOrderAsync = ref.watch(currentOrderProvider);
     final unreadCount = ref.watch(unreadCountProvider);
     final isAuthenticated = ref.watch(isAuthenticatedProvider);
 
@@ -69,12 +73,57 @@ class HomeScreen extends ConsumerWidget {
             child: bannersAsync.when(
               loading:
                   () => const SizedBox(height: 180, child: LoadingIndicator()),
-              error: (_, __) => const SizedBox.shrink(),
+              error:
+                  (_, __) => _HomeSectionError(
+                    onRetry: () => ref.invalidate(bannersProvider),
+                  ),
               data: (banners) => BannerCarousel(banners: banners),
             ),
           ),
           const HomeContactButton(),
+          const HomeWeeklyProductsSection(),
+          if (isAuthenticated)
+            currentOrderAsync.when(
+              loading: () => const SizedBox.shrink(),
+              error:
+                  (_, __) => _HomeSectionError(
+                    onRetry: () => ref.invalidate(currentOrderProvider),
+                  ),
+              data: (order) {
+                if (order == null) {
+                  return const SizedBox.shrink();
+                }
+                return HomeOrderHistorySection(
+                  key: ValueKey(order.id),
+                  order: order,
+                );
+              },
+            ),
           if (!isAuthenticated) const AuthPromptBanner(),
+        ],
+      ),
+    );
+  }
+}
+
+class _HomeSectionError extends StatelessWidget {
+  const _HomeSectionError({required this.onRetry});
+
+  final VoidCallback onRetry;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      child: Row(
+        children: [
+          Expanded(
+            child: Text(
+              AppStrings.homeLoadError,
+              style: TextStyle(color: Theme.of(context).colorScheme.error),
+            ),
+          ),
+          TextButton(onPressed: onRetry, child: const Text(AppStrings.homeRetry)),
         ],
       ),
     );

@@ -1,8 +1,10 @@
 import 'dart:async';
 
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:osetrovich/core/theme/app_colors.dart';
 import 'package:osetrovich/features/home/domain/banner.dart' as home;
+import 'package:osetrovich/features/home/domain/banner_link_handler.dart';
 
 class BannerCarousel extends StatefulWidget {
   const BannerCarousel({super.key, required this.banners});
@@ -104,32 +106,58 @@ class _BannerContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (banner.imageUrl.isEmpty) {
-      return Container(
-        width: double.infinity,
-        color: AppColors.primary.withValues(alpha: 0.15),
-        child: Center(
-          child: Text(
-            'Баннер ${bannerIndex + 1}',
-            style: const TextStyle(
-              color: AppColors.primary,
-              fontSize: 18,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-        ),
-      );
+    final child =
+        banner.imageUrl.isEmpty
+            ? Container(
+              width: double.infinity,
+              color: AppColors.primary.withValues(alpha: 0.15),
+              child: Center(
+                child: Text(
+                  'Баннер ${bannerIndex + 1}',
+                  style: const TextStyle(
+                    color: AppColors.primary,
+                    fontSize: 18,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            )
+            : CachedNetworkImage(
+              imageUrl: banner.imageUrl,
+              width: double.infinity,
+              fit: BoxFit.cover,
+              placeholder:
+                  (_, __) => ColoredBox(
+                    color: AppColors.background,
+                    child: Center(
+                      child: Icon(
+                        Icons.image_outlined,
+                        color: AppColors.dark.withValues(alpha: 0.4),
+                      ),
+                    ),
+                  ),
+              errorWidget:
+                  (_, __, ___) => ColoredBox(
+                    color: AppColors.background,
+                    child: Center(
+                      child: Icon(
+                        Icons.image_not_supported_outlined,
+                        color: AppColors.dark.withValues(alpha: 0.4),
+                      ),
+                    ),
+                  ),
+            );
+
+    if (banner.link.type == home.BannerLinkType.none) {
+      return child;
     }
 
-    return Image.network(
-      banner.imageUrl,
-      width: double.infinity,
-      fit: BoxFit.cover,
-      errorBuilder:
-          (_, __, ___) => Container(
-            color: Colors.grey.shade300,
-            child: const Center(child: Icon(Icons.image, size: 48)),
-          ),
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: () => handleBannerLink(context, banner.link),
+        child: child,
+      ),
     );
   }
 }

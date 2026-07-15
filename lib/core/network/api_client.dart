@@ -32,6 +32,17 @@ abstract class ApiClient {
 
   Future<List<Banner>> getHomeBanners();
 
+  Future<List<ProductSummary>> getWeeklyProducts();
+
+  Future<CurrentOrder?> getCurrentOrder();
+
+  Future<CurrentOrder> submitOrderRating(
+    String orderId,
+    SubmitOrderRatingRequest request,
+  );
+
+  Future<CurrentOrder> skipOrderRating(String orderId);
+
   Future<NotificationBadge> getUnreadNotificationCount();
 
   Future<List<AppNotification>> getNotifications();
@@ -180,6 +191,63 @@ class DioApiClient implements ApiClient {
       return items
           .map((e) => Banner.fromJson(e as Map<String, dynamic>))
           .toList();
+    } on Object catch (e) {
+      throw _mapError(e);
+    }
+  }
+
+  @override
+  Future<List<ProductSummary>> getWeeklyProducts() async {
+    try {
+      final response = await _dio.get<Map<String, dynamic>>(
+        '/home/weekly-products',
+      );
+      final items = response.data!['items'] as List<dynamic>;
+      return items
+          .map((e) => ProductSummary.fromJson(e as Map<String, dynamic>))
+          .toList();
+    } on Object catch (e) {
+      throw _mapError(e);
+    }
+  }
+
+  @override
+  Future<CurrentOrder?> getCurrentOrder() async {
+    try {
+      final response = await _dio.get<Map<String, dynamic>>('/orders/current');
+      final orderJson = response.data!['order'];
+      if (orderJson == null) {
+        return null;
+      }
+      return CurrentOrder.fromJson(orderJson as Map<String, dynamic>);
+    } on Object catch (e) {
+      throw _mapError(e);
+    }
+  }
+
+  @override
+  Future<CurrentOrder> submitOrderRating(
+    String orderId,
+    SubmitOrderRatingRequest request,
+  ) async {
+    try {
+      final response = await _dio.post<Map<String, dynamic>>(
+        '/orders/$orderId/rating',
+        data: request.toJson(),
+      );
+      return CurrentOrder.fromJson(response.data!);
+    } on Object catch (e) {
+      throw _mapError(e);
+    }
+  }
+
+  @override
+  Future<CurrentOrder> skipOrderRating(String orderId) async {
+    try {
+      final response = await _dio.post<Map<String, dynamic>>(
+        '/orders/$orderId/rating/skip',
+      );
+      return CurrentOrder.fromJson(response.data!);
     } on Object catch (e) {
       throw _mapError(e);
     }

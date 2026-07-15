@@ -25,6 +25,14 @@ class CartNotifier extends Notifier<Map<String, int>> {
 
   void add(String productId) => increment(productId);
 
+  void addQuantity(String productId, int quantity) {
+    if (quantity <= 0) {
+      return;
+    }
+    final current = quantityOf(productId);
+    state = {...state, productId: current + quantity};
+  }
+
   void remove(String productId) {
     if (!state.containsKey(productId)) {
       return;
