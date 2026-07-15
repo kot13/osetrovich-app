@@ -30,7 +30,10 @@ void main() {
   });
 
   test('demo phone delivery returns active order', () async {
-    await client.verifySmsCode(MockApiClient.demoPhoneDelivery, MockApiClient.validCode);
+    await client.verifySmsCode(
+      MockApiClient.demoPhoneDelivery,
+      MockApiClient.validCode,
+    );
     final order = await client.getCurrentOrder();
     expect(order, isNotNull);
     expect(order!.status, OrderStatus.delivery);

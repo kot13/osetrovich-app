@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:osetrovich/core/analytics/analytics_providers.dart';
 import 'package:osetrovich/core/l10n/app_strings.dart';
 import 'package:osetrovich/core/widgets/empty_state.dart';
 import 'package:osetrovich/core/widgets/loading_indicator.dart';
@@ -8,11 +9,29 @@ import 'package:osetrovich/features/catalog/domain/products_notifier.dart';
 import 'package:osetrovich/features/catalog/presentation/category_chips.dart';
 import 'package:osetrovich/features/catalog/presentation/widgets/product_grid.dart';
 
-class CatalogScreen extends ConsumerWidget {
+class CatalogScreen extends ConsumerStatefulWidget {
   const CatalogScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<CatalogScreen> createState() => _CatalogScreenState();
+}
+
+class _CatalogScreenState extends ConsumerState<CatalogScreen> {
+  bool _catalogViewReported = false;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!_catalogViewReported && mounted) {
+        ref.read(analyticsServiceProvider).reportCatalogView();
+        _catalogViewReported = true;
+      }
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final categoriesAsync = ref.watch(categoriesProvider);
     final selectedId = ref.watch(selectedCategoryIdProvider);
     final productsState = ref.watch(productsNotifierProvider);

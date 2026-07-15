@@ -756,10 +756,7 @@ class MockApiClient implements ApiClient {
   ) async {
     await Future<void>.delayed(const Duration(milliseconds: 100));
     final publishedIds = switch (type) {
-      PromotionType.all => {
-        ..._publishedPromotionIds,
-        ..._publishedNewsIds,
-      },
+      PromotionType.all => {..._publishedPromotionIds, ..._publishedNewsIds},
       PromotionType.promotion => _publishedPromotionIds,
       PromotionType.news => _publishedNewsIds,
     };

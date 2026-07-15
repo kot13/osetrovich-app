@@ -123,7 +123,10 @@ class _HomeSectionError extends StatelessWidget {
               style: TextStyle(color: Theme.of(context).colorScheme.error),
             ),
           ),
-          TextButton(onPressed: onRetry, child: const Text(AppStrings.homeRetry)),
+          TextButton(
+            onPressed: onRetry,
+            child: const Text(AppStrings.homeRetry),
+          ),
         ],
       ),
     );

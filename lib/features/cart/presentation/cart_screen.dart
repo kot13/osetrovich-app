@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:osetrovich/core/analytics/analytics_providers.dart';
 import 'package:osetrovich/core/l10n/app_strings.dart';
 import 'package:osetrovich/core/widgets/empty_state.dart';
 import 'package:osetrovich/features/auth/domain/auth_session_provider.dart';
@@ -26,13 +27,23 @@ class _CartScreenState extends ConsumerState<CartScreen> {
   final _addressController = TextEditingController();
   final _commentController = TextEditingController();
   bool _checkoutResumeInProgress = false;
+  bool _checkoutStartReported = false;
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _resumePendingCheckoutAfterAuth();
+      _reportCheckoutStartIfNeeded();
     });
+  }
+
+  void _reportCheckoutStartIfNeeded() {
+    final cart = ref.read(cartNotifierProvider);
+    if (cart.isNotEmpty && !_checkoutStartReported) {
+      ref.read(analyticsServiceProvider).reportCheckoutStart();
+      _checkoutStartReported = true;
+    }
   }
 
   @override
@@ -137,6 +148,16 @@ class _CartScreenState extends ConsumerState<CartScreen> {
     ref.listen<bool>(isAuthenticatedProvider, (previous, next) {
       if (next && previous != true) {
         _resumePendingCheckoutAfterAuth();
+      }
+    });
+
+    ref.listen<Map<String, int>>(cartNotifierProvider, (previous, next) {
+      if (next.isNotEmpty && !_checkoutStartReported) {
+        ref.read(analyticsServiceProvider).reportCheckoutStart();
+        _checkoutStartReported = true;
+      }
+      if (next.isEmpty) {
+        _checkoutStartReported = false;
       }
     });
 

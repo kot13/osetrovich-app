@@ -86,6 +86,18 @@ flutter run -d macos       # macOS desktop
 flutter run -d <deviceId>  # Android / iOS
 ```
 
+### Yandex AppMetrica (аналитика, краши, push)
+
+Для сборок с аналитикой передайте API-ключ через `--dart-define` (ключи **не коммитить**):
+
+```bash
+flutter run --dart-define=APPMETRICA_API_KEY=<your_debug_api_key>
+```
+
+Без ключа приложение использует `NoOpAnalyticsService` — тесты и локальная разработка работают без AppMetrica.
+
+Подробная настройка воронки, крашей и push: [`specs/008-yandex-appmetrica/quickstart.md`](specs/008-yandex-appmetrica/quickstart.md).
+
 ### Мок-API
 
 По умолчанию приложение работает с **мок-данными** (без боевого бэкенда). Флаг в коде:

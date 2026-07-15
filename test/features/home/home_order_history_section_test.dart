@@ -43,9 +43,7 @@ void main() {
     await tester.pumpWidget(
       MaterialApp(
         theme: AppTheme.light,
-        home: Scaffold(
-          body: HomeOrderHistorySection(order: sampleOrder()),
-        ),
+        home: Scaffold(body: HomeOrderHistorySection(order: sampleOrder())),
       ),
     );
 

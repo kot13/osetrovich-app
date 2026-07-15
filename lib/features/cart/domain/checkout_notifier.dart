@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:osetrovich/core/analytics/analytics_providers.dart';
 import 'package:osetrovich/core/l10n/app_strings.dart';
 import 'package:osetrovich/core/network/api_exception.dart';
 import 'package:osetrovich/core/network/mock_profile_sync.dart';
@@ -86,6 +87,9 @@ class CheckoutNotifier extends Notifier<CheckoutState> {
       final order = await ref
           .read(orderRepositoryProvider)
           .createOrder(request);
+      ref
+          .read(analyticsServiceProvider)
+          .reportOrderSuccess(orderId: order.id, orderTotalRub: order.totalRub);
       ref.read(cartNotifierProvider.notifier).clear();
       state = state.copyWith(
         isSubmitting: false,

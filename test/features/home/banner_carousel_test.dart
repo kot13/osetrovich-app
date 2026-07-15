@@ -54,7 +54,9 @@ void main() {
     tester,
   ) async {
     await tester.pumpWidget(
-      MaterialApp(home: Scaffold(body: BannerCarousel(banners: bannersWithImages))),
+      MaterialApp(
+        home: Scaffold(body: BannerCarousel(banners: bannersWithImages)),
+      ),
     );
 
     expect(find.byType(CachedNetworkImage), findsWidgets);
@@ -118,7 +120,9 @@ void main() {
 
   testWidgets('tappable banner has InkWell', (tester) async {
     await tester.pumpWidget(
-      MaterialApp(home: Scaffold(body: BannerCarousel(banners: bannersWithImages))),
+      MaterialApp(
+        home: Scaffold(body: BannerCarousel(banners: bannersWithImages)),
+      ),
     );
 
     expect(find.byType(InkWell), findsWidgets);

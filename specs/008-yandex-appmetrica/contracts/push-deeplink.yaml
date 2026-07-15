@@ -1,0 +1,98 @@
+# Контракт payload push-уведомлений (AppMetrica → приложение)
+# Фича: 008-yandex-appmetrica
+# Версия: 1.0.0
+#
+# JSON передаётся в поле data push-уведомления при отправке из панели AppMetrica
+# или через Push API AppMetrica.
+
+version: "1.0.0"
+platform: appmetrica_push
+description: Deep link payload для навигации в приложении osetrovich.ru
+
+payload_schema:
+  type: object
+  required:
+    - type
+  properties:
+    type:
+      type: string
+      enum:
+        - home
+        - order
+        - promotion
+        - notification
+        - product
+      description: Тип целевого экрана
+    targetId:
+      type: string
+      description: >
+        Идентификатор сущности. Обязателен для order, promotion, notification, product.
+        Для home — опускается.
+
+routing:
+  home:
+    path: /home
+    required_targetId: false
+  order:
+    path: /home
+    required_targetId: true
+    note: Блок истории заказов на главной; targetId = orderId
+  promotion:
+    path: /promotions/article/{targetId}
+    required_targetId: true
+  notification:
+    path: /home/notifications/{targetId}
+    required_targetId: true
+  product:
+    path: /catalog/product/{targetId}
+    required_targetId: true
+
+fallback:
+  unknown_type: /home
+  missing_targetId: /home
+
+examples:
+  - description: Статус заказа
+    payload:
+      type: order
+      targetId: ord-12345
+    expected_route: /home
+
+  - description: Акция
+    payload:
+      type: promotion
+      targetId: promo-1
+    expected_route: /promotions/article/promo-1
+
+  - description: In-app уведомление
+    payload:
+      type: notification
+      targetId: notif-7
+    expected_route: /home/notifications/notif-7
+
+  - description: Товар
+    payload:
+      type: product
+      targetId: p1
+    expected_route: /catalog/product/p1
+
+  - description: Общее сообщение
+    payload:
+      type: home
+    expected_route: /home
+
+panel_setup:
+  segment_push_enabled:
+    attribute: push_enabled
+    value: true
+    description: Сегмент для рассылок; согласовано с FR-010
+  transports:
+    android: FCM
+    ios: APNs
+
+client_handler:
+  module: lib/core/push/push_deeplink_handler.dart
+  entrypoints:
+    - cold_start
+    - background_tap
+    - foreground_receive

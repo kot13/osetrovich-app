@@ -18,12 +18,13 @@ Future<void> showOrderRatingSheet(
   return showModalBottomSheet<void>(
     context: context,
     isScrollControlled: true,
-    builder: (context) => Padding(
-      padding: EdgeInsets.only(
-        bottom: MediaQuery.viewInsetsOf(context).bottom,
-      ),
-      child: OrderRatingSheet(onSubmit: onSubmit),
-    ),
+    builder:
+        (context) => Padding(
+          padding: EdgeInsets.only(
+            bottom: MediaQuery.viewInsetsOf(context).bottom,
+          ),
+          child: OrderRatingSheet(onSubmit: onSubmit),
+        ),
   );
 }
 

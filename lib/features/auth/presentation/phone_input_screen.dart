@@ -90,8 +90,7 @@ class _PhoneInputScreenState extends ConsumerState<PhoneInputScreen> {
                                 .read(smsAuthProvider.notifier)
                                 .submitPhone();
                         if (ok && context.mounted) {
-                          final query =
-                              from != null ? '?from=$from' : '';
+                          final query = from != null ? '?from=$from' : '';
                           context.push('/auth/sms$query');
                         }
                       },

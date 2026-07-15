@@ -9,13 +9,14 @@ void main() {
     await tester.pumpWidget(
       MaterialApp(
         theme: AppTheme.light,
-        home: Scaffold(
-          body: OrderRatingSheet(onSubmit: (_, __) {}),
-        ),
+        home: Scaffold(body: OrderRatingSheet(onSubmit: (_, __) {})),
       ),
     );
 
-    final submitButton = find.widgetWithText(FilledButton, AppStrings.homeOrderRatingSubmit);
+    final submitButton = find.widgetWithText(
+      FilledButton,
+      AppStrings.homeOrderRatingSubmit,
+    );
     expect(tester.widget<FilledButton>(submitButton).onPressed, isNull);
 
     await tester.tap(find.byIcon(Icons.star_border).first);

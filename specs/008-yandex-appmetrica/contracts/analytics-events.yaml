@@ -1,0 +1,103 @@
+# Контракт событий аналитики (AppMetrica)
+# Фича: 008-yandex-appmetrica
+# Версия: 1.0.0
+#
+# События отправляются через AppMetrica.reportEventWithMap.
+# Имена стабильны — используются в отчёте воронки панели AppMetrica.
+
+version: "1.0.0"
+platform: appmetrica
+description: Базовая воронка покупки osetrovich.ru
+
+events:
+  - name: app_launch
+    description: Приложение готово к взаимодействию после bootstrap
+    parameters: {}
+    trigger:
+      module: core/bootstrap/app_bootstrap.dart
+      when: После restoreSession и загрузки категорий
+
+  - name: catalog_view
+    description: Пользователь открыл вкладку «Каталог»
+    parameters: {}
+    trigger:
+      module: features/catalog/presentation/catalog_screen.dart
+      when: Первое отображение экрана в сессии вкладки
+
+  - name: product_view
+    description: Просмотр карточки товара
+    parameters:
+      product_id:
+        type: string
+        required: true
+        description: Идентификатор товара (ProductSummary.id)
+    trigger:
+      module: features/catalog/presentation/product_detail_screen.dart
+      when: Открытие экрана с productId
+
+  - name: add_to_cart
+    description: Товар добавлен в корзину (любой источник UI)
+    parameters:
+      product_id:
+        type: string
+        required: true
+        description: Идентификатор товара
+    trigger:
+      module: features/cart/domain/cart_notifier.dart
+      when: increment / add / addQuantity с положительным результатом
+
+  - name: checkout_start
+    description: Пользователь открыл непустую корзину для оформления
+    parameters: {}
+    trigger:
+      module: features/cart/presentation/cart_screen.dart
+      when: Экран корзины с ≥1 позицией
+
+  - name: order_success
+    description: Заказ успешно создан
+    parameters:
+      order_id:
+        type: string
+        required: true
+        description: Идентификатор заказа (Order.id)
+      order_total:
+        type: integer
+        required: true
+        description: Итоговая сумма заказа в рублях (целое число)
+    trigger:
+      module: features/cart/domain/checkout_notifier.dart
+      when: Успешный ответ createOrder
+
+forbidden_parameters:
+  - phone
+  - address
+  - email
+  - token
+  - jwt
+
+user_profile:
+  profile_id:
+    source: AuthSession.userId
+    description: Внутренний ID пользователя; MUST NOT быть номером телефона
+  attributes:
+    push_enabled:
+      type: boolean
+      source: UserProfile.pushEnabled
+      description: Согласие на push из профиля
+
+funnel_report:
+  steps:
+    - app_launch
+    - catalog_view
+    - product_view
+    - add_to_cart
+    - checkout_start
+    - order_success
+  note: >
+    catalog_view и product_view — альтернативные пути после app_launch;
+    в отчёте панели настраивается воронка с объединением или параллельными ветками.
+
+debug_separation:
+  method: separate_api_key
+  debug_define: APPMETRICA_API_KEY_DEBUG
+  release_define: APPMETRICA_API_KEY

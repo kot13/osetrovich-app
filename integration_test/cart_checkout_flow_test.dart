@@ -10,7 +10,9 @@ import 'package:osetrovich/core/network/providers.dart';
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
-  testWidgets('cart checkout flow add auth order success empty', (tester) async {
+  testWidgets('cart checkout flow add auth order success empty', (
+    tester,
+  ) async {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [apiClientProvider.overrideWithValue(MockApiClient())],
@@ -41,10 +43,7 @@ void main() {
     await tester.tap(find.text(AppStrings.cartCheckout));
     await tester.pumpAndSettle();
 
-    await tester.enterText(
-      find.byType(TextField).first,
-      '9001234567',
-    );
+    await tester.enterText(find.byType(TextField).first, '9001234567');
     await tester.tap(find.text(AppStrings.continueButton));
     await tester.pumpAndSettle();
 

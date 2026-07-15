@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:osetrovich/core/analytics/analytics_providers.dart';
 import 'package:osetrovich/core/l10n/app_strings.dart';
 import 'package:osetrovich/core/theme/app_colors.dart';
 import 'package:osetrovich/core/utils/price_formatter.dart';
@@ -19,14 +20,30 @@ final productDetailProvider = FutureProvider.family<ProductDetail, String>((
   return ref.read(catalogRepositoryProvider).getProductById(id);
 });
 
-class ProductDetailScreen extends ConsumerWidget {
+class ProductDetailScreen extends ConsumerStatefulWidget {
   const ProductDetailScreen({super.key, required this.productId});
 
   final String productId;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final detailAsync = ref.watch(productDetailProvider(productId));
+  ConsumerState<ProductDetailScreen> createState() =>
+      _ProductDetailScreenState();
+}
+
+class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        ref.read(analyticsServiceProvider).reportProductView(widget.productId);
+      }
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final detailAsync = ref.watch(productDetailProvider(widget.productId));
 
     return Scaffold(
       // Внутри MainShell — не конфликтовать с внешним Scaffold и его Tab Bar.

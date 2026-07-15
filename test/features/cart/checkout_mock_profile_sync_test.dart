@@ -17,30 +17,35 @@ class _FakeAuthSessionNotifier extends AuthSessionNotifier {
 }
 
 void main() {
-  test('submit seeds mock profile from session without visiting profile screen', () async {
-    final mockClient = MockApiClient();
-    final session = AuthSession(
-      accessToken: 'mock.access.token.+79001234567',
-      refreshToken: 'r',
-      expiresAt: DateTime.utc(2099),
-      phone: '+79001234567',
-    );
+  test(
+    'submit seeds mock profile from session without visiting profile screen',
+    () async {
+      final mockClient = MockApiClient();
+      final session = AuthSession(
+        accessToken: 'mock.access.token.+79001234567',
+        refreshToken: 'r',
+        expiresAt: DateTime.utc(2099),
+        phone: '+79001234567',
+      );
 
-    final container = ProviderContainer(
-      overrides: [
-        apiClientProvider.overrideWithValue(mockClient),
-        authSessionProvider.overrideWith(() => _FakeAuthSessionNotifier(session)),
-      ],
-    );
-    addTearDown(container.dispose);
+      final container = ProviderContainer(
+        overrides: [
+          apiClientProvider.overrideWithValue(mockClient),
+          authSessionProvider.overrideWith(
+            () => _FakeAuthSessionNotifier(session),
+          ),
+        ],
+      );
+      addTearDown(container.dispose);
 
-    container.read(cartNotifierProvider.notifier).increment('p-fish-0');
+      container.read(cartNotifierProvider.notifier).increment('p-fish-0');
 
-    final order = await container
-        .read(checkoutNotifierProvider.notifier)
-        .submit(address: 'г. Санкт-Петербург, ул. Тестовая, 1');
+      final order = await container
+          .read(checkoutNotifierProvider.notifier)
+          .submit(address: 'г. Санкт-Петербург, ул. Тестовая, 1');
 
-    expect(order, isNotNull);
-    expect(container.read(cartNotifierProvider), isEmpty);
-  });
+      expect(order, isNotNull);
+      expect(container.read(cartNotifierProvider), isEmpty);
+    },
+  );
 }

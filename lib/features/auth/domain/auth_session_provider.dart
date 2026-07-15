@@ -1,3 +1,5 @@
+import 'package:osetrovich/core/analytics/analytics_providers.dart';
+import 'package:osetrovich/core/analytics/analytics_user_id.dart';
 import 'package:osetrovich/core/network/mock_api_client.dart';
 import 'package:osetrovich/core/network/mock_profile_sync.dart';
 import 'package:osetrovich/core/network/providers.dart';
@@ -22,6 +24,7 @@ class AuthSessionNotifier extends Notifier<AuthSession?> {
     final refresh = await _storage.readRefreshToken();
     if (access == null || refresh == null) {
       state = null;
+      ref.read(analyticsServiceProvider).setUserId(null);
       return;
     }
     state = AuthSession(
@@ -31,6 +34,9 @@ class AuthSessionNotifier extends Notifier<AuthSession?> {
       phone: MockApiClient.phoneFromAccessToken(access) ?? '',
     );
     syncMockApiProfile(ref, state!);
+    ref
+        .read(analyticsServiceProvider)
+        .setUserId(analyticsUserIdFromPhone(state!.phone));
   }
 
   Future<void> setSession({
@@ -48,11 +54,15 @@ class AuthSessionNotifier extends Notifier<AuthSession?> {
       phone: phone,
     );
     syncMockApiProfile(ref, state!);
+    ref
+        .read(analyticsServiceProvider)
+        .setUserId(analyticsUserIdFromPhone(phone));
   }
 
   Future<void> clearSession() async {
     await _storage.clear();
     state = null;
+    ref.read(analyticsServiceProvider).setUserId(null);
   }
 }
 

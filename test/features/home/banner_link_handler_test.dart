@@ -6,26 +6,27 @@ import 'package:osetrovich/features/home/domain/banner_link_handler.dart';
 
 void main() {
   testWidgets('external link does not throw', (tester) async {
-  final router = GoRouter(
-    routes: [
-      GoRoute(
-        path: '/',
-        builder: (context, state) => Scaffold(
-          body: ElevatedButton(
-            onPressed:
-                () => handleBannerLink(
-                  context,
-                  const BannerLink(
-                    type: BannerLinkType.external,
-                    url: 'https://osetrovich.ru',
-                  ),
+    final router = GoRouter(
+      routes: [
+        GoRoute(
+          path: '/',
+          builder:
+              (context, state) => Scaffold(
+                body: ElevatedButton(
+                  onPressed:
+                      () => handleBannerLink(
+                        context,
+                        const BannerLink(
+                          type: BannerLinkType.external,
+                          url: 'https://osetrovich.ru',
+                        ),
+                      ),
+                  child: const Text('open'),
                 ),
-            child: const Text('open'),
-          ),
+              ),
         ),
-      ),
-    ],
-  );
+      ],
+    );
 
     await tester.pumpWidget(MaterialApp.router(routerConfig: router));
     await tester.tap(find.text('open'));

@@ -190,7 +190,9 @@ void main() {
     expect(container.read(cartNotifierProvider), isNotEmpty);
   });
 
-  testWidgets('checkout resumes order after auth from checkout', (tester) async {
+  testWidgets('checkout resumes order after auth from checkout', (
+    tester,
+  ) async {
     final container = ProviderContainer(
       overrides: [
         apiClientProvider.overrideWithValue(MockApiClient()),

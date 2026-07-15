@@ -108,9 +108,9 @@ void main() {
   });
 
   test('skips unavailable products', () async {
-    when(() => api.getProductById('missing')).thenThrow(
-      ApiException(code: 'NOT_FOUND', message: 'Товар не найден'),
-    );
+    when(
+      () => api.getProductById('missing'),
+    ).thenThrow(ApiException(code: 'NOT_FOUND', message: 'Товар не найден'));
 
     final result = await repeatOrderToCart(
       order: orderWith(const [

@@ -72,9 +72,7 @@ class _HomeOrderHistorySectionState
                         ),
                       ),
                       Icon(
-                        _expanded
-                            ? Icons.expand_less
-                            : Icons.expand_more,
+                        _expanded ? Icons.expand_less : Icons.expand_more,
                         color: AppColors.dark,
                       ),
                     ],
@@ -129,8 +127,7 @@ class _HomeOrderHistorySectionState
                   children: [
                     Expanded(
                       child: OutlinedButton(
-                        onPressed:
-                            _isSubmittingRating ? null : _onSkipRating,
+                        onPressed: _isSubmittingRating ? null : _onSkipRating,
                         child: const Text(AppStrings.homeOrderSkipRating),
                       ),
                     ),
@@ -141,8 +138,7 @@ class _HomeOrderHistorySectionState
                           backgroundColor: AppColors.accent,
                           foregroundColor: AppColors.dark,
                         ),
-                        onPressed:
-                            _isSubmittingRating ? null : _onRateOrder,
+                        onPressed: _isSubmittingRating ? null : _onRateOrder,
                         child: const Text(AppStrings.homeOrderRate),
                       ),
                     ),
@@ -177,9 +173,7 @@ class _HomeOrderHistorySectionState
   Future<void> _onSkipRating() async {
     setState(() => _isSubmittingRating = true);
     try {
-      await ref
-          .read(orderRepositoryProvider)
-          .skipOrderRating(widget.order.id);
+      await ref.read(orderRepositoryProvider).skipOrderRating(widget.order.id);
       ref.invalidate(currentOrderProvider);
     } finally {
       if (mounted) {
@@ -194,10 +188,12 @@ class _HomeOrderHistorySectionState
       onSubmit: (stars, comment) async {
         setState(() => _isSubmittingRating = true);
         try {
-          await ref.read(orderRepositoryProvider).submitOrderRating(
-            widget.order.id,
-            SubmitOrderRatingRequest(stars: stars, comment: comment),
-          );
+          await ref
+              .read(orderRepositoryProvider)
+              .submitOrderRating(
+                widget.order.id,
+                SubmitOrderRatingRequest(stars: stars, comment: comment),
+              );
           ref.invalidate(currentOrderProvider);
         } finally {
           if (mounted) {

@@ -42,3 +42,8 @@ android {
 flutter {
     source = "../.."
 }
+
+// AppMetrica Push (FCM): раскомментируйте после добавления google-services.json
+// plugins {
+//     id("com.google.gms.google-services")
+// }

@@ -20,11 +20,26 @@ void main() {
 
   group('orderStatusLabel', () {
     test('returns Russian labels', () {
-      expect(orderStatusLabel(OrderStatus.accepted), AppStrings.homeOrderStatusAccepted);
-      expect(orderStatusLabel(OrderStatus.processing), AppStrings.homeOrderStatusProcessing);
-      expect(orderStatusLabel(OrderStatus.assembly), AppStrings.homeOrderStatusAssembly);
-      expect(orderStatusLabel(OrderStatus.delivery), AppStrings.homeOrderStatusDelivery);
-      expect(orderStatusLabel(OrderStatus.completed), AppStrings.homeOrderStatusCompleted);
+      expect(
+        orderStatusLabel(OrderStatus.accepted),
+        AppStrings.homeOrderStatusAccepted,
+      );
+      expect(
+        orderStatusLabel(OrderStatus.processing),
+        AppStrings.homeOrderStatusProcessing,
+      );
+      expect(
+        orderStatusLabel(OrderStatus.assembly),
+        AppStrings.homeOrderStatusAssembly,
+      );
+      expect(
+        orderStatusLabel(OrderStatus.delivery),
+        AppStrings.homeOrderStatusDelivery,
+      );
+      expect(
+        orderStatusLabel(OrderStatus.completed),
+        AppStrings.homeOrderStatusCompleted,
+      );
     });
   });
 }

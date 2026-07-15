@@ -23,6 +23,8 @@ final bannersProvider = FutureProvider<List<Banner>>((ref) async {
   return ref.watch(homeRepositoryProvider).getBanners();
 });
 
-final weeklyProductsProvider = FutureProvider<List<ProductSummary>>((ref) async {
+final weeklyProductsProvider = FutureProvider<List<ProductSummary>>((
+  ref,
+) async {
   return ref.watch(homeRepositoryProvider).getWeeklyProducts();
 });

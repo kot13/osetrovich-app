@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:osetrovich/core/analytics/analytics_providers.dart';
 
 class CartNotifier extends Notifier<Map<String, int>> {
   @override
@@ -11,6 +12,7 @@ class CartNotifier extends Notifier<Map<String, int>> {
   void increment(String productId) {
     final current = quantityOf(productId);
     state = {...state, productId: current + 1};
+    ref.read(analyticsServiceProvider).reportAddToCart(productId);
   }
 
   void decrement(String productId) {
@@ -31,6 +33,7 @@ class CartNotifier extends Notifier<Map<String, int>> {
     }
     final current = quantityOf(productId);
     state = {...state, productId: current + quantity};
+    ref.read(analyticsServiceProvider).reportAddToCart(productId);
   }
 
   void remove(String productId) {
