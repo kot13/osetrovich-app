@@ -86,6 +86,7 @@ paths:
               $ref: '#/components/schemas/RefreshBody'
       responses:
         '200':
+          description: Новая пара токенов
           content:
             application/json:
               schema:
@@ -115,6 +116,7 @@ paths:
         - bearerAuth: []
       responses:
         '200':
+          description: Профиль пользователя
           content:
             application/json:
               schema:
@@ -142,6 +144,7 @@ paths:
               $ref: '#/components/schemas/UpdateProfileBody'
       responses:
         '200':
+          description: Обновлённый профиль
           content:
             application/json:
               schema:
@@ -166,6 +169,7 @@ paths:
               $ref: '#/components/schemas/PhoneChangeRequestBody'
       responses:
         '200':
+          description: Код отправлен
           content:
             application/json:
               schema:
@@ -192,6 +196,7 @@ paths:
               $ref: '#/components/schemas/PhoneChangeVerifyBody'
       responses:
         '200':
+          description: Телефон обновлён
           content:
             application/json:
               schema:
@@ -220,6 +225,7 @@ paths:
               $ref: '#/components/schemas/EmailVerifyRequestBody'
       responses:
         '200':
+          description: Код отправлен
           content:
             application/json:
               schema:
@@ -246,6 +252,7 @@ paths:
               $ref: '#/components/schemas/EmailVerifyBody'
       responses:
         '200':
+          description: Email подтверждён
           content:
             application/json:
               schema:
@@ -268,6 +275,7 @@ paths:
         - bearerAuth: []
       responses:
         '200':
+          description: Настройки профиля
           content:
             application/json:
               schema:
@@ -288,6 +296,7 @@ paths:
               $ref: '#/components/schemas/UpdateProfilePreferencesBody'
       responses:
         '200':
+          description: Обновлённые настройки
           content:
             application/json:
               schema:
@@ -302,6 +311,7 @@ paths:
       operationId: getCategories
       responses:
         '200':
+          description: Категории каталога
           content:
             application/json:
               schema:
@@ -342,6 +352,7 @@ paths:
             default: 20
       responses:
         '200':
+          description: Страница списка товаров
           content:
             application/json:
               schema:
@@ -362,6 +373,7 @@ paths:
             type: string
       responses:
         '200':
+          description: Детальная информация о товаре
           content:
             application/json:
               schema:
@@ -380,6 +392,7 @@ paths:
       operationId: getHomeBanners
       responses:
         '200':
+          description: Список баннеров, отсортированный по sortOrder
           content:
             application/json:
               schema:
@@ -392,6 +405,7 @@ paths:
       operationId: getWeeklyProducts
       responses:
         '200':
+          description: Список товаров недели
           content:
             application/json:
               schema:
@@ -406,6 +420,7 @@ paths:
         - bearerAuth: []
       responses:
         '200':
+          description: Список уведомлений
           content:
             application/json:
               schema:
@@ -434,6 +449,7 @@ paths:
             type: string
       responses:
         '200':
+          description: Детальное уведомление
           content:
             application/json:
               schema:
@@ -494,6 +510,7 @@ paths:
         - bearerAuth: []
       responses:
         '200':
+          description: Счётчик
           content:
             application/json:
               schema:
@@ -590,6 +607,7 @@ paths:
         - bearerAuth: []
       responses:
         '200':
+          description: Текущий заказ или null, если нет актуального
           content:
             application/json:
               schema:
@@ -618,11 +636,13 @@ paths:
               $ref: '#/components/schemas/SubmitOrderRatingRequest'
       responses:
         '200':
+          description: Оценка сохранена
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/CurrentOrder'
         '400':
+          description: Некорректная оценка или заказ не в статусе completed
           content:
             application/json:
               schema:
@@ -630,11 +650,13 @@ paths:
         '401':
           $ref: '#/components/responses/Unauthorized'
         '404':
+          description: Заказ не найден
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
         '409':
+          description: Оценка уже отправлена или пропущена
           content:
             application/json:
               schema:
@@ -655,11 +677,13 @@ paths:
             type: string
       responses:
         '200':
+          description: Пропуск зафиксирован
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/CurrentOrder'
         '400':
+          description: Заказ не в статусе completed
           content:
             application/json:
               schema:
@@ -667,11 +691,13 @@ paths:
         '401':
           $ref: '#/components/responses/Unauthorized'
         '404':
+          description: Заказ не найден
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
         '409':
+          description: Оценка уже отправлена или пропущена
           content:
             application/json:
               schema:
