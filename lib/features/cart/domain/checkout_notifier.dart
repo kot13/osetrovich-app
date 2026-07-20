@@ -75,7 +75,10 @@ class CheckoutNotifier extends Notifier<CheckoutState> {
       final request = CreateOrderRequest(
         items: [
           for (final entry in cart.entries)
-            OrderLineInput(productId: entry.key, quantity: entry.value),
+            OrderLineInput(
+              productId: entry.key.toString(),
+              quantity: entry.value,
+            ),
         ],
         deliveryAddress: trimmedAddress,
         comment:

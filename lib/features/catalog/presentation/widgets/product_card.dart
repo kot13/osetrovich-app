@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:osetrovich/core/theme/app_colors.dart';
 import 'package:osetrovich/features/cart/domain/cart_notifier.dart';
 import 'package:osetrovich/features/catalog/domain/product.dart';
+import 'package:osetrovich/features/catalog/presentation/widgets/product_promo_badges.dart';
 import 'package:osetrovich/features/catalog/presentation/widgets/quantity_price_bar.dart';
 
 /// Зарезервированная высота под название (2 строки) + вес — не отдаётся под фото.
@@ -38,29 +39,46 @@ class ProductCard extends ConsumerWidget {
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     Expanded(
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(8),
-                        child: CachedNetworkImage(
-                          imageUrl: product.imageUrl,
-                          fit: BoxFit.cover,
-                          width: double.infinity,
-                          placeholder:
-                              (_, __) => ColoredBox(
-                                color: AppColors.background,
-                                child: Icon(
-                                  Icons.image_outlined,
-                                  color: AppColors.dark.withValues(alpha: 0.4),
-                                ),
-                              ),
-                          errorWidget:
-                              (_, __, ___) => ColoredBox(
-                                color: AppColors.background,
-                                child: Icon(
-                                  Icons.image_not_supported_outlined,
-                                  color: AppColors.dark.withValues(alpha: 0.4),
-                                ),
-                              ),
-                        ),
+                      child: Stack(
+                        children: [
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(8),
+                            child: CachedNetworkImage(
+                              imageUrl: product.imageUrl,
+                              fit: BoxFit.cover,
+                              width: double.infinity,
+                              height: double.infinity,
+                              placeholder:
+                                  (_, __) => ColoredBox(
+                                    color: AppColors.background,
+                                    child: Icon(
+                                      Icons.image_outlined,
+                                      color: AppColors.dark.withValues(
+                                        alpha: 0.4,
+                                      ),
+                                    ),
+                                  ),
+                              errorWidget:
+                                  (_, __, ___) => ColoredBox(
+                                    color: AppColors.background,
+                                    child: Icon(
+                                      Icons.image_not_supported_outlined,
+                                      color: AppColors.dark.withValues(
+                                        alpha: 0.4,
+                                      ),
+                                    ),
+                                  ),
+                            ),
+                          ),
+                          Positioned(
+                            top: 8,
+                            left: 8,
+                            child: ProductPromoBadges(
+                              sale: product.sale,
+                              special: product.special,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                     const SizedBox(height: 8),

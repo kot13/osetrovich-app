@@ -8,7 +8,7 @@ import 'package:osetrovich/features/cart/presentation/widgets/cart_line_tile.dar
 
 void main() {
   const line = CartLineItemView(
-    productId: 'p-fish-0',
+    productId: 1000,
     name: 'Сёмга',
     weightLabel: '500 г',
     priceRub: 450,
@@ -21,8 +21,8 @@ void main() {
   ) async {
     final container = ProviderContainer();
     addTearDown(container.dispose);
-    container.read(cartNotifierProvider.notifier).increment('p-fish-0');
-    container.read(cartNotifierProvider.notifier).increment('p-fish-0');
+    container.read(cartNotifierProvider.notifier).increment(1000);
+    container.read(cartNotifierProvider.notifier).increment(1000);
 
     await tester.pumpWidget(
       UncontrolledProviderScope(
@@ -46,8 +46,8 @@ void main() {
   ) async {
     final container = ProviderContainer();
     addTearDown(container.dispose);
-    container.read(cartNotifierProvider.notifier).increment('p-fish-0');
-    container.read(cartNotifierProvider.notifier).increment('p-fish-0');
+    container.read(cartNotifierProvider.notifier).increment(1000);
+    container.read(cartNotifierProvider.notifier).increment(1000);
 
     await tester.pumpWidget(
       UncontrolledProviderScope(
@@ -63,6 +63,6 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.textContaining('3 ×'), findsOneWidget);
-    expect(container.read(cartNotifierProvider)['p-fish-0'], 3);
+    expect(container.read(cartNotifierProvider)[1000], 3);
   });
 }

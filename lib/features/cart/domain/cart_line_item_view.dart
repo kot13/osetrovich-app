@@ -21,7 +21,7 @@ class CartLineItemView {
     );
   }
 
-  final String productId;
+  final int productId;
   final String name;
   final String weightLabel;
   final int priceRub;

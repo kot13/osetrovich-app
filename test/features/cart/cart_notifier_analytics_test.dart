@@ -13,11 +13,11 @@ void main() {
     );
     addTearDown(container.dispose);
 
-    container.read(cartNotifierProvider.notifier).increment('p1');
+    container.read(cartNotifierProvider.notifier).increment(1001);
 
     expect(fakeAnalytics.events, ['add_to_cart']);
     expect(fakeAnalytics.eventParams, [
-      {'product_id': 'p1'},
+      {'product_id': '1001'},
     ]);
   });
 }

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:osetrovich/core/theme/app_theme.dart';
+import 'package:osetrovich/features/catalog/domain/catalog_category.dart';
 import 'package:osetrovich/features/catalog/domain/product.dart';
 import 'package:osetrovich/features/catalog/domain/products_notifier.dart';
 import 'package:osetrovich/features/catalog/presentation/widgets/product_grid.dart';
@@ -9,20 +10,26 @@ import 'package:osetrovich/features/catalog/presentation/widgets/product_grid.da
 void main() {
   const products = [
     ProductSummary(
-      id: 'p1',
+      id: 1001,
       name: 'Сёмга',
       weightLabel: '500 г',
       priceRub: 300,
+      oldPriceRub: 300,
       imageUrl: 'https://example.com/1.jpg',
-      categoryIds: ['fish'],
+      categoryIds: [kCategoryFish],
+      sale: false,
+      special: false,
     ),
     ProductSummary(
-      id: 'p2',
+      id: 1002,
       name: 'Форель',
       weightLabel: '400 г',
       priceRub: 450,
+      oldPriceRub: 450,
       imageUrl: 'https://example.com/2.jpg',
-      categoryIds: ['fish'],
+      categoryIds: [kCategoryFish],
+      sale: false,
+      special: false,
     ),
   ];
 
@@ -35,7 +42,7 @@ void main() {
             body: ProductGrid(
               productsState: const ProductsUiState(
                 items: products,
-                categoryId: 'fish',
+                categoryId: kCategoryFish,
                 hasMore: false,
               ),
             ),

@@ -9,25 +9,25 @@ void main() {
 
     final notifier = container.read(cartNotifierProvider.notifier);
 
-    notifier.increment('p1');
-    expect(container.read(cartNotifierProvider), {'p1': 1});
+    notifier.increment(1001);
+    expect(container.read(cartNotifierProvider), {1001: 1});
     expect(container.read(cartDistinctCountProvider), 1);
 
-    notifier.increment('p1');
-    expect(container.read(cartNotifierProvider), {'p1': 2});
+    notifier.increment(1001);
+    expect(container.read(cartNotifierProvider), {1001: 2});
     expect(container.read(cartDistinctCountProvider), 1);
 
-    notifier.increment('p2');
+    notifier.increment(1002);
     expect(container.read(cartDistinctCountProvider), 2);
 
-    notifier.decrement('p1');
-    expect(container.read(cartNotifierProvider), {'p1': 1, 'p2': 1});
+    notifier.decrement(1001);
+    expect(container.read(cartNotifierProvider), {1001: 1, 1002: 1});
 
-    notifier.decrement('p1');
-    expect(container.read(cartNotifierProvider), {'p2': 1});
+    notifier.decrement(1001);
+    expect(container.read(cartNotifierProvider), {1002: 1});
     expect(container.read(cartDistinctCountProvider), 1);
 
-    notifier.decrement('p2');
+    notifier.decrement(1002);
     expect(container.read(cartNotifierProvider), isEmpty);
     expect(container.read(cartDistinctCountProvider), 0);
   });
@@ -37,8 +37,8 @@ void main() {
     addTearDown(container.dispose);
 
     final notifier = container.read(cartNotifierProvider.notifier);
-    notifier.increment('p1');
-    notifier.increment('p2');
+    notifier.increment(1001);
+    notifier.increment(1002);
 
     notifier.clear();
 

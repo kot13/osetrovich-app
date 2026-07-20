@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:osetrovich/core/network/api_error_mapper.dart';
 import 'package:osetrovich/core/network/api_exception.dart';
 import 'package:osetrovich/features/auth/data/auth_dto.dart';
 import 'package:osetrovich/features/catalog/domain/catalog_category.dart';
@@ -23,12 +24,12 @@ abstract class ApiClient {
   Future<List<CatalogCategory>> getCategories();
 
   Future<ProductListPage> getProducts({
-    required String categoryId,
+    required int categoryId,
     required int offset,
     required int limit,
   });
 
-  Future<ProductDetail> getProductById(String id);
+  Future<ProductDetail> getProductById(int id);
 
   Future<List<Banner>> getHomeBanners();
 
@@ -152,7 +153,7 @@ class DioApiClient implements ApiClient {
 
   @override
   Future<ProductListPage> getProducts({
-    required String categoryId,
+    required int categoryId,
     required int offset,
     required int limit,
   }) async {
@@ -160,7 +161,7 @@ class DioApiClient implements ApiClient {
       final response = await _dio.get<Map<String, dynamic>>(
         '/catalog/products',
         queryParameters: {
-          'categoryId': categoryId,
+          'categoryId': categoryIdToApiQuery(categoryId),
           'offset': offset,
           'limit': limit,
         },
@@ -172,7 +173,7 @@ class DioApiClient implements ApiClient {
   }
 
   @override
-  Future<ProductDetail> getProductById(String id) async {
+  Future<ProductDetail> getProductById(int id) async {
     try {
       final response = await _dio.get<Map<String, dynamic>>(
         '/catalog/products/$id',
@@ -457,7 +458,6 @@ class DioApiClient implements ApiClient {
   }
 
   ApiException _mapError(Object error) {
-    // Dio-specific mapping would go here; fallback for now.
-    return ApiException(code: 'NETWORK_ERROR', message: error.toString());
+    return mapToApiException(error);
   }
 }

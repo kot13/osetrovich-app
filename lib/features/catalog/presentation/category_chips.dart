@@ -11,8 +11,8 @@ class CategoryChips extends StatelessWidget {
   });
 
   final List<CatalogCategory> categories;
-  final String selectedId;
-  final ValueChanged<String> onSelected;
+  final int selectedId;
+  final ValueChanged<int> onSelected;
 
   @override
   Widget build(BuildContext context) {

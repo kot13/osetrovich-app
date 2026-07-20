@@ -59,6 +59,24 @@ class AuthSessionNotifier extends Notifier<AuthSession?> {
         .setUserId(analyticsUserIdFromPhone(phone));
   }
 
+  Future<void> applyRefreshedTokens(TokenResponse tokens) async {
+    final current = state;
+    if (current == null) {
+      return;
+    }
+
+    await _storage.saveTokens(
+      accessToken: tokens.accessToken,
+      refreshToken: tokens.refreshToken,
+    );
+    state = AuthSession(
+      accessToken: tokens.accessToken,
+      refreshToken: tokens.refreshToken,
+      expiresAt: AuthSession.neverExpiresAt,
+      phone: current.phone,
+    );
+  }
+
   Future<void> clearSession() async {
     await _storage.clear();
     state = null;

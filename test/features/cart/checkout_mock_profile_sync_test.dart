@@ -38,7 +38,7 @@ void main() {
       );
       addTearDown(container.dispose);
 
-      container.read(cartNotifierProvider.notifier).increment('p-fish-0');
+      container.read(cartNotifierProvider.notifier).increment(1000);
 
       final order = await container
           .read(checkoutNotifierProvider.notifier)

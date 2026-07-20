@@ -14,7 +14,7 @@ void main() {
     test('creates order with delivery fee', () async {
       final order = await client.createOrder(
         const CreateOrderRequest(
-          items: [OrderLineInput(productId: 'p-fish-0', quantity: 1)],
+          items: [OrderLineInput(productId: '1000', quantity: 1)],
           deliveryAddress: 'г. Санкт-Петербург, Невский пр., 1',
         ),
       );
@@ -30,7 +30,7 @@ void main() {
       expect(
         guestClient.createOrder(
           const CreateOrderRequest(
-            items: [OrderLineInput(productId: 'p-fish-0', quantity: 1)],
+            items: [OrderLineInput(productId: '1000', quantity: 1)],
             deliveryAddress: 'адрес',
           ),
         ),
@@ -44,7 +44,7 @@ void main() {
       expect(
         client.createOrder(
           const CreateOrderRequest(
-            items: [OrderLineInput(productId: 'p-fish-0', quantity: 1)],
+            items: [OrderLineInput(productId: '1000', quantity: 1)],
             deliveryAddress: '   ',
           ),
         ),

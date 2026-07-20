@@ -30,6 +30,8 @@ abstract final class AppStrings {
   static const invalidCode = 'Неверный код';
   static const requestFailed =
       'Не удалось выполнить запрос. Попробуйте ещё раз';
+  static const sessionExpired = 'Сессия истекла. Войдите снова.';
+  static const networkError = 'Нет соединения с интернетом';
   static const categoriesLoadFailed =
       'Не удалось загрузить категории. Попробуйте ещё раз';
   static const productsLoadFailed =
@@ -136,4 +138,7 @@ abstract final class AppStrings {
   static const homeBannerLinkFailed = 'Не удалось открыть ссылку';
   static const homeLoadError = 'Не удалось загрузить данные';
   static const homeRetry = 'Повторить';
+
+  static const badgeSale = 'Акция';
+  static const badgeSpecialPrice = 'СПЕЦЦЕНА';
 }

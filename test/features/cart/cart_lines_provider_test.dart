@@ -12,9 +12,9 @@ void main() {
     );
     addTearDown(container.dispose);
 
-    container.read(cartNotifierProvider.notifier).increment('p-fish-0');
-    container.read(cartNotifierProvider.notifier).increment('p-fish-0');
-    container.read(cartNotifierProvider.notifier).increment('p-caviar-0');
+    container.read(cartNotifierProvider.notifier).increment(1000);
+    container.read(cartNotifierProvider.notifier).increment(1000);
+    container.read(cartNotifierProvider.notifier).increment(2000);
 
     final lines = await container.read(cartLinesProvider.future);
 
@@ -29,7 +29,7 @@ void main() {
     );
     addTearDown(container.dispose);
 
-    container.read(cartNotifierProvider.notifier).increment('unknown-id');
+    container.read(cartNotifierProvider.notifier).increment(999999);
 
     final lines = await container.read(cartLinesProvider.future);
     await Future<void>.delayed(Duration.zero);

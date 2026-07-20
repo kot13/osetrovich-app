@@ -23,10 +23,13 @@ Future<RepeatOrderResult> repeatOrderToCart({
 
   for (final line in order.items) {
     try {
-      await catalog.getProductById(line.productId);
-      cart.addQuantity(line.productId, line.quantity);
+      final productId = int.parse(line.productId);
+      await catalog.getProductById(productId);
+      cart.addQuantity(productId, line.quantity);
       addedLineCount++;
     } on ApiException {
+      skippedProductIds.add(line.productId);
+    } on FormatException {
       skippedProductIds.add(line.productId);
     }
   }

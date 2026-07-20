@@ -13,7 +13,7 @@ import 'package:osetrovich/features/catalog/domain/product.dart';
 import 'package:osetrovich/features/catalog/presentation/widgets/product_image_gallery.dart';
 import 'package:osetrovich/features/catalog/presentation/widgets/quantity_price_bar.dart';
 
-final productDetailProvider = FutureProvider.family<ProductDetail, String>((
+final productDetailProvider = FutureProvider.family<ProductDetail, int>((
   ref,
   id,
 ) {
@@ -23,7 +23,7 @@ final productDetailProvider = FutureProvider.family<ProductDetail, String>((
 class ProductDetailScreen extends ConsumerStatefulWidget {
   const ProductDetailScreen({super.key, required this.productId});
 
-  final String productId;
+  final int productId;
 
   @override
   ConsumerState<ProductDetailScreen> createState() =>
@@ -36,7 +36,9 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
-        ref.read(analyticsServiceProvider).reportProductView(widget.productId);
+        ref.read(analyticsServiceProvider).reportProductView(
+          widget.productId.toString(),
+        );
       }
     });
   }

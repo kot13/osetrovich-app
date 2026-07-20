@@ -39,4 +39,7 @@ void main() {
 
     expect(find.text(AppStrings.signedInPlaceholder), findsOneWidget);
   });
+
+  // Token refresh on 401 is covered by unit tests (TokenRefreshInterceptor) because
+  // integration tests use MockApiClient, which bypasses Dio interceptors.
 }

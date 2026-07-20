@@ -69,7 +69,7 @@ void main() {
           apiClientProvider.overrideWithValue(MockApiClient()),
           appBootstrapProvider.overrideWith((ref) async {}),
           cartNotifierProvider.overrideWith(
-            () => _SeededCartNotifier({'p1': 2, 'p2': 1}),
+            () => _SeededCartNotifier({1: 2, 2: 1}),
           ),
         ],
         child: const _TestAppHost(),
@@ -100,8 +100,8 @@ void main() {
 class _SeededCartNotifier extends CartNotifier {
   _SeededCartNotifier(this._seed);
 
-  final Map<String, int> _seed;
+  final Map<int, int> _seed;
 
   @override
-  Map<String, int> build() => Map<String, int>.from(_seed);
+  Map<int, int> build() => Map<int, int>.from(_seed);
 }

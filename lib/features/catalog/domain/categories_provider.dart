@@ -22,13 +22,13 @@ final categoriesProvider =
     );
 
 final selectedCategoryIdProvider =
-    NotifierProvider<SelectedCategoryNotifier, String>(
+    NotifierProvider<SelectedCategoryNotifier, int>(
       SelectedCategoryNotifier.new,
     );
 
-class SelectedCategoryNotifier extends Notifier<String> {
+class SelectedCategoryNotifier extends Notifier<int> {
   @override
-  String build() => 'all';
+  int build() => kAllCategoriesId;
 
-  void select(String id) => state = id;
+  void select(int id) => state = id;
 }

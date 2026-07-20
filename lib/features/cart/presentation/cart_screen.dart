@@ -151,7 +151,7 @@ class _CartScreenState extends ConsumerState<CartScreen> {
       }
     });
 
-    ref.listen<Map<String, int>>(cartNotifierProvider, (previous, next) {
+    ref.listen<Map<int, int>>(cartNotifierProvider, (previous, next) {
       if (next.isNotEmpty && !_checkoutStartReported) {
         ref.read(analyticsServiceProvider).reportCheckoutStart();
         _checkoutStartReported = true;

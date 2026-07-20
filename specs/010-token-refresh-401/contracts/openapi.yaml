@@ -1,0 +1,105 @@
+openapi: 3.0.3
+info:
+  title: Osetrovich Mobile API
+  description: |
+    Дельта контракта авторизации для фичи 010-token-refresh-401.
+    Полная спецификация — `openapi/openapi.yaml` в корне репозитория.
+    Изменений API не требуется; документ фиксирует используемые эндпоинты refresh/logout.
+  version: 0.8.0
+
+servers:
+  - url: https://trout.osetrovich.ru/v1
+    description: Production
+
+tags:
+  - name: auth
+    description: JWT-авторизация (refresh при 401)
+
+paths:
+  /auth/refresh:
+    post:
+      tags: [auth]
+      summary: Обновить access token (вызывается клиентом при 401)
+      operationId: refreshToken
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RefreshBody'
+      responses:
+        '200':
+          description: Новая пара токенов
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenResponse'
+        '401':
+          description: Refresh-токен недействителен — клиент MUST разлогинить пользователя
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /auth/logout:
+    post:
+      tags: [auth]
+      summary: Выход (явный; не вызывается при auto-logout по refresh)
+      operationId: logout
+      security:
+        - bearerAuth: []
+      responses:
+        '204':
+          description: Успешный выход
+        '401':
+          description: Токен недействителен
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    RefreshBody:
+      type: object
+      required: [refresh_token]
+      properties:
+        refresh_token:
+          type: string
+          description: Refresh JWT из secure storage
+
+    TokenResponse:
+      type: object
+      required: [access_token, refresh_token, expires_in, token_type]
+      properties:
+        access_token:
+          type: string
+        refresh_token:
+          type: string
+        expires_in:
+          type: integer
+          description: TTL access-токена в секундах
+        token_type:
+          type: string
+          enum: [Bearer]
+
+    ErrorResponse:
+      type: object
+      required: [code, message]
+      properties:
+        code:
+          type: string
+          example: unauthorized
+        message:
+          type: string
+          example: Сессия истекла
+
+  responses:
+    Unauthorized:
+      description: Не авторизован
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'

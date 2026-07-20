@@ -55,7 +55,7 @@ void main() {
       orderNumber: 'ORD-DEMO',
       items: const [
         OrderLine(
-          productId: 'p-fish-0',
+          productId: '1000',
           name: 'Сёмга',
           weightLabel: '500 г',
           priceRub: 890,

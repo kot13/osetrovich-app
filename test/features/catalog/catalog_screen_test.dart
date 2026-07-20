@@ -5,12 +5,13 @@ import 'package:osetrovich/core/l10n/app_strings.dart';
 import 'package:osetrovich/core/network/mock_api_client.dart';
 import 'package:osetrovich/core/network/providers.dart';
 import 'package:osetrovich/core/theme/app_theme.dart';
+import 'package:osetrovich/features/catalog/domain/catalog_category.dart';
 import 'package:osetrovich/features/catalog/domain/categories_provider.dart';
 import 'package:osetrovich/features/catalog/presentation/catalog_screen.dart';
 
 class _SemiFinishedCategoryNotifier extends SelectedCategoryNotifier {
   @override
-  String build() => 'semi_finished';
+  int build() => kCategorySemiFinished;
 }
 
 void main() {

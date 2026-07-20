@@ -44,22 +44,25 @@ void main() {
   }
 
   test('adds all available lines to cart', () async {
-    when(() => api.getProductById('p1')).thenAnswer(
+    when(() => api.getProductById(1001)).thenAnswer(
       (_) async => const ProductDetail(
-        id: 'p1',
+        id: 1001,
         name: 'Товар 1',
         weightLabel: '500 г',
         priceRub: 100,
+        oldPriceRub: 100,
         imageUrls: ['https://example.com/1.jpg'],
         description: 'desc',
-        categoryIds: ['fish'],
+        categoryIds: [1],
+        sale: false,
+        special: false,
       ),
     );
 
     final result = await repeatOrderToCart(
       order: orderWith(const [
         OrderLine(
-          productId: 'p1',
+          productId: '1001',
           name: 'Товар 1',
           weightLabel: '500 г',
           priceRub: 100,
@@ -72,27 +75,30 @@ void main() {
     );
 
     expect(result.addedLineCount, 1);
-    expect(cart.quantityOf('p1'), 2);
+    expect(cart.quantityOf(1001), 2);
   });
 
   test('merges quantities with existing cart items', () async {
-    when(() => api.getProductById('p1')).thenAnswer(
+    when(() => api.getProductById(1001)).thenAnswer(
       (_) async => const ProductDetail(
-        id: 'p1',
+        id: 1001,
         name: 'Товар 1',
         weightLabel: '500 г',
         priceRub: 100,
+        oldPriceRub: 100,
         imageUrls: ['https://example.com/1.jpg'],
         description: 'desc',
-        categoryIds: ['fish'],
+        categoryIds: [1],
+        sale: false,
+        special: false,
       ),
     );
-    cart.add('p1');
+    cart.add(1001);
 
     await repeatOrderToCart(
       order: orderWith(const [
         OrderLine(
-          productId: 'p1',
+          productId: '1001',
           name: 'Товар 1',
           weightLabel: '500 г',
           priceRub: 100,
@@ -104,18 +110,18 @@ void main() {
       catalog: catalog,
     );
 
-    expect(cart.quantityOf('p1'), 3);
+    expect(cart.quantityOf(1001), 3);
   });
 
   test('skips unavailable products', () async {
     when(
-      () => api.getProductById('missing'),
+      () => api.getProductById(999999),
     ).thenThrow(ApiException(code: 'NOT_FOUND', message: 'Товар не найден'));
 
     final result = await repeatOrderToCart(
       order: orderWith(const [
         OrderLine(
-          productId: 'missing',
+          productId: '999999',
           name: 'Нет',
           weightLabel: '500 г',
           priceRub: 100,
@@ -128,6 +134,6 @@ void main() {
     );
 
     expect(result.addedLineCount, 0);
-    expect(result.skippedProductIds, ['missing']);
+    expect(result.skippedProductIds, ['999999']);
   });
 }

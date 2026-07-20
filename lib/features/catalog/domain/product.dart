@@ -4,30 +4,37 @@ class ProductSummary {
     required this.name,
     required this.weightLabel,
     required this.priceRub,
+    required this.oldPriceRub,
     required this.imageUrl,
     required this.categoryIds,
+    required this.sale,
+    required this.special,
   });
 
   factory ProductSummary.fromJson(Map<String, dynamic> json) {
     return ProductSummary(
-      id: json['id'] as String,
+      id: json['id'] as int,
       name: json['name'] as String,
       weightLabel: json['weightLabel'] as String,
       priceRub: json['priceRub'] as int,
+      oldPriceRub: json['oldPriceRub'] as int,
       imageUrl: json['imageUrl'] as String,
       categoryIds:
-          (json['categoryIds'] as List<dynamic>)
-              .map((e) => e as String)
-              .toList(),
+          (json['categoryIds'] as List<dynamic>).map((e) => e as int).toList(),
+      sale: json['sale'] as bool,
+      special: json['special'] as bool,
     );
   }
 
-  final String id;
+  final int id;
   final String name;
   final String weightLabel;
   final int priceRub;
+  final int oldPriceRub;
   final String imageUrl;
-  final List<String> categoryIds;
+  final List<int> categoryIds;
+  final bool sale;
+  final bool special;
 }
 
 class ProductDetail {
@@ -36,34 +43,41 @@ class ProductDetail {
     required this.name,
     required this.weightLabel,
     required this.priceRub,
+    required this.oldPriceRub,
     required this.imageUrls,
     required this.description,
     required this.categoryIds,
+    required this.sale,
+    required this.special,
   });
 
   factory ProductDetail.fromJson(Map<String, dynamic> json) {
     return ProductDetail(
-      id: json['id'] as String,
+      id: json['id'] as int,
       name: json['name'] as String,
       weightLabel: json['weightLabel'] as String,
       priceRub: json['priceRub'] as int,
+      oldPriceRub: json['oldPriceRub'] as int,
       imageUrls:
           (json['imageUrls'] as List<dynamic>).map((e) => e as String).toList(),
       description: json['description'] as String,
       categoryIds:
-          (json['categoryIds'] as List<dynamic>)
-              .map((e) => e as String)
-              .toList(),
+          (json['categoryIds'] as List<dynamic>).map((e) => e as int).toList(),
+      sale: json['sale'] as bool,
+      special: json['special'] as bool,
     );
   }
 
-  final String id;
+  final int id;
   final String name;
   final String weightLabel;
   final int priceRub;
+  final int oldPriceRub;
   final List<String> imageUrls;
   final String description;
-  final List<String> categoryIds;
+  final List<int> categoryIds;
+  final bool sale;
+  final bool special;
 }
 
 class ProductListPage {

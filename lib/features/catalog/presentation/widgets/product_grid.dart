@@ -16,7 +16,7 @@ class ProductGrid extends ConsumerStatefulWidget {
 
 class _ProductGridState extends ConsumerState<ProductGrid> {
   final _scrollController = ScrollController();
-  String? _lastCategoryId;
+  int? _lastCategoryId;
 
   @override
   void initState() {

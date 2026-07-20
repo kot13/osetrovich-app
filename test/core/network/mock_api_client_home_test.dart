@@ -22,7 +22,7 @@ void main() {
   test('getWeeklyProducts returns product summaries', () async {
     final products = await client.getWeeklyProducts();
     expect(products.length, greaterThanOrEqualTo(6));
-    expect(products.first.id, isNotEmpty);
+    expect(products.first.id, greaterThan(0));
   });
 
   test('getCurrentOrder returns null without profile', () async {

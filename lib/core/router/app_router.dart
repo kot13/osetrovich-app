@@ -93,7 +93,7 @@ final routerProvider = Provider<GoRouter>((ref) {
                   GoRoute(
                     path: 'product/:id',
                     builder: (context, state) {
-                      final id = state.pathParameters['id']!;
+                      final id = int.parse(state.pathParameters['id']!);
                       return ProductDetailScreen(productId: id);
                     },
                   ),

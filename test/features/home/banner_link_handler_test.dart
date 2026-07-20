@@ -46,7 +46,7 @@ void main() {
                         context,
                         const BannerLink(
                           type: BannerLinkType.product,
-                          targetId: 'p-fish-0',
+                          targetId: '1000',
                         ),
                       ),
                   child: const Text('product'),
@@ -66,7 +66,7 @@ void main() {
     await tester.tap(find.text('product'));
     await tester.pumpAndSettle();
 
-    expect(find.text('product-p-fish-0'), findsOneWidget);
+    expect(find.text('product-1000'), findsOneWidget);
   });
 
   testWidgets('none link does nothing', (tester) async {

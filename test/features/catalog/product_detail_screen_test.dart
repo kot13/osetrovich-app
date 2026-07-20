@@ -15,7 +15,7 @@ void main() {
         overrides: [apiClientProvider.overrideWithValue(MockApiClient())],
         child: MaterialApp(
           theme: AppTheme.light,
-          home: const ProductDetailScreen(productId: 'p-fish-0'),
+          home: const ProductDetailScreen(productId: 1000),
         ),
       ),
     );
@@ -41,7 +41,7 @@ void main() {
         child: MaterialApp(
           theme: AppTheme.light,
           home: Scaffold(
-            body: const ProductDetailScreen(productId: 'p-fish-0'),
+            body: const ProductDetailScreen(productId: 1000),
             bottomNavigationBar: BottomNavigationBar(
               items: const [
                 BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
@@ -73,7 +73,7 @@ void main() {
             ),
         child: MaterialApp(
           theme: AppTheme.light,
-          home: const ProductDetailScreen(productId: 'p-fish-1'),
+          home: const ProductDetailScreen(productId: 1001),
         ),
       ),
     );
@@ -82,6 +82,6 @@ void main() {
     await tester.tap(find.textContaining(' +').last);
     await tester.pumpAndSettle();
 
-    expect(container.read(cartNotifierProvider)['p-fish-1'], 1);
+    expect(container.read(cartNotifierProvider)[1001], 1);
   });
 }

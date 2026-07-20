@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:osetrovich/core/l10n/app_strings.dart';
 import 'package:osetrovich/core/theme/app_colors.dart';
+import 'package:osetrovich/core/network/api_error_mapper.dart';
 import 'package:osetrovich/core/network/api_exception.dart';
 import 'package:osetrovich/core/widgets/empty_state.dart';
 import 'package:osetrovich/features/auth/domain/auth_session_provider.dart';
@@ -60,7 +61,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Text(error.toString()),
+                  Text(userFacingErrorMessage(error)),
                   const SizedBox(height: 12),
                   ElevatedButton(
                     onPressed:

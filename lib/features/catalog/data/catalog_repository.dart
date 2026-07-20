@@ -14,7 +14,7 @@ class CatalogRepository {
   }
 
   Future<ProductListPage> getProducts({
-    required String categoryId,
+    required int categoryId,
     required int offset,
     required int limit,
   }) {
@@ -25,7 +25,7 @@ class CatalogRepository {
     );
   }
 
-  Future<ProductDetail> getProductById(String id) {
+  Future<ProductDetail> getProductById(int id) {
     return _apiClient.getProductById(id);
   }
 }

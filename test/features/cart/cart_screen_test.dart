@@ -112,7 +112,7 @@ void main() {
     );
     addTearDown(container.dispose);
 
-    container.read(cartNotifierProvider.notifier).increment('p-fish-0');
+    container.read(cartNotifierProvider.notifier).increment(1000);
 
     await tester.pumpWidget(buildCartApp(container: container));
     await tester.pumpAndSettle();
@@ -135,7 +135,7 @@ void main() {
     );
     addTearDown(container.dispose);
 
-    container.read(cartNotifierProvider.notifier).increment('p-fish-0');
+    container.read(cartNotifierProvider.notifier).increment(1000);
 
     await tester.pumpWidget(buildCartApp(container: container));
     await tester.pumpAndSettle();
@@ -158,7 +158,7 @@ void main() {
     );
     addTearDown(container.dispose);
 
-    container.read(cartNotifierProvider.notifier).increment('p-fish-0');
+    container.read(cartNotifierProvider.notifier).increment(1000);
 
     await tester.pumpWidget(buildCartApp(container: container));
     await tester.pumpAndSettle();
@@ -175,7 +175,7 @@ void main() {
     );
     addTearDown(container.dispose);
 
-    container.read(cartNotifierProvider.notifier).increment('p-fish-0');
+    container.read(cartNotifierProvider.notifier).increment(1000);
 
     await pumpLargeScreen(tester, buildCartApp(container: container));
 
@@ -201,7 +201,7 @@ void main() {
     );
     addTearDown(container.dispose);
 
-    container.read(cartNotifierProvider.notifier).increment('p-fish-0');
+    container.read(cartNotifierProvider.notifier).increment(1000);
 
     await pumpLargeScreen(tester, buildCartApp(container: container));
 
@@ -245,7 +245,7 @@ void main() {
     );
     addTearDown(container.dispose);
 
-    container.read(cartNotifierProvider.notifier).increment('p-fish-0');
+    container.read(cartNotifierProvider.notifier).increment(1000);
 
     await pumpLargeScreen(tester, buildCartApp(container: container));
 

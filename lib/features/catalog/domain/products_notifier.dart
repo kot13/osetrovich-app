@@ -3,12 +3,13 @@ import 'package:osetrovich/core/l10n/app_strings.dart';
 import 'package:osetrovich/core/network/api_exception.dart';
 import 'package:osetrovich/features/catalog/data/catalog_repository.dart';
 import 'package:osetrovich/features/catalog/domain/categories_provider.dart';
+import 'package:osetrovich/features/catalog/domain/catalog_category.dart';
 import 'package:osetrovich/features/catalog/domain/product.dart';
 
 class ProductsUiState {
   const ProductsUiState({
     this.items = const [],
-    this.categoryId = 'all',
+    this.categoryId = kAllCategoriesId,
     this.isLoadingInitial = false,
     this.isLoadingMore = false,
     this.hasMore = false,
@@ -17,7 +18,7 @@ class ProductsUiState {
   });
 
   final List<ProductSummary> items;
-  final String categoryId;
+  final int categoryId;
   final bool isLoadingInitial;
   final bool isLoadingMore;
   final bool hasMore;
@@ -29,7 +30,7 @@ class ProductsUiState {
 
   ProductsUiState copyWith({
     List<ProductSummary>? items,
-    String? categoryId,
+    int? categoryId,
     bool? isLoadingInitial,
     bool? isLoadingMore,
     bool? hasMore,
@@ -64,10 +65,13 @@ class ProductsNotifier extends Notifier<ProductsUiState> {
     Future.microtask(
       () => selectCategory(ref.read(selectedCategoryIdProvider)),
     );
-    return const ProductsUiState(isLoadingInitial: true, categoryId: 'all');
+    return const ProductsUiState(
+      isLoadingInitial: true,
+      categoryId: kAllCategoriesId,
+    );
   }
 
-  Future<void> selectCategory(String categoryId) async {
+  Future<void> selectCategory(int categoryId) async {
     state = ProductsUiState(categoryId: categoryId, isLoadingInitial: true);
 
     await _fetchPage(categoryId: categoryId, offset: 0, append: false);
@@ -100,7 +104,7 @@ class ProductsNotifier extends Notifier<ProductsUiState> {
   }
 
   Future<void> _fetchPage({
-    required String categoryId,
+    required int categoryId,
     required int offset,
     required bool append,
   }) async {
@@ -152,7 +156,7 @@ class ProductsNotifier extends Notifier<ProductsUiState> {
   void _handleError(
     String message, {
     required bool append,
-    required String categoryId,
+    required int categoryId,
   }) {
     if (append) {
       if (state.categoryId != categoryId) {

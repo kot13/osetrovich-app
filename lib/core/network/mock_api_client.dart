@@ -26,6 +26,11 @@ class MockApiClient implements ApiClient {
   static const demoPhoneRatingSkipped = '+79003333333';
   static const _accessTokenPhonePrefix = 'mock.access.token.';
 
+  /// When `true`, the first [getProfile] call throws UNAUTHORIZED (manual QA for token refresh).
+  static bool simulateExpiredAccessOnProfile = false;
+
+  bool _profileUnauthorizedOnce = false;
+
   /// Extracts phone embedded in mock access tokens (`mock.access.token.+7...`).
   static String? phoneFromAccessToken(String accessToken) {
     if (!accessToken.startsWith(_accessTokenPhonePrefix)) {
@@ -62,23 +67,27 @@ class MockApiClient implements ApiClient {
   UserProfile? _profile;
 
   static final List<CatalogCategory> _categories = [
-    const CatalogCategory(id: 'all', name: 'Все', sortOrder: 0),
-    const CatalogCategory(id: 'fish', name: 'Рыба', sortOrder: 1),
-    const CatalogCategory(id: 'caviar', name: 'Икра', sortOrder: 2),
-    const CatalogCategory(id: 'crabs', name: 'Крабы', sortOrder: 3),
+    const CatalogCategory(id: kAllCategoriesId, name: 'Все', sortOrder: 0),
+    const CatalogCategory(id: kCategoryFish, name: 'Рыба', sortOrder: 1),
+    const CatalogCategory(id: kCategoryCaviar, name: 'Икра', sortOrder: 2),
+    const CatalogCategory(id: kCategoryCrabs, name: 'Крабы', sortOrder: 3),
     const CatalogCategory(
-      id: 'seaweed',
+      id: kCategorySeaweed,
       name: 'Морские водоросли',
       sortOrder: 4,
     ),
-    const CatalogCategory(id: 'spices', name: 'Специи', sortOrder: 5),
-    const CatalogCategory(id: 'sauces', name: 'Соусы', sortOrder: 6),
-    const CatalogCategory(id: 'shrimp', name: 'Креветки', sortOrder: 7),
-    const CatalogCategory(id: 'mollusks', name: 'Моллюски', sortOrder: 8),
-    const CatalogCategory(id: 'canned', name: 'Консервы', sortOrder: 9),
-    const CatalogCategory(id: 'for_fish', name: 'Всё для рыбы', sortOrder: 10),
+    const CatalogCategory(id: kCategorySpices, name: 'Специи', sortOrder: 5),
+    const CatalogCategory(id: kCategorySauces, name: 'Соусы', sortOrder: 6),
+    const CatalogCategory(id: kCategoryShrimp, name: 'Креветки', sortOrder: 7),
+    const CatalogCategory(id: kCategoryMollusks, name: 'Моллюски', sortOrder: 8),
+    const CatalogCategory(id: kCategoryCanned, name: 'Консервы', sortOrder: 9),
     const CatalogCategory(
-      id: 'semi_finished',
+      id: kCategoryForFish,
+      name: 'Всё для рыбы',
+      sortOrder: 10,
+    ),
+    const CatalogCategory(
+      id: kCategorySemiFinished,
       name: 'Полуфабрикаты',
       sortOrder: 11,
     ),
@@ -259,8 +268,9 @@ class MockApiClient implements ApiClient {
   @override
   Future<TokenResponse> refreshToken(String refreshToken) async {
     await Future<void>.delayed(const Duration(milliseconds: 100));
+    final phone = _profile?.phone ?? phoneFromAccessToken(refreshToken) ?? '';
     return TokenResponse(
-      accessToken: 'mock.access.refreshed',
+      accessToken: 'mock.access.refreshed.$phone',
       refreshToken: refreshToken,
       expiresIn: 3600,
       tokenType: 'Bearer',
@@ -280,7 +290,7 @@ class MockApiClient implements ApiClient {
   }
 
   static final List<ProductSummary> _products = _buildMockProducts();
-  static final Map<String, ProductDetail> _productDetails = {
+  static final Map<int, ProductDetail> _productDetails = {
     for (final p in _products) p.id: _toDetail(p),
   };
 
@@ -299,52 +309,63 @@ class MockApiClient implements ApiClient {
       'Дорадо',
     ];
     for (var i = 0; i < 30; i++) {
+      final id = 1000 + i;
+      final priceRub = 450 + i * 30;
       products.add(
         ProductSummary(
-          id: 'p-fish-$i',
+          id: id,
           name: '${fishNames[i % fishNames.length]} №${i + 1}',
           weightLabel: '${300 + (i % 5) * 100} г',
-          priceRub: 450 + i * 30,
+          priceRub: priceRub,
+          oldPriceRub: i == 0 ? priceRub + 150 : priceRub,
           imageUrl: 'https://picsum.photos/seed/osetrovich-fish$i/400/400',
-          categoryIds: const ['fish'],
+          categoryIds: const [kCategoryFish],
+          sale: i == 0 || i == 1,
+          special: i == 1,
         ),
       );
     }
 
-    const categoryProducts = <String, List<String>>{
-      'caviar': [
+    const categoryProducts = <int, List<String>>{
+      kCategoryCaviar: [
         'Красная икра',
         'Чёрная икра',
         'Икра кеты',
         'Икра нерки',
         'Икра горбуши',
       ],
-      'crabs': ['Камчатский краб', 'Стригун', 'Колючий краб', 'Краб-ванам'],
-      'seaweed': ['Вакаме', 'Нори', 'Комбу'],
-      'spices': ['Соль морская', 'Перец душистый', 'Лавровый лист'],
-      'sauces': ['Соус терияки', 'Соус соевый', 'Икра тобико'],
-      'shrimp': [
+      kCategoryCrabs: ['Камчатский краб', 'Стригун', 'Колючий краб', 'Краб-ванам'],
+      kCategorySeaweed: ['Вакаме', 'Нори', 'Комбу'],
+      kCategorySpices: ['Соль морская', 'Перец душистый', 'Лавровый лист'],
+      kCategorySauces: ['Соус терияки', 'Соус соевый', 'Икра тобико'],
+      kCategoryShrimp: [
         'Креветки тигровые',
         'Креветки северные',
         'Креветки королевские',
       ],
-      'mollusks': ['Мидии', 'Гребешок', 'Кальмар'],
-      'canned': ['Лосось в масле', 'Шпроты', 'Тунец'],
-      'for_fish': ['Нож рыболовный', 'Доска для разделки'],
+      kCategoryMollusks: ['Мидии', 'Гребешок', 'Кальмар'],
+      kCategoryCanned: ['Лосось в масле', 'Шпроты', 'Тунец'],
+      kCategoryForFish: ['Нож рыболовный', 'Доска для разделки'],
     };
 
     for (final entry in categoryProducts.entries) {
+      final baseId = entry.key * 1000;
       for (var i = 0; i < entry.value.length; i++) {
         final name = entry.value[i];
+        final priceRub = 250 + i * 120;
         products.add(
           ProductSummary(
-            id: 'p-${entry.key}-$i',
+            id: baseId + i,
             name: name,
             weightLabel: i.isEven ? '500 г' : '1 кг',
-            priceRub: 250 + i * 120,
+            priceRub: priceRub,
+            oldPriceRub:
+                entry.key == kCategoryCaviar && i == 0 ? priceRub + 200 : priceRub,
             imageUrl:
                 'https://picsum.photos/seed/osetrovich-${entry.key}$i/400/400',
             categoryIds: [entry.key],
+            sale: false,
+            special: entry.key == kCategoryCaviar && i == 0,
           ),
         );
       }
@@ -354,7 +375,7 @@ class MockApiClient implements ApiClient {
   }
 
   static ProductDetail _toDetail(ProductSummary summary) {
-    final multiImageIds = {'p-fish-0', 'p-caviar-0', 'p-crabs-0'};
+    const multiImageIds = {1000, 2000, 3000};
     final imageUrls =
         multiImageIds.contains(summary.id)
             ? [
@@ -369,25 +390,30 @@ class MockApiClient implements ApiClient {
       name: summary.name,
       weightLabel: summary.weightLabel,
       priceRub: summary.priceRub,
+      oldPriceRub: summary.oldPriceRub,
       imageUrls: imageUrls,
       description:
           '${summary.name} — свежая продукция от osetrovich.ru. '
           'Идеально для праздничного стола и ежедневного меню. '
           'Хранить при температуре от −2 до +4 °C.',
       categoryIds: summary.categoryIds,
+      sale: summary.sale,
+      special: summary.special,
     );
   }
 
-  List<ProductSummary> _filterProducts(String categoryId) {
-    if (categoryId == 'all') {
+  List<ProductSummary> _filterProducts(int categoryId) {
+    if (categoryId == kAllCategoriesId) {
       return List<ProductSummary>.from(_products);
     }
-    return _products.where((p) => p.categoryIds.contains(categoryId)).toList();
+    return _products
+        .where((p) => p.categoryIds.contains(categoryId))
+        .toList();
   }
 
   @override
   Future<ProductListPage> getProducts({
-    required String categoryId,
+    required int categoryId,
     required int offset,
     required int limit,
   }) async {
@@ -408,7 +434,7 @@ class MockApiClient implements ApiClient {
   }
 
   @override
-  Future<ProductDetail> getProductById(String id) async {
+  Future<ProductDetail> getProductById(int id) async {
     await Future<void>.delayed(const Duration(milliseconds: 80));
     final detail = _productDetails[id];
     if (detail == null) {
@@ -445,7 +471,7 @@ class MockApiClient implements ApiClient {
         sortOrder: 2,
         link: const BannerLink(
           type: BannerLinkType.product,
-          targetId: 'p-fish-0',
+          targetId: '1000',
         ),
       ),
       Banner(
@@ -460,16 +486,7 @@ class MockApiClient implements ApiClient {
   @override
   Future<List<ProductSummary>> getWeeklyProducts() async {
     await Future<void>.delayed(const Duration(milliseconds: 100));
-    const weeklyIds = [
-      'p-fish-0',
-      'p-fish-1',
-      'p-caviar-0',
-      'p-crabs-0',
-      'p-shrimp-0',
-      'p-sauces-0',
-      'p-mollusks-0',
-      'p-canned-0',
-    ];
+    const weeklyIds = [1000, 1001, 2000, 3000, 7000, 6000, 8000, 9000];
     return [
       for (final id in weeklyIds)
         for (final product in _products)
@@ -601,6 +618,13 @@ class MockApiClient implements ApiClient {
   @override
   Future<UserProfile> getProfile() async {
     await Future<void>.delayed(const Duration(milliseconds: 100));
+    if (simulateExpiredAccessOnProfile && !_profileUnauthorizedOnce) {
+      _profileUnauthorizedOnce = true;
+      throw ApiException(
+        code: 'UNAUTHORIZED',
+        message: 'Требуется авторизация',
+      );
+    }
     return _requireProfile();
   }
 
@@ -707,7 +731,8 @@ class MockApiClient implements ApiClient {
     var itemsSubtotalRub = 0;
 
     for (final item in request.items) {
-      final detail = _productDetails[item.productId];
+      final productId = int.tryParse(item.productId);
+      final detail = productId != null ? _productDetails[productId] : null;
       if (detail == null) {
         throw ApiException(
           code: 'PRODUCT_UNAVAILABLE',
@@ -718,7 +743,7 @@ class MockApiClient implements ApiClient {
       itemsSubtotalRub += lineTotalRub;
       orderLines.add(
         OrderLine(
-          productId: detail.id,
+          productId: detail.id.toString(),
           name: detail.name,
           weightLabel: detail.weightLabel,
           priceRub: detail.priceRub,
@@ -838,11 +863,11 @@ class MockApiClient implements ApiClient {
     required OrderStatus status,
     required OrderRatingState ratingState,
   }) {
-    final fish = _productDetails['p-fish-0']!;
-    final caviar = _productDetails['p-caviar-0']!;
+    final fish = _productDetails[1000]!;
+    final caviar = _productDetails[2000]!;
     final lines = [
       OrderLine(
-        productId: fish.id,
+        productId: fish.id.toString(),
         name: fish.name,
         weightLabel: fish.weightLabel,
         priceRub: fish.priceRub,
@@ -850,7 +875,7 @@ class MockApiClient implements ApiClient {
         lineTotalRub: fish.priceRub,
       ),
       OrderLine(
-        productId: caviar.id,
+        productId: caviar.id.toString(),
         name: caviar.name,
         weightLabel: caviar.weightLabel,
         priceRub: caviar.priceRub,

@@ -40,7 +40,7 @@ void main() {
     );
     addTearDown(container.dispose);
 
-    container.read(cartNotifierProvider.notifier).increment('p-fish-0');
+    container.read(cartNotifierProvider.notifier).increment(1000);
 
     final result = await container
         .read(checkoutNotifierProvider.notifier)
@@ -67,7 +67,7 @@ void main() {
     );
     addTearDown(container.dispose);
 
-    container.read(cartNotifierProvider.notifier).increment('p-fish-0');
+    container.read(cartNotifierProvider.notifier).increment(1000);
 
     final order = await container
         .read(checkoutNotifierProvider.notifier)
@@ -94,7 +94,7 @@ void main() {
     );
     addTearDown(container.dispose);
 
-    container.read(cartNotifierProvider.notifier).increment('p-fish-0');
+    container.read(cartNotifierProvider.notifier).increment(1000);
 
     final notifier = container.read(checkoutNotifierProvider.notifier);
     final first = notifier.submit(
@@ -125,7 +125,7 @@ void main() {
     );
     addTearDown(container.dispose);
 
-    container.read(cartNotifierProvider.notifier).increment('p-fish-0');
+    container.read(cartNotifierProvider.notifier).increment(1000);
 
     final result = await container
         .read(checkoutNotifierProvider.notifier)

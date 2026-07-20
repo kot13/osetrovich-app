@@ -12,7 +12,7 @@ final cartLinesProvider = FutureProvider<List<CartLineItemView>>((ref) async {
 
   final repository = ref.watch(catalogRepositoryProvider);
   final lines = <CartLineItemView>[];
-  final unavailableIds = <String>[];
+  final unavailableIds = <int>[];
 
   for (final entry in cart.entries) {
     try {
