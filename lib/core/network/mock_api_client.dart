@@ -761,8 +761,7 @@ class MockApiClient implements ApiClient {
     var itemsSubtotalRub = 0;
 
     for (final item in request.items) {
-      final productId = int.tryParse(item.productId);
-      final detail = productId != null ? _productDetails[productId] : null;
+      final detail = _productDetails[item.id];
       if (detail == null) {
         throw ApiException(
           code: 'PRODUCT_UNAVAILABLE',
@@ -773,7 +772,7 @@ class MockApiClient implements ApiClient {
       itemsSubtotalRub += lineTotalRub;
       orderLines.add(
         OrderLine(
-          productId: detail.id.toString(),
+          id: detail.id,
           name: detail.name,
           weightLabel: detail.weightLabel,
           priceRub: detail.priceRub,
@@ -786,6 +785,7 @@ class MockApiClient implements ApiClient {
     final deliveryFeeRub = calculateDeliveryFeeRub(itemsSubtotalRub);
     _orderSequence += 1;
     final profile = _requireProfile();
+    final trimmedApartment = request.apartment?.trim();
 
     final currentOrder = CurrentOrder(
       id: 'ord-$_orderSequence',
@@ -795,6 +795,10 @@ class MockApiClient implements ApiClient {
       deliveryFeeRub: deliveryFeeRub,
       totalRub: itemsSubtotalRub + deliveryFeeRub,
       deliveryAddress: address,
+      apartment:
+          trimmedApartment != null && trimmedApartment.isNotEmpty
+              ? trimmedApartment
+              : null,
       comment: request.comment,
       status: OrderStatus.accepted,
       createdAt: DateTime.now().toUtc(),
@@ -897,7 +901,7 @@ class MockApiClient implements ApiClient {
     final caviar = _productDetails[2000]!;
     final lines = [
       OrderLine(
-        productId: fish.id.toString(),
+        id: fish.id,
         name: fish.name,
         weightLabel: fish.weightLabel,
         priceRub: fish.priceRub,
@@ -905,7 +909,7 @@ class MockApiClient implements ApiClient {
         lineTotalRub: fish.priceRub,
       ),
       OrderLine(
-        productId: caviar.id.toString(),
+        id: caviar.id,
         name: caviar.name,
         weightLabel: caviar.weightLabel,
         priceRub: caviar.priceRub,

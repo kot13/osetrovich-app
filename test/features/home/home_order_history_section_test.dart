@@ -21,7 +21,7 @@ void main() {
       orderNumber: 'ORD-1001',
       items: const [
         OrderLine(
-          productId: '1000',
+          id: 1000,
           name: 'Сёмга',
           weightLabel: '500 г',
           priceRub: 890,

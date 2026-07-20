@@ -25,6 +25,7 @@ class CartScreen extends ConsumerStatefulWidget {
 
 class _CartScreenState extends ConsumerState<CartScreen> {
   final _addressController = TextEditingController();
+  final _apartmentController = TextEditingController();
   final _commentController = TextEditingController();
   bool _checkoutResumeInProgress = false;
   bool _checkoutStartReported = false;
@@ -49,6 +50,7 @@ class _CartScreenState extends ConsumerState<CartScreen> {
   @override
   void dispose() {
     _addressController.dispose();
+    _apartmentController.dispose();
     _commentController.dispose();
     super.dispose();
   }
@@ -59,6 +61,7 @@ class _CartScreenState extends ConsumerState<CartScreen> {
           .read(pendingCheckoutProvider.notifier)
           .save(
             address: _addressController.text,
+            apartment: _apartmentController.text,
             comment: _commentController.text,
           );
       await context.push('/auth/phone?from=checkout');
@@ -67,6 +70,7 @@ class _CartScreenState extends ConsumerState<CartScreen> {
 
     await _submitOrder(
       address: _addressController.text,
+      apartment: _apartmentController.text,
       comment: _commentController.text,
     );
   }
@@ -84,15 +88,23 @@ class _CartScreenState extends ConsumerState<CartScreen> {
     if (_addressController.text.trim().isEmpty) {
       _addressController.text = pending.address;
     }
+    if (_apartmentController.text.trim().isEmpty) {
+      _apartmentController.text = pending.apartment;
+    }
     if (_commentController.text.trim().isEmpty) {
       _commentController.text = pending.comment;
     }
 
-    await _submitOrder(address: pending.address, comment: pending.comment);
+    await _submitOrder(
+      address: pending.address,
+      apartment: pending.apartment,
+      comment: pending.comment,
+    );
   }
 
   Future<void> _submitOrder({
     required String address,
+    required String apartment,
     required String comment,
   }) async {
     if (_checkoutResumeInProgress) {
@@ -103,7 +115,7 @@ class _CartScreenState extends ConsumerState<CartScreen> {
     try {
       final order = await ref
           .read(checkoutNotifierProvider.notifier)
-          .submit(address: address, comment: comment);
+          .submit(address: address, apartment: apartment, comment: comment);
 
       if (!mounted || order == null) {
         return;
@@ -140,6 +152,7 @@ class _CartScreenState extends ConsumerState<CartScreen> {
 
     ref.read(checkoutNotifierProvider.notifier).acknowledgeSuccess();
     _addressController.clear();
+    _apartmentController.clear();
     _commentController.clear();
   }
 
@@ -174,6 +187,7 @@ class _CartScreenState extends ConsumerState<CartScreen> {
               )
               : _FilledCartBody(
                 addressController: _addressController,
+                apartmentController: _apartmentController,
                 commentController: _commentController,
                 onCheckout: _handleCheckout,
               ),
@@ -184,11 +198,13 @@ class _CartScreenState extends ConsumerState<CartScreen> {
 class _FilledCartBody extends ConsumerWidget {
   const _FilledCartBody({
     required this.addressController,
+    required this.apartmentController,
     required this.commentController,
     required this.onCheckout,
   });
 
   final TextEditingController addressController;
+  final TextEditingController apartmentController;
   final TextEditingController commentController;
   final VoidCallback onCheckout;
 
@@ -226,22 +242,23 @@ class _FilledCartBody extends ConsumerWidget {
         return ListView(
           padding: const EdgeInsets.all(16),
           children: [
-            for (final line in lines) CartLineTile(line: line),
-            if (totals != null) ...[
-              const SizedBox(height: 8),
-              CartOrderSummary(totals: totals),
+              for (final line in lines) CartLineTile(line: line),
+              if (totals != null) ...[
+                const SizedBox(height: 8),
+                CartOrderSummary(totals: totals),
+              ],
+              const SizedBox(height: 16),
+              const DeliveryTermsCard(),
+              const SizedBox(height: 16),
+              CheckoutForm(
+                addressController: addressController,
+                apartmentController: apartmentController,
+                commentController: commentController,
+                onCheckout: onCheckout,
+                isSubmitting: checkoutState.isSubmitting,
+                errorMessage: checkoutState.errorMessage,
+              ),
             ],
-            const SizedBox(height: 16),
-            const DeliveryTermsCard(),
-            const SizedBox(height: 16),
-            CheckoutForm(
-              addressController: addressController,
-              commentController: commentController,
-              onCheckout: onCheckout,
-              isSubmitting: checkoutState.isSubmitting,
-              errorMessage: checkoutState.errorMessage,
-            ),
-          ],
         );
       },
     );

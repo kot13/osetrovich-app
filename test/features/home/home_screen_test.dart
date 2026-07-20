@@ -49,6 +49,7 @@ void main() {
     expect(find.text(AppStrings.homeWeeklyProductsTitle), findsOneWidget);
     expect(find.byType(CachedNetworkImage), findsWidgets);
     expect(find.byType(AuthPromptBanner), findsOneWidget);
+    expect(find.byType(RefreshIndicator), findsOneWidget);
   });
 
   testWidgets('home shows order block when authenticated with order', (
@@ -59,7 +60,7 @@ void main() {
       orderNumber: 'ORD-DEMO',
       items: const [
         OrderLine(
-          productId: '1000',
+          id: 1000,
           name: 'Сёмга',
           weightLabel: '500 г',
           priceRub: 890,

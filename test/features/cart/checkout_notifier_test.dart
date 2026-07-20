@@ -135,12 +135,80 @@ void main() {
     expect(container.read(cartNotifierProvider), isNotEmpty);
     expect(container.read(checkoutNotifierProvider).errorMessage, isNotNull);
   });
+
+  test('submit passes integer product id and apartment', () async {
+    final capturingClient = _CapturingMockApiClient()
+      ..ensureProfile('+79001234567');
+
+    final container = ProviderContainer(
+      overrides: [
+        apiClientProvider.overrideWithValue(capturingClient),
+        authSessionProvider.overrideWith(
+          () => _FakeAuthSessionNotifier(session),
+        ),
+      ],
+    );
+    addTearDown(container.dispose);
+
+    container.read(cartNotifierProvider.notifier).increment(1000);
+
+    await container.read(checkoutNotifierProvider.notifier).submit(
+          address: 'г. Санкт-Петербург, ул. Тестовая, 1',
+          apartment: ' 42 ',
+        );
+
+    final request = capturingClient.lastRequest;
+    expect(request, isNotNull);
+    expect(request!.items.single.id, 1000);
+    expect(request.apartment, '42');
+    expect(request.toJson()['items'], [
+      {'id': 1000, 'quantity': 1},
+    ]);
+  });
+
+  test('submit omits empty apartment', () async {
+    final capturingClient = _CapturingMockApiClient()
+      ..ensureProfile('+79001234567');
+
+    final container = ProviderContainer(
+      overrides: [
+        apiClientProvider.overrideWithValue(capturingClient),
+        authSessionProvider.overrideWith(
+          () => _FakeAuthSessionNotifier(session),
+        ),
+      ],
+    );
+    addTearDown(container.dispose);
+
+    container.read(cartNotifierProvider.notifier).increment(1000);
+
+    await container.read(checkoutNotifierProvider.notifier).submit(
+          address: 'г. Санкт-Петербург, ул. Тестовая, 1',
+          apartment: '   ',
+        );
+
+    expect(capturingClient.lastRequest?.apartment, isNull);
+    expect(
+      capturingClient.lastRequest?.toJson().containsKey('apartment'),
+      isFalse,
+    );
+  });
 }
 
 class _SlowMockApiClient extends MockApiClient {
   @override
   Future<Order> createOrder(CreateOrderRequest request) async {
     await Future<void>.delayed(const Duration(milliseconds: 300));
+    return super.createOrder(request);
+  }
+}
+
+class _CapturingMockApiClient extends MockApiClient {
+  CreateOrderRequest? lastRequest;
+
+  @override
+  Future<Order> createOrder(CreateOrderRequest request) async {
+    lastRequest = request;
     return super.createOrder(request);
   }
 }

@@ -52,14 +52,25 @@ class ProductDetail {
   });
 
   factory ProductDetail.fromJson(Map<String, dynamic> json) {
+    final imageUrlsFromJson =
+        (json['imageUrls'] as List<dynamic>?)
+            ?.map((e) => e as String)
+            .where((url) => url.isNotEmpty)
+            .toList() ??
+        <String>[];
+    final imageUrl = json['imageUrl'] as String?;
+    final imageUrls =
+        imageUrlsFromJson.isNotEmpty
+            ? imageUrlsFromJson
+            : (imageUrl != null && imageUrl.isNotEmpty ? [imageUrl] : <String>[]);
+
     return ProductDetail(
       id: json['id'] as int,
       name: json['name'] as String,
       weightLabel: json['weightLabel'] as String,
       priceRub: json['priceRub'] as int,
       oldPriceRub: json['oldPriceRub'] as int,
-      imageUrls:
-          (json['imageUrls'] as List<dynamic>).map((e) => e as String).toList(),
+      imageUrls: imageUrls,
       description: json['description'] as String,
       categoryIds:
           (json['categoryIds'] as List<dynamic>).map((e) => e as int).toList(),

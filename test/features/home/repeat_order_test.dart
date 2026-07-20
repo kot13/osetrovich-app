@@ -62,7 +62,7 @@ void main() {
     final result = await repeatOrderToCart(
       order: orderWith(const [
         OrderLine(
-          productId: '1001',
+          id: 1001,
           name: 'Товар 1',
           weightLabel: '500 г',
           priceRub: 100,
@@ -98,7 +98,7 @@ void main() {
     await repeatOrderToCart(
       order: orderWith(const [
         OrderLine(
-          productId: '1001',
+          id: 1001,
           name: 'Товар 1',
           weightLabel: '500 г',
           priceRub: 100,
@@ -121,7 +121,7 @@ void main() {
     final result = await repeatOrderToCart(
       order: orderWith(const [
         OrderLine(
-          productId: '999999',
+          id: 999999,
           name: 'Нет',
           weightLabel: '500 г',
           priceRub: 100,
@@ -134,6 +134,6 @@ void main() {
     );
 
     expect(result.addedLineCount, 0);
-    expect(result.skippedProductIds, ['999999']);
+    expect(result.skippedProductIds, [999999]);
   });
 }

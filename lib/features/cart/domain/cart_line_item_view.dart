@@ -16,7 +16,7 @@ class CartLineItemView {
       name: product.name,
       weightLabel: product.weightLabel,
       priceRub: product.priceRub,
-      imageUrl: product.imageUrls.first,
+      imageUrl: product.imageUrls.isNotEmpty ? product.imageUrls.first : '',
       quantity: quantity,
     );
   }

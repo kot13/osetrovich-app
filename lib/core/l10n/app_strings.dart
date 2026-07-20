@@ -87,6 +87,8 @@ abstract final class AppStrings {
   static const cartAddressLabel = 'Адрес доставки';
   static const cartAddressHint =
       'Укажите адрес в Санкт-Петербурге или ближайшем пригороде';
+  static const cartApartmentLabel = 'Квартира / офис';
+  static const cartApartmentHint = 'Необязательно';
   static const cartCommentLabel = 'Комментарий к заказу';
   static const cartCommentHint = 'Необязательно';
   static const cartItemsSubtotal = 'Товары';

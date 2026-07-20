@@ -6,6 +6,7 @@ class CheckoutForm extends StatelessWidget {
   const CheckoutForm({
     super.key,
     required this.addressController,
+    required this.apartmentController,
     required this.commentController,
     required this.onCheckout,
     this.isSubmitting = false,
@@ -13,6 +14,7 @@ class CheckoutForm extends StatelessWidget {
   });
 
   final TextEditingController addressController;
+  final TextEditingController apartmentController;
   final TextEditingController commentController;
   final VoidCallback onCheckout;
   final bool isSubmitting;
@@ -32,6 +34,17 @@ class CheckoutForm extends StatelessWidget {
           ),
           minLines: 2,
           maxLines: 3,
+          onTapOutside: (_) => FocusManager.instance.primaryFocus?.unfocus(),
+        ),
+        const SizedBox(height: 12),
+        TextField(
+          controller: apartmentController,
+          decoration: const InputDecoration(
+            labelText: AppStrings.cartApartmentLabel,
+            hintText: AppStrings.cartApartmentHint,
+            border: OutlineInputBorder(),
+          ),
+          onTapOutside: (_) => FocusManager.instance.primaryFocus?.unfocus(),
         ),
         const SizedBox(height: 12),
         TextField(
@@ -43,6 +56,7 @@ class CheckoutForm extends StatelessWidget {
           ),
           minLines: 2,
           maxLines: 4,
+          onTapOutside: (_) => FocusManager.instance.primaryFocus?.unfocus(),
         ),
         if (errorMessage != null) ...[
           const SizedBox(height: 12),

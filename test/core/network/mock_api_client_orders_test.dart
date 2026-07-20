@@ -14,14 +14,27 @@ void main() {
     test('creates order with delivery fee', () async {
       final order = await client.createOrder(
         const CreateOrderRequest(
-          items: [OrderLineInput(productId: '1000', quantity: 1)],
+          items: [OrderLineInput(id: 1000, quantity: 1)],
           deliveryAddress: 'г. Санкт-Петербург, Невский пр., 1',
         ),
       );
 
       expect(order.orderNumber, startsWith('ORD-'));
       expect(order.items, isNotEmpty);
+      expect(order.items.first.id, 1000);
       expect(order.deliveryAddress, contains('Санкт-Петербург'));
+    });
+
+    test('persists apartment in response', () async {
+      final order = await client.createOrder(
+        const CreateOrderRequest(
+          items: [OrderLineInput(id: 1000, quantity: 1)],
+          deliveryAddress: 'г. Санкт-Петербург, Невский пр., 1',
+          apartment: '42',
+        ),
+      );
+
+      expect(order.apartment, '42');
     });
 
     test('throws unauthorized without profile', () async {
@@ -30,7 +43,7 @@ void main() {
       expect(
         guestClient.createOrder(
           const CreateOrderRequest(
-            items: [OrderLineInput(productId: '1000', quantity: 1)],
+            items: [OrderLineInput(id: 1000, quantity: 1)],
             deliveryAddress: 'адрес',
           ),
         ),
@@ -44,7 +57,7 @@ void main() {
       expect(
         client.createOrder(
           const CreateOrderRequest(
-            items: [OrderLineInput(productId: '1000', quantity: 1)],
+            items: [OrderLineInput(id: 1000, quantity: 1)],
             deliveryAddress: '   ',
           ),
         ),
@@ -58,7 +71,7 @@ void main() {
       expect(
         client.createOrder(
           const CreateOrderRequest(
-            items: [OrderLineInput(productId: 'unknown-id', quantity: 1)],
+            items: [OrderLineInput(id: 999999, quantity: 1)],
             deliveryAddress: 'г. Санкт-Петербург, Невский пр., 1',
           ),
         ),

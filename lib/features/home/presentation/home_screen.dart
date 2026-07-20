@@ -66,8 +66,11 @@ class HomeScreen extends ConsumerWidget {
           ),
         ],
       ),
-      body: ListView(
-        children: [
+      body: RefreshIndicator(
+        onRefresh: () => _refreshHome(ref),
+        child: ListView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          children: [
           Padding(
             padding: const EdgeInsets.only(top: 16),
             child: bannersAsync.when(
@@ -100,10 +103,29 @@ class HomeScreen extends ConsumerWidget {
               },
             ),
           if (!isAuthenticated) const AuthPromptBanner(),
-        ],
+          ],
+        ),
       ),
     );
   }
+}
+
+Future<void> _refreshHome(WidgetRef ref) async {
+  ref.invalidate(bannersProvider);
+  ref.invalidate(weeklyProductsProvider);
+
+  final refreshTasks = <Future<Object?>>[
+    ref.read(bannersProvider.future),
+    ref.read(weeklyProductsProvider.future),
+  ];
+
+  if (ref.read(isAuthenticatedProvider)) {
+    ref.invalidate(currentOrderProvider);
+    refreshTasks.add(ref.read(currentOrderProvider.future));
+    refreshTasks.add(ref.read(unreadCountNotifierProvider.notifier).refresh());
+  }
+
+  await Future.wait(refreshTasks);
 }
 
 class _HomeSectionError extends StatelessWidget {

@@ -1,0 +1,186 @@
+openapi: 3.0.3
+info:
+  title: Osetrovich Mobile API
+  description: |
+    Дельта контракта orders для фичи 012-api-order-create.
+    Полная спецификация — `openapi/openapi.yaml` в корне репозитория (v0.11.2).
+  version: 0.11.2
+
+servers:
+  - url: https://api.osetrovich.ru/v1
+    description: Production (будущее)
+
+tags:
+  - name: orders
+    description: Оформление заказов (изменения int id, apartment, coordinates)
+
+paths:
+  /orders:
+    post:
+      tags: [orders]
+      summary: Создать заказ (обновлённый payload)
+      operationId: createOrder
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateOrderRequest'
+            examples:
+              withApartment:
+                summary: С квартирой
+                value:
+                  items:
+                    - id: 1000
+                      quantity: 2
+                  deliveryAddress: 'Санкт-Петербург, ул. Примерная, 1'
+                  apartment: '42'
+                  comment: 'Позвонить за час'
+              minimal:
+                summary: Минимальный запрос
+                value:
+                  items:
+                    - id: 1001
+                      quantity: 1
+                  deliveryAddress: 'Санкт-Петербург, Невский пр., 1'
+      responses:
+        '201':
+          description: Заказ создан
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Order'
+        '400':
+          description: Некорректный запрос или недоступный товар
+        '401':
+          description: Требуется авторизация
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    CreateOrderRequest:
+      type: object
+      required: [items, deliveryAddress]
+      properties:
+        items:
+          type: array
+          minItems: 1
+          items:
+            $ref: '#/components/schemas/OrderLineInput'
+        deliveryAddress:
+          type: string
+          minLength: 1
+        apartment:
+          type: string
+          nullable: true
+          description: Квартира / офис (необязательно)
+        lat:
+          type: number
+          format: double
+          nullable: true
+          description: Широта (необязательно)
+        lng:
+          type: number
+          format: double
+          nullable: true
+          description: Долгота (необязательно)
+        comment:
+          type: string
+          nullable: true
+
+    OrderLineInput:
+      type: object
+      required: [id, quantity]
+      properties:
+        id:
+          type: integer
+          minimum: 1
+          description: Идентификатор товара (было productId string)
+        quantity:
+          type: integer
+          minimum: 1
+
+    Order:
+      type: object
+      required:
+        - id
+        - orderNumber
+        - items
+        - itemsSubtotalRub
+        - deliveryFeeRub
+        - totalRub
+        - deliveryAddress
+        - status
+        - createdAt
+      properties:
+        id:
+          type: string
+        orderNumber:
+          type: string
+        items:
+          type: array
+          minItems: 1
+          items:
+            $ref: '#/components/schemas/OrderLine'
+        itemsSubtotalRub:
+          type: integer
+          minimum: 0
+        deliveryFeeRub:
+          type: integer
+          minimum: 0
+        totalRub:
+          type: integer
+          minimum: 0
+        deliveryAddress:
+          type: string
+        apartment:
+          type: string
+          nullable: true
+        lat:
+          type: number
+          format: double
+          nullable: true
+        lng:
+          type: number
+          format: double
+          nullable: true
+        comment:
+          type: string
+          nullable: true
+        status:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+
+    OrderLine:
+      type: object
+      required:
+        - id
+        - name
+        - weightLabel
+        - priceRub
+        - quantity
+        - lineTotalRub
+      properties:
+        id:
+          type: integer
+          minimum: 1
+          description: Идентификатор товара (было productId string)
+        name:
+          type: string
+        weightLabel:
+          type: string
+        priceRub:
+          type: integer
+        quantity:
+          type: integer
+        lineTotalRub:
+          type: integer

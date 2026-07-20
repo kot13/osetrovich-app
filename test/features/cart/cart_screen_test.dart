@@ -124,7 +124,8 @@ void main() {
     expect(find.text(AppStrings.cartTotal), findsOneWidget);
     expect(find.text(AppStrings.cartDeliveryTerms), findsOneWidget);
     expect(find.text(AppStrings.cartCheckout), findsOneWidget);
-    expect(find.byType(TextField), findsNWidgets(2));
+    expect(find.text(AppStrings.cartApartmentLabel), findsOneWidget);
+    expect(find.byType(TextField), findsNWidgets(3));
   });
 
   testWidgets('filled cart updates summary when quantity changes', (
@@ -262,5 +263,22 @@ void main() {
 
     expect(find.text(AppStrings.cartEmpty), findsOneWidget);
     expect(container.read(cartNotifierProvider), isEmpty);
+  });
+
+  testWidgets('checkout text fields configure tap outside to unfocus', (
+    tester,
+  ) async {
+    final container = ProviderContainer(
+      overrides: [apiClientProvider.overrideWithValue(MockApiClient())],
+    );
+    addTearDown(container.dispose);
+
+    container.read(cartNotifierProvider.notifier).increment(1000);
+
+    await pumpLargeScreen(tester, buildCartApp(container: container));
+
+    for (final field in tester.widgetList<TextField>(find.byType(TextField))) {
+      expect(field.onTapOutside, isNotNull);
+    }
   });
 }

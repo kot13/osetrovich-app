@@ -2,7 +2,7 @@ openapi: 3.0.3
 info:
   title: Osetrovich Mobile API
   description: REST API мобильного приложения osetrovich.ru (фаза home-screen-content)
-  version: 0.10.0
+  version: 0.11.2
 
 servers:
   - url: https://api.osetrovich.ru/v1
@@ -328,12 +328,6 @@ paths:
                 $ref: '#/components/schemas/ErrorResponse'
         '401':
           $ref: '#/components/responses/Unauthorized'
-        '422':
-          description: Пустой или невалидный token
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
 
   /catalog/categories:
     get:
@@ -1109,6 +1103,17 @@ components:
           minimum: 0
         deliveryAddress:
           type: string
+        apartment:
+          type: string
+          nullable: true
+        lat:
+          type: number
+          format: double
+          nullable: true
+        lng:
+          type: number
+          format: double
+          nullable: true
         comment:
           type: string
           nullable: true
@@ -1178,16 +1183,45 @@ components:
         deliveryAddress:
           type: string
           minLength: 1
+        apartment:
+          type: string
+          nullable: true
+          description: Квартира / офис (необязательно)
+        lat:
+          type: number
+          format: double
+          nullable: true
+          description: Широта (необязательно)
+        lng:
+          type: number
+          format: double
+          nullable: true
+          description: Долгота (необязательно)
         comment:
           type: string
           nullable: true
+        deliveryDate:
+          type: string
+          format: date
+          description: Дата доставки (необязательно)
+        deliveryIntervalFrom:
+          type: integer
+          minimum: 0
+          maximum: 23
+          description: Час начала интервала доставки (необязательно)
+        deliveryIntervalTo:
+          type: integer
+          minimum: 1
+          maximum: 24
+          description: Час окончания интервала доставки (необязательно, ≥ from)
 
     OrderLineInput:
       type: object
-      required: [productId, quantity]
+      required: [id, quantity]
       properties:
-        productId:
-          type: string
+        id:
+          type: integer
+          minimum: 1
         quantity:
           type: integer
           minimum: 1
@@ -1225,6 +1259,17 @@ components:
           minimum: 0
         deliveryAddress:
           type: string
+        apartment:
+          type: string
+          nullable: true
+        lat:
+          type: number
+          format: double
+          nullable: true
+        lng:
+          type: number
+          format: double
+          nullable: true
         comment:
           type: string
           nullable: true
@@ -1237,15 +1282,16 @@ components:
     OrderLine:
       type: object
       required:
-        - productId
+        - id
         - name
         - weightLabel
         - priceRub
         - quantity
         - lineTotalRub
       properties:
-        productId:
-          type: string
+        id:
+          type: integer
+          minimum: 1
         name:
           type: string
         weightLabel:
@@ -1263,15 +1309,18 @@ components:
     OrderStatus:
       type: string
       enum:
+        - draft
         - accepted
         - processing
         - assembly
         - delivery
         - completed
       description: |
+        draft — Черновик (ожидает обработки оператором);
         accepted — Принят; processing — В обработке; assembly — Сборка;
         delivery — Доставка; completed — Выполнено.
         Значение pending из POST /orders (v0.5.0) трактуется как accepted.
+        POST /orders (v0.11.0+) при создании возвращает draft.
 
     PromotionArticleType:
       type: string

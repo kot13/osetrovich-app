@@ -40,7 +40,11 @@ class CheckoutNotifier extends Notifier<CheckoutState> {
   @override
   CheckoutState build() => const CheckoutState();
 
-  Future<Order?> submit({required String address, String? comment}) async {
+  Future<Order?> submit({
+    required String address,
+    String? apartment,
+    String? comment,
+  }) async {
     if (state.isSubmitting) {
       return null;
     }
@@ -72,15 +76,17 @@ class CheckoutNotifier extends Notifier<CheckoutState> {
 
     try {
       final trimmedComment = comment?.trim();
+      final trimmedApartment = apartment?.trim();
       final request = CreateOrderRequest(
         items: [
           for (final entry in cart.entries)
-            OrderLineInput(
-              productId: entry.key.toString(),
-              quantity: entry.value,
-            ),
+            OrderLineInput(id: entry.key, quantity: entry.value),
         ],
         deliveryAddress: trimmedAddress,
+        apartment:
+            trimmedApartment != null && trimmedApartment.isNotEmpty
+                ? trimmedApartment
+                : null,
         comment:
             trimmedComment != null && trimmedComment.isNotEmpty
                 ? trimmedComment

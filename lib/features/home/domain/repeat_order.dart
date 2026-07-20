@@ -10,7 +10,7 @@ class RepeatOrderResult {
   });
 
   final int addedLineCount;
-  final List<String> skippedProductIds;
+  final List<int> skippedProductIds;
 }
 
 Future<RepeatOrderResult> repeatOrderToCart({
@@ -19,18 +19,15 @@ Future<RepeatOrderResult> repeatOrderToCart({
   required CatalogRepository catalog,
 }) async {
   var addedLineCount = 0;
-  final skippedProductIds = <String>[];
+  final skippedProductIds = <int>[];
 
   for (final line in order.items) {
     try {
-      final productId = int.parse(line.productId);
-      await catalog.getProductById(productId);
-      cart.addQuantity(productId, line.quantity);
+      await catalog.getProductById(line.id);
+      cart.addQuantity(line.id, line.quantity);
       addedLineCount++;
     } on ApiException {
-      skippedProductIds.add(line.productId);
-    } on FormatException {
-      skippedProductIds.add(line.productId);
+      skippedProductIds.add(line.id);
     }
   }
 

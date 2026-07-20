@@ -56,38 +56,51 @@ enum OrderRatingState {
 }
 
 class OrderLineInput {
-  const OrderLineInput({required this.productId, required this.quantity});
+  const OrderLineInput({required this.id, required this.quantity});
 
-  final String productId;
+  final int id;
   final int quantity;
 
-  Map<String, dynamic> toJson() => {
-    'productId': productId,
-    'quantity': quantity,
-  };
+  Map<String, dynamic> toJson() => {'id': id, 'quantity': quantity};
 }
 
 class CreateOrderRequest {
   const CreateOrderRequest({
     required this.items,
     required this.deliveryAddress,
+    this.apartment,
+    this.lat,
+    this.lng,
     this.comment,
   });
 
   final List<OrderLineInput> items;
   final String deliveryAddress;
+  final String? apartment;
+  final double? lat;
+  final double? lng;
   final String? comment;
 
-  Map<String, dynamic> toJson() => {
-    'items': items.map((e) => e.toJson()).toList(),
-    'deliveryAddress': deliveryAddress,
-    if (comment != null && comment!.isNotEmpty) 'comment': comment,
-  };
+  Map<String, dynamic> toJson() {
+    final trimmedApartment = apartment?.trim();
+    final trimmedComment = comment?.trim();
+
+    return {
+      'items': items.map((e) => e.toJson()).toList(),
+      'deliveryAddress': deliveryAddress,
+      if (trimmedApartment != null && trimmedApartment.isNotEmpty)
+        'apartment': trimmedApartment,
+      if (lat != null) 'lat': lat,
+      if (lng != null) 'lng': lng,
+      if (trimmedComment != null && trimmedComment.isNotEmpty)
+        'comment': trimmedComment,
+    };
+  }
 }
 
 class OrderLine {
   const OrderLine({
-    required this.productId,
+    required this.id,
     required this.name,
     required this.weightLabel,
     required this.priceRub,
@@ -97,7 +110,7 @@ class OrderLine {
 
   factory OrderLine.fromJson(Map<String, dynamic> json) {
     return OrderLine(
-      productId: json['productId'] as String,
+      id: json['id'] as int,
       name: json['name'] as String,
       weightLabel: json['weightLabel'] as String,
       priceRub: json['priceRub'] as int,
@@ -106,7 +119,7 @@ class OrderLine {
     );
   }
 
-  final String productId;
+  final int id;
   final String name;
   final String weightLabel;
   final int priceRub;
@@ -125,6 +138,9 @@ class Order {
     required this.deliveryAddress,
     required this.status,
     required this.createdAt,
+    this.apartment,
+    this.lat,
+    this.lng,
     this.comment,
   });
 
@@ -140,6 +156,9 @@ class Order {
       deliveryFeeRub: json['deliveryFeeRub'] as int,
       totalRub: json['totalRub'] as int,
       deliveryAddress: json['deliveryAddress'] as String,
+      apartment: json['apartment'] as String?,
+      lat: (json['lat'] as num?)?.toDouble(),
+      lng: (json['lng'] as num?)?.toDouble(),
       comment: json['comment'] as String?,
       status: orderStatusFromJson(json['status'] as String),
       createdAt: DateTime.parse(json['createdAt'] as String),
@@ -153,6 +172,9 @@ class Order {
   final int deliveryFeeRub;
   final int totalRub;
   final String deliveryAddress;
+  final String? apartment;
+  final double? lat;
+  final double? lng;
   final String? comment;
   final OrderStatus status;
   final DateTime createdAt;
@@ -170,6 +192,9 @@ class CurrentOrder extends Order {
     required super.status,
     required super.createdAt,
     required this.ratingState,
+    super.apartment,
+    super.lat,
+    super.lng,
     super.comment,
     this.ratingStars,
   });
@@ -186,6 +211,9 @@ class CurrentOrder extends Order {
       deliveryFeeRub: json['deliveryFeeRub'] as int,
       totalRub: json['totalRub'] as int,
       deliveryAddress: json['deliveryAddress'] as String,
+      apartment: json['apartment'] as String?,
+      lat: (json['lat'] as num?)?.toDouble(),
+      lng: (json['lng'] as num?)?.toDouble(),
       comment: json['comment'] as String?,
       status: orderStatusFromJson(json['status'] as String),
       createdAt: DateTime.parse(json['createdAt'] as String),
@@ -210,6 +238,9 @@ class CurrentOrder extends Order {
       deliveryFeeRub: deliveryFeeRub,
       totalRub: totalRub,
       deliveryAddress: deliveryAddress,
+      apartment: apartment,
+      lat: lat,
+      lng: lng,
       comment: comment,
       status: status,
       createdAt: createdAt,

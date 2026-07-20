@@ -37,21 +37,31 @@ class CartLineTile extends ConsumerWidget {
                   child: SizedBox(
                     width: 72,
                     height: 72,
-                    child: CachedNetworkImage(
-                      imageUrl: line.imageUrl,
-                      fit: BoxFit.cover,
-                      placeholder:
-                          (_, __) =>
-                              const ColoredBox(color: AppColors.background),
-                      errorWidget:
-                          (_, __, ___) => const ColoredBox(
-                            color: AppColors.background,
-                            child: Icon(
-                              Icons.image_not_supported_outlined,
-                              color: AppColors.dark,
+                    child:
+                        line.imageUrl.isEmpty
+                            ? const ColoredBox(
+                              color: AppColors.background,
+                              child: Icon(
+                                Icons.image_not_supported_outlined,
+                                color: AppColors.dark,
+                              ),
+                            )
+                            : CachedNetworkImage(
+                              imageUrl: line.imageUrl,
+                              fit: BoxFit.cover,
+                              placeholder:
+                                  (_, __) => const ColoredBox(
+                                    color: AppColors.background,
+                                  ),
+                              errorWidget:
+                                  (_, __, ___) => const ColoredBox(
+                                    color: AppColors.background,
+                                    child: Icon(
+                                      Icons.image_not_supported_outlined,
+                                      color: AppColors.dark,
+                                    ),
+                                  ),
                             ),
-                          ),
-                    ),
                   ),
                 ),
                 const SizedBox(width: 12),

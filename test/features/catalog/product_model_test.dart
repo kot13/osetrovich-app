@@ -43,5 +43,41 @@ void main() {
       expect(detail.categoryIds, [2]);
       expect(detail.special, isTrue);
     });
+
+    test('falls back to imageUrl when imageUrls is empty', () {
+      final detail = ProductDetail.fromJson({
+        'id': 512,
+        'name': 'Икра',
+        'weightLabel': '0 кг',
+        'priceRub': 749,
+        'oldPriceRub': 0,
+        'imageUrl': 'https://example.com/fallback.jpg',
+        'imageUrls': <String>[],
+        'description': '',
+        'categoryIds': [13],
+        'sale': false,
+        'special': false,
+      });
+
+      expect(detail.imageUrls, ['https://example.com/fallback.jpg']);
+    });
+
+    test('allows empty images when API returns no urls', () {
+      final detail = ProductDetail.fromJson({
+        'id': 512,
+        'name': 'Икра',
+        'weightLabel': '0 кг',
+        'priceRub': 749,
+        'oldPriceRub': 0,
+        'imageUrl': '',
+        'imageUrls': <String>[],
+        'description': '',
+        'categoryIds': [13],
+        'sale': false,
+        'special': false,
+      });
+
+      expect(detail.imageUrls, isEmpty);
+    });
   });
 }
