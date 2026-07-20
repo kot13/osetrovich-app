@@ -2,10 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:osetrovich/core/l10n/app_strings.dart';
+import 'package:osetrovich/core/network/api_exception.dart';
 import 'package:osetrovich/core/theme/app_colors.dart';
 import 'package:osetrovich/core/widgets/loading_indicator.dart';
 import 'package:osetrovich/features/cart/data/order_repository.dart';
 import 'package:osetrovich/features/cart/domain/order.dart';
+import 'package:osetrovich/features/home/domain/order_rating_error.dart';
 import 'package:osetrovich/features/home/presentation/order_rating_sheet.dart';
 import 'package:osetrovich/features/notifications/domain/notification_action.dart';
 import 'package:osetrovich/features/notifications/domain/notifications_notifier.dart';
@@ -25,6 +27,7 @@ class _NotificationDetailScreenState
     extends ConsumerState<NotificationDetailScreen> {
   var _markedRead = false;
   var _isOpeningRating = false;
+  var _ratingSubmitted = false;
 
   @override
   Widget build(BuildContext context) {
@@ -41,6 +44,7 @@ class _NotificationDetailScreenState
     }
 
     final notificationsAsync = ref.watch(notificationsNotifierProvider);
+    final currentOrderAsync = ref.watch(currentOrderProvider);
 
     return Scaffold(
       appBar: AppBar(
@@ -65,6 +69,14 @@ class _NotificationDetailScreenState
           }
 
           final action = notificationActionFor(notification);
+          final showRateButton =
+              action == NotificationAction.rateOrder &&
+              !_ratingSubmitted &&
+              currentOrderAsync.maybeWhen(
+                data:
+                    (order) => order?.ratingState == OrderRatingState.pending,
+                orElse: () => false,
+              );
 
           return Padding(
             padding: const EdgeInsets.all(24),
@@ -95,7 +107,7 @@ class _NotificationDetailScreenState
                     color: AppColors.dark,
                   ),
                 ),
-                if (action == NotificationAction.rateOrder) ...[
+                if (showRateButton) ...[
                   const SizedBox(height: 24),
                   FilledButton(
                     style: FilledButton.styleFrom(
@@ -138,14 +150,38 @@ class _NotificationDetailScreenState
       await showOrderRatingSheet(
         context,
         onSubmit: (stars, comment) async {
-          await ref
-              .read(orderRepositoryProvider)
-              .submitOrderRating(
-                order.id,
-                SubmitOrderRatingRequest(stars: stars, comment: comment),
-              );
-          ref.invalidate(currentOrderProvider);
+          try {
+            await ref
+                .read(orderRepositoryProvider)
+                .submitOrderRating(
+                  order.id,
+                  SubmitOrderRatingRequest(stars: stars, comment: comment),
+                );
+            if (!mounted) {
+              return;
+            }
+            setState(() => _ratingSubmitted = true);
+            ref.invalidate(currentOrderProvider);
+            showRatingThankYouSnackBar(context);
+          } on ApiException catch (e) {
+            if (!mounted) {
+              return;
+            }
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text(orderRatingErrorMessage(e))),
+            );
+            if (shouldRefreshOrderAfterRatingError(e)) {
+              ref.invalidate(currentOrderProvider);
+            }
+          }
         },
+      );
+    } on ApiException catch (e) {
+      if (!mounted) {
+        return;
+      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(orderRatingErrorMessage(e))),
       );
     } finally {
       if (mounted) {

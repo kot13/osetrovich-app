@@ -100,6 +100,7 @@ class CheckoutNotifier extends Notifier<CheckoutState> {
           .read(analyticsServiceProvider)
           .reportOrderSuccess(orderId: order.id, orderTotalRub: order.totalRub);
       ref.read(cartNotifierProvider.notifier).clear();
+      ref.invalidate(currentOrderProvider);
       state = state.copyWith(
         isSubmitting: false,
         lastSuccessOrder: order,

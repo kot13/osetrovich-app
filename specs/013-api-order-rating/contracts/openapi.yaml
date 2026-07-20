@@ -1,0 +1,279 @@
+openapi: 3.0.3
+info:
+  title: Osetrovich Mobile API
+  description: |
+    Дельта контракта orders для фичи 013-api-order-rating.
+    Полная спецификация — `openapi/openapi.yaml` в корне репозитория (v0.12.1).
+  version: 0.12.1
+
+servers:
+  - url: https://trout.osetrovich.ru/v1
+    description: Staging / production Mobile API
+
+tags:
+  - name: orders
+    description: Текущий заказ и оценка (ERP)
+
+paths:
+  /orders/current:
+    get:
+      tags: [orders]
+      summary: Текущий заказ пользователя (данные ERP)
+      operationId: getCurrentOrder
+      description: |
+        Возвращает актуальный заказ покупателя из БД или `order: null`.
+        Включает `ratingState` и `ratingStars` по таблице `order_ratings`.
+        Выполненный заказ без оценки возвращается только в течение 7 суток
+        от даты доставки (`delivery_at`).
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Текущий заказ или null, если нет актуального
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CurrentOrderResponse'
+              examples:
+                activeOrder:
+                  summary: Активная доставка
+                  value:
+                    order:
+                      id: ord-123
+                      orderNumber: 'ORD-1001'
+                      items:
+                        - id: 1000
+                          name: Осётр горячего копчения
+                          weightLabel: '200 г'
+                          priceRub: 1500
+                          quantity: 1
+                          lineTotalRub: 1500
+                      itemsSubtotalRub: 1500
+                      deliveryFeeRub: 300
+                      totalRub: 1800
+                      deliveryAddress: 'Санкт-Петербург, Невский пр., 1'
+                      status: delivery
+                      createdAt: '2026-07-20T10:00:00Z'
+                      ratingState: not_applicable
+                noOrder:
+                  summary: Нет актуального заказа
+                  value:
+                    order: null
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /orders/{orderId}/rating:
+    post:
+      tags: [orders]
+      summary: Оценить выполненный заказ
+      operationId: submitOrderRating
+      description: |
+        Создаёт запись в `order_ratings` для выполненного заказа.
+        Оценка доступна в течение 7 суток от даты доставки (`delivery_at`).
+        При истёкшем сроке — HTTP 400, код `rating_period_expired`.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: orderId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SubmitOrderRatingRequest'
+            examples:
+              withComment:
+                value:
+                  stars: 5
+                  comment: 'Всё отлично!'
+              starsOnly:
+                value:
+                  stars: 4
+      responses:
+        '200':
+          description: Оценка сохранена
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CurrentOrder'
+        '400':
+          description: Некорректная оценка, заказ не completed или истёк срок (`rating_period_expired`)
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          description: Заказ не найден
+        '409':
+          description: Оценка уже отправлена или пропущена
+
+  /orders/{orderId}/rating/skip:
+    post:
+      tags: [orders]
+      summary: Пропустить оценку выполненного заказа
+      operationId: skipOrderRating
+      description: |
+        Создаёт запись `skipped` в `order_ratings` для выполненного заказа.
+        Пропуск доступен в течение 7 суток от даты доставки (`delivery_at`).
+        При истёкшем сроке — HTTP 400, код `rating_period_expired`.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: orderId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Пропуск зафиксирован
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CurrentOrder'
+        '400':
+          description: Заказ не completed или истёк срок (`rating_period_expired`)
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          description: Заказ не найден
+        '409':
+          description: Оценка уже отправлена или пропущена
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  responses:
+    Unauthorized:
+      description: Требуется авторизация
+
+  schemas:
+    CurrentOrderResponse:
+      type: object
+      required: [order]
+      properties:
+        order:
+          nullable: true
+          allOf:
+            - $ref: '#/components/schemas/CurrentOrder'
+
+    CurrentOrder:
+      type: object
+      required:
+        - id
+        - orderNumber
+        - items
+        - itemsSubtotalRub
+        - deliveryFeeRub
+        - totalRub
+        - deliveryAddress
+        - status
+        - createdAt
+        - ratingState
+      properties:
+        id:
+          type: string
+        orderNumber:
+          type: string
+        items:
+          type: array
+          minItems: 1
+          items:
+            $ref: '#/components/schemas/OrderLine'
+        itemsSubtotalRub:
+          type: integer
+          minimum: 0
+        deliveryFeeRub:
+          type: integer
+          minimum: 0
+        totalRub:
+          type: integer
+          minimum: 0
+        deliveryAddress:
+          type: string
+        apartment:
+          type: string
+          nullable: true
+        lat:
+          type: number
+          format: double
+          nullable: true
+        lng:
+          type: number
+          format: double
+          nullable: true
+        comment:
+          type: string
+          nullable: true
+        status:
+          $ref: '#/components/schemas/OrderStatus'
+        createdAt:
+          type: string
+          format: date-time
+        deliveryAt:
+          type: string
+          format: date-time
+          nullable: true
+          description: Дата доставки; TTL оценки — 7 суток от этой даты
+        ratingState:
+          $ref: '#/components/schemas/OrderRatingState'
+        ratingStars:
+          type: integer
+          minimum: 1
+          maximum: 5
+          nullable: true
+
+    OrderLine:
+      type: object
+      required: [id, name, weightLabel, priceRub, quantity, lineTotalRub]
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        weightLabel:
+          type: string
+        priceRub:
+          type: integer
+        quantity:
+          type: integer
+        lineTotalRub:
+          type: integer
+
+    OrderStatus:
+      type: string
+      enum: [accepted, processing, assembly, delivery, completed]
+
+    OrderRatingState:
+      type: string
+      enum: [not_applicable, pending, submitted, skipped]
+
+    SubmitOrderRatingRequest:
+      type: object
+      required: [stars]
+      properties:
+        stars:
+          type: integer
+          minimum: 1
+          maximum: 5
+        comment:
+          type: string
+          maxLength: 500
+          nullable: true
+
+    ErrorResponse:
+      type: object
+      required: [code, message]
+      properties:
+        code:
+          type: string
+          description: |
+            В т.ч. `rating_period_expired` — истёк срок оценки (7 суток от delivery_at)
+        message:
+          type: string

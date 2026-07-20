@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:osetrovich/core/l10n/app_strings.dart';
+import 'package:osetrovich/core/network/api_exception.dart';
 import 'package:osetrovich/core/network/mock_api_client.dart';
 import 'package:osetrovich/core/network/providers.dart';
 import 'package:osetrovich/core/theme/app_theme.dart';
@@ -106,5 +107,54 @@ void main() {
     expect(find.text(AppStrings.homeOrderHistoryTitle), findsOneWidget);
     expect(find.text(AppStrings.homeOrderStatusDelivery), findsOneWidget);
     expect(find.byType(AuthPromptBanner), findsNothing);
+  });
+
+  testWidgets('home shows order load error and retry refetches provider', (
+    tester,
+  ) async {
+    var fetchCount = 0;
+
+    tester.view.physicalSize = const Size(400, 2000);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          apiClientProvider.overrideWithValue(MockApiClient()),
+          authSessionProvider.overrideWith(
+            () => _FakeAuthSessionNotifier(
+              AuthSession(
+                accessToken: 'mock.access.token.+79001111111',
+                refreshToken: 'r',
+                expiresAt: DateTime.utc(2099),
+                phone: '+79001111111',
+              ),
+            ),
+          ),
+          currentOrderProvider.overrideWith((ref) async {
+            fetchCount++;
+            if (fetchCount == 1) {
+              throw ApiException(
+                code: 'NETWORK_ERROR',
+                message: AppStrings.networkError,
+              );
+            }
+            return null;
+          }),
+        ],
+        child: MaterialApp(theme: AppTheme.light, home: const HomeScreen()),
+      ),
+    );
+    await tester.pump(const Duration(seconds: 1));
+
+    expect(find.text(AppStrings.homeLoadError), findsOneWidget);
+    expect(find.text(AppStrings.homeRetry), findsWidgets);
+
+    await tester.tap(find.text(AppStrings.homeRetry).last);
+    await tester.pumpAndSettle();
+
+    expect(fetchCount, greaterThan(1));
   });
 }

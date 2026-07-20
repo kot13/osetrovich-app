@@ -52,4 +52,20 @@ void main() {
     expect(submittedStars, 5);
     expect(submittedComment, 'Хорошо');
   });
+
+  testWidgets('comment field has maxLength 500', (tester) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: AppTheme.light,
+        home: Scaffold(body: OrderRatingSheet(onSubmit: (_, __) {})),
+      ),
+    );
+
+    final field = tester.widget<TextField>(find.byType(TextField));
+    expect(field.maxLength, 500);
+    expect(field.textCapitalization, TextCapitalization.sentences);
+    expect(field.decoration?.labelText, AppStrings.cartCommentLabel);
+    expect(field.decoration?.hintText, isNull);
+    expect(field.decoration?.border, isA<OutlineInputBorder>());
+  });
 }

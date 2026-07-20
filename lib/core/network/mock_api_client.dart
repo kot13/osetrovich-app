@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:osetrovich/core/network/api_exception.dart';
 import 'package:osetrovich/core/network/api_client.dart';
 import 'package:osetrovich/features/auth/data/auth_dto.dart';
@@ -13,18 +14,12 @@ import 'package:osetrovich/features/promotions/domain/promotion_article.dart';
 import 'package:osetrovich/features/promotions/domain/promotion_type.dart';
 
 class MockApiClient implements ApiClient {
-  /// Mock presets for manual QA (quickstart):
-  /// - +79001111111 — текущий заказ в статусе «Доставка»
-  /// - +79002222222 — выполненный заказ, оценка не дана (pending)
-  /// - +79003333333 — выполненный заказ, оценка пропущена (repeat ready)
   /// Обычный вход → заказ появляется после createOrder (checkout).
   static const validCode = '123456';
   static const takenPhone = '+79999999999';
   static const takenEmail = 'taken@example.com';
-  static const demoPhoneDelivery = '+79001111111';
-  static const demoPhoneRatingPending = '+79002222222';
-  static const demoPhoneRatingSkipped = '+79003333333';
   static const _accessTokenPhonePrefix = 'mock.access.token.';
+  static const _ratingPeriod = Duration(days: 7);
 
   /// When `true`, the first [getProfile] call throws UNAUTHORIZED (manual QA for token refresh).
   static bool simulateExpiredAccessOnProfile = false;
@@ -54,7 +49,6 @@ class MockApiClient implements ApiClient {
       emailVerified: false,
       pushEnabled: true,
     );
-    _seedDemoOrdersIfNeeded(normalized);
   }
 
   static String _userIdForPhone(String phone) =>
@@ -505,7 +499,61 @@ class MockApiClient implements ApiClient {
     if (orders == null || orders.isEmpty) {
       return null;
     }
-    return orders.last;
+    final order = orders.last;
+    if (_isExpiredUnratedOrder(order)) {
+      return null;
+    }
+    return order;
+  }
+
+  @visibleForTesting
+  void completeOrderForRating(String orderId, {DateTime? deliveryAt}) {
+    final profile = _requireProfile();
+    final order = _findOrder(profile.id, orderId);
+    _replaceOrder(
+      profile.id,
+      order.copyWith(
+        status: OrderStatus.completed,
+        ratingState: OrderRatingState.pending,
+        deliveryAt: deliveryAt ?? DateTime.now().toUtc(),
+      ),
+    );
+  }
+
+  @visibleForTesting
+  void expireOrderRatingPeriod(String orderId) {
+    final profile = _requireProfile();
+    final order = _findOrder(profile.id, orderId);
+    _replaceOrder(
+      profile.id,
+      order.copyWith(
+        deliveryAt: DateTime.now().toUtc().subtract(const Duration(days: 8)),
+      ),
+    );
+  }
+
+  bool _isRatingPeriodExpired(CurrentOrder order) {
+    final deliveryAt = order.deliveryAt;
+    if (deliveryAt == null) {
+      return false;
+    }
+    final deadline = deliveryAt.toUtc().add(_ratingPeriod);
+    return DateTime.now().toUtc().isAfter(deadline);
+  }
+
+  bool _isExpiredUnratedOrder(CurrentOrder order) {
+    return order.status == OrderStatus.completed &&
+        order.ratingState == OrderRatingState.pending &&
+        _isRatingPeriodExpired(order);
+  }
+
+  void _ensureRatingPeriodActive(CurrentOrder order) {
+    if (_isRatingPeriodExpired(order)) {
+      throw ApiException(
+        code: 'rating_period_expired',
+        message: 'Срок оценки истёк',
+      );
+    }
   }
 
   @override
@@ -524,10 +572,11 @@ class MockApiClient implements ApiClient {
     }
     if (order.ratingState != OrderRatingState.pending) {
       throw ApiException(
-        code: 'RATING_ALREADY_SET',
+        code: 'rating_already_set',
         message: 'Оценка уже отправлена или пропущена',
       );
     }
+    _ensureRatingPeriodActive(order);
     if (request.stars < 1 || request.stars > 5) {
       throw ApiException(
         code: 'INVALID_REQUEST',
@@ -555,10 +604,11 @@ class MockApiClient implements ApiClient {
     }
     if (order.ratingState != OrderRatingState.pending) {
       throw ApiException(
-        code: 'RATING_ALREADY_SET',
+        code: 'rating_already_set',
         message: 'Оценка уже отправлена или пропущена',
       );
     }
+    _ensureRatingPeriodActive(order);
     final updated = order.copyWith(
       ratingState: OrderRatingState.skipped,
       clearRatingStars: true,
@@ -851,86 +901,6 @@ class MockApiClient implements ApiClient {
   bool _isPublishedArticle(String id) {
     return _publishedPromotionIds.contains(id) ||
         _publishedNewsIds.contains(id);
-  }
-
-  void _seedDemoOrdersIfNeeded(String phone) {
-    final profile = _profile;
-    if (profile == null) {
-      return;
-    }
-    if (_ordersByUserId.containsKey(profile.id)) {
-      return;
-    }
-
-    CurrentOrder? demo;
-    if (phone == demoPhoneDelivery) {
-      demo = _buildDemoOrder(
-        id: 'ord-demo-delivery',
-        number: 'ORD-DEMO-1',
-        status: OrderStatus.delivery,
-        ratingState: OrderRatingState.notApplicable,
-      );
-    } else if (phone == demoPhoneRatingPending) {
-      demo = _buildDemoOrder(
-        id: 'ord-demo-rating',
-        number: 'ORD-DEMO-2',
-        status: OrderStatus.completed,
-        ratingState: OrderRatingState.pending,
-      );
-    } else if (phone == demoPhoneRatingSkipped) {
-      demo = _buildDemoOrder(
-        id: 'ord-demo-repeat',
-        number: 'ORD-DEMO-3',
-        status: OrderStatus.completed,
-        ratingState: OrderRatingState.skipped,
-      );
-    }
-
-    if (demo != null) {
-      _ordersByUserId[profile.id] = [demo];
-    }
-  }
-
-  CurrentOrder _buildDemoOrder({
-    required String id,
-    required String number,
-    required OrderStatus status,
-    required OrderRatingState ratingState,
-  }) {
-    final fish = _productDetails[1000]!;
-    final caviar = _productDetails[2000]!;
-    final lines = [
-      OrderLine(
-        id: fish.id,
-        name: fish.name,
-        weightLabel: fish.weightLabel,
-        priceRub: fish.priceRub,
-        quantity: 1,
-        lineTotalRub: fish.priceRub,
-      ),
-      OrderLine(
-        id: caviar.id,
-        name: caviar.name,
-        weightLabel: caviar.weightLabel,
-        priceRub: caviar.priceRub,
-        quantity: 2,
-        lineTotalRub: caviar.priceRub * 2,
-      ),
-    ];
-    final subtotal = fish.priceRub + caviar.priceRub * 2;
-    final delivery = calculateDeliveryFeeRub(subtotal);
-    return CurrentOrder(
-      id: id,
-      orderNumber: number,
-      items: lines,
-      itemsSubtotalRub: subtotal,
-      deliveryFeeRub: delivery,
-      totalRub: subtotal + delivery,
-      deliveryAddress: 'г. Санкт-Петербург, Невский пр., д. 1',
-      status: status,
-      createdAt: DateTime.utc(2026, 7, 14, 12),
-      ratingState: ratingState,
-    );
   }
 
   CurrentOrder _findOrder(String userId, String orderId) {

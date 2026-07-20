@@ -19,7 +19,8 @@
 | name | string | да | Название для Filter Chip |
 | sortOrder | int | да | Порядок сортировки |
 
-**Источник**: `GET /catalog/categories` (без id=0); «Все» добавляется в UI-слое или моке.
+**Источник**: `GET /catalog/categories` (без id=0); «Все» добавляется в `CategoriesNotifier`
+через `withAllCategoryFirst()` — всегда первая в списке, даже если API не возвращает id=0.
 
 **Валидация**: `id >= 0`; id с сервера `>= 1`.
 

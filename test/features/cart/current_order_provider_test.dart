@@ -7,6 +7,20 @@ import 'package:osetrovich/features/auth/domain/auth_session_provider.dart';
 import 'package:osetrovich/features/cart/data/order_repository.dart';
 import 'package:osetrovich/features/cart/domain/order.dart';
 
+const _phoneA = '+79001111111';
+const _phoneB = '+79002222222';
+
+Future<void> _seedOrder(MockApiClient mock, String phone) async {
+  await mock.verifySmsCode(phone, MockApiClient.validCode);
+  final created = await mock.createOrder(
+    const CreateOrderRequest(
+      items: [OrderLineInput(id: 1000, quantity: 1)],
+      deliveryAddress: 'г. Санкт-Петербург, ул. Тестовая, 1',
+    ),
+  );
+  mock.completeOrderForRating(created.id);
+}
+
 void main() {
   test('currentOrderProvider returns null without session', () async {
     final container = ProviderContainer(
@@ -24,28 +38,31 @@ void main() {
     );
     addTearDown(container.dispose);
 
-    mock.ensureProfile(MockApiClient.demoPhoneDelivery);
+    await _seedOrder(mock, _phoneA);
+    await mock.skipOrderRating((await mock.getCurrentOrder())!.id);
+
     container.read(authSessionProvider.notifier).state = AuthSession(
-      accessToken: 'mock.access.token.${MockApiClient.demoPhoneDelivery}',
+      accessToken: 'mock.access.token.$_phoneA',
       refreshToken: 'r',
       expiresAt: DateTime.utc(2099),
-      phone: MockApiClient.demoPhoneDelivery,
+      phone: _phoneA,
     );
 
-    final deliveryOrder = await container.read(currentOrderProvider.future);
-    expect(deliveryOrder?.status, OrderStatus.delivery);
+    final skippedOrder = await container.read(currentOrderProvider.future);
+    expect(skippedOrder?.status, OrderStatus.completed);
+    expect(skippedOrder?.ratingState, OrderRatingState.skipped);
 
-    mock.ensureProfile(MockApiClient.demoPhoneRatingSkipped);
+    await _seedOrder(mock, _phoneB);
     container.read(authSessionProvider.notifier).state = AuthSession(
-      accessToken: 'mock.access.token.${MockApiClient.demoPhoneRatingSkipped}',
+      accessToken: 'mock.access.token.$_phoneB',
       refreshToken: 'r',
       expiresAt: DateTime.utc(2099),
-      phone: MockApiClient.demoPhoneRatingSkipped,
+      phone: _phoneB,
     );
 
-    final repeatOrder = await container.read(currentOrderProvider.future);
-    expect(repeatOrder?.status, OrderStatus.completed);
-    expect(repeatOrder?.ratingState, OrderRatingState.skipped);
+    final pendingOrder = await container.read(currentOrderProvider.future);
+    expect(pendingOrder?.status, OrderStatus.completed);
+    expect(pendingOrder?.ratingState, OrderRatingState.pending);
   });
 
   test('currentOrderProvider returns null after logout', () async {
@@ -55,12 +72,12 @@ void main() {
     );
     addTearDown(container.dispose);
 
-    mock.ensureProfile(MockApiClient.demoPhoneDelivery);
+    await _seedOrder(mock, _phoneA);
     container.read(authSessionProvider.notifier).state = AuthSession(
-      accessToken: 'mock.access.token.${MockApiClient.demoPhoneDelivery}',
+      accessToken: 'mock.access.token.$_phoneA',
       refreshToken: 'r',
       expiresAt: DateTime.utc(2099),
-      phone: MockApiClient.demoPhoneDelivery,
+      phone: _phoneA,
     );
     expect(await container.read(currentOrderProvider.future), isNotNull);
 

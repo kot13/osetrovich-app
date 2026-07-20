@@ -127,6 +127,14 @@ class OrderLine {
   final int lineTotalRub;
 }
 
+DateTime? _deliveryAtFromJson(Map<String, dynamic> json) {
+  final raw = json['deliveryAt'] ?? json['delivery_at'];
+  if (raw is String && raw.isNotEmpty) {
+    return DateTime.parse(raw);
+  }
+  return null;
+}
+
 class Order {
   const Order({
     required this.id,
@@ -142,6 +150,7 @@ class Order {
     this.lat,
     this.lng,
     this.comment,
+    this.deliveryAt,
   });
 
   factory Order.fromJson(Map<String, dynamic> json) {
@@ -162,6 +171,7 @@ class Order {
       comment: json['comment'] as String?,
       status: orderStatusFromJson(json['status'] as String),
       createdAt: DateTime.parse(json['createdAt'] as String),
+      deliveryAt: _deliveryAtFromJson(json),
     );
   }
 
@@ -178,6 +188,7 @@ class Order {
   final String? comment;
   final OrderStatus status;
   final DateTime createdAt;
+  final DateTime? deliveryAt;
 }
 
 class CurrentOrder extends Order {
@@ -196,6 +207,7 @@ class CurrentOrder extends Order {
     super.lat,
     super.lng,
     super.comment,
+    super.deliveryAt,
     this.ratingStars,
   });
 
@@ -217,6 +229,7 @@ class CurrentOrder extends Order {
       comment: json['comment'] as String?,
       status: orderStatusFromJson(json['status'] as String),
       createdAt: DateTime.parse(json['createdAt'] as String),
+      deliveryAt: _deliveryAtFromJson(json),
       ratingState: OrderRatingState.fromJson(json['ratingState'] as String),
       ratingStars: json['ratingStars'] as int?,
     );
@@ -229,6 +242,9 @@ class CurrentOrder extends Order {
     OrderRatingState? ratingState,
     int? ratingStars,
     bool clearRatingStars = false,
+    OrderStatus? status,
+    DateTime? deliveryAt,
+    bool clearDeliveryAt = false,
   }) {
     return CurrentOrder(
       id: id,
@@ -242,8 +258,9 @@ class CurrentOrder extends Order {
       lat: lat,
       lng: lng,
       comment: comment,
-      status: status,
+      status: status ?? this.status,
       createdAt: createdAt,
+      deliveryAt: clearDeliveryAt ? null : (deliveryAt ?? this.deliveryAt),
       ratingState: ratingState ?? this.ratingState,
       ratingStars: clearRatingStars ? null : (ratingStars ?? this.ratingStars),
     );

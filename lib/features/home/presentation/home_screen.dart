@@ -123,6 +123,9 @@ Future<void> _refreshHome(WidgetRef ref) async {
     ref.invalidate(currentOrderProvider);
     refreshTasks.add(ref.read(currentOrderProvider.future));
     refreshTasks.add(ref.read(unreadCountNotifierProvider.notifier).refresh());
+    refreshTasks.add(
+      ref.read(notificationsNotifierProvider.notifier).reload(),
+    );
   }
 
   await Future.wait(refreshTasks);

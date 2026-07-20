@@ -48,6 +48,11 @@ abstract final class AppStrings {
   static const orderDeliveredNotificationTitle = 'Заказ доставлен';
   static const rateOrderFromNotification = 'Оценить заказ';
   static const ratingUnavailable = 'Оценка недоступна';
+  static const ratingPeriodExpired = 'Срок оценки истёк';
+  static const ratingAlreadySet = 'Оценка уже отправлена или пропущена';
+  static const ratingSubmitFailed =
+      'Не удалось отправить оценку. Попробуйте ещё раз';
+  static const ratingThankYou = 'Спасибо за оценку!';
   static const pushNotificationReceived = 'Новое уведомление';
   static const contactUs = 'Связаться';
 

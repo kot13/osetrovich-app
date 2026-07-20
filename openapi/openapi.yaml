@@ -2,7 +2,7 @@ openapi: 3.0.3
 info:
   title: Osetrovich Mobile API
   description: REST API мобильного приложения osetrovich.ru (фаза home-screen-content)
-  version: 0.11.2
+  version: 0.12.1
 
 servers:
   - url: https://api.osetrovich.ru/v1
@@ -626,8 +626,13 @@ paths:
   /orders/current:
     get:
       tags: [orders]
-      summary: Текущий заказ пользователя
+      summary: Текущий заказ пользователя (данные ERP)
       operationId: getCurrentOrder
+      description: |
+        Возвращает актуальный заказ покупателя из БД или `order: null`.
+        Включает `ratingState` и `ratingStars` по таблице `order_ratings`.
+        Выполненный заказ без оценки возвращается только в течение 7 суток
+        от даты доставки (`delivery_at`).
       security:
         - bearerAuth: []
       responses:
@@ -643,8 +648,12 @@ paths:
   /orders/{orderId}/rating:
     post:
       tags: [orders]
-      summary: Оценить выполненный заказ
+      summary: Оценить выполненный заказ (сохранение в ERP)
       operationId: submitOrderRating
+      description: |
+        Создаёт запись в `order_ratings` для выполненного заказа покупателя.
+        Оценка доступна в течение 7 суток от даты доставки (`delivery_at`).
+        При истёкшем сроке — HTTP 400, код `rating_period_expired`.
       security:
         - bearerAuth: []
       parameters:
@@ -667,7 +676,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/CurrentOrder'
         '400':
-          description: Некорректная оценка или заказ не в статусе completed
+          description: Некорректная оценка, заказ не completed или истёк срок оценки (`rating_period_expired`)
           content:
             application/json:
               schema:
@@ -690,8 +699,12 @@ paths:
   /orders/{orderId}/rating/skip:
     post:
       tags: [orders]
-      summary: Пропустить оценку выполненного заказа
+      summary: Пропустить оценку выполненного заказа (сохранение в ERP)
       operationId: skipOrderRating
+      description: |
+        Создаёт запись `skipped` в `order_ratings` для выполненного заказа.
+        Пропуск доступен в течение 7 суток от даты доставки (`delivery_at`).
+        При истёкшем сроке — HTTP 400, код `rating_period_expired`.
       security:
         - bearerAuth: []
       parameters:
@@ -708,7 +721,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/CurrentOrder'
         '400':
-          description: Заказ не в статусе completed
+          description: Заказ не completed или истёк срок оценки (`rating_period_expired`)
           content:
             application/json:
               schema:
@@ -1317,8 +1330,8 @@ components:
         - completed
       description: |
         draft — Черновик (ожидает обработки оператором);
-        accepted — Принят; processing — В обработке; assembly — Сборка;
-        delivery — Доставка; completed — Выполнено.
+        accepted — Принят; processing — Изменён / в обработке (ERP STATUS_CHANGED);
+        assembly — Сборка; delivery — Доставка; completed — Выполнено.
         Значение pending из POST /orders (v0.5.0) трактуется как accepted.
         POST /orders (v0.11.0+) при создании возвращает draft.
 

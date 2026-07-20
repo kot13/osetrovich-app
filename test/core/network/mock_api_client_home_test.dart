@@ -4,6 +4,23 @@ import 'package:osetrovich/core/network/mock_api_client.dart';
 import 'package:osetrovich/features/cart/domain/order.dart';
 import 'package:osetrovich/features/home/domain/banner.dart';
 
+const _testPhone = '+79001234567';
+const _testAddress = 'г. Санкт-Петербург, ул. Тестовая, 1';
+
+Future<CurrentOrder> _createOrderForRating(MockApiClient client) async {
+  await client.verifySmsCode(_testPhone, MockApiClient.validCode);
+  final created = await client.createOrder(
+    const CreateOrderRequest(
+      items: [OrderLineInput(id: 1000, quantity: 1)],
+      deliveryAddress: _testAddress,
+    ),
+  );
+  client.completeOrderForRating(created.id);
+  final order = await client.getCurrentOrder();
+  expect(order, isNotNull);
+  return order!;
+}
+
 void main() {
   late MockApiClient client;
 
@@ -29,49 +46,33 @@ void main() {
     expect(() => client.getCurrentOrder(), throwsA(isA<ApiException>()));
   });
 
-  test('demo phone delivery returns active order', () async {
-    await client.verifySmsCode(
-      MockApiClient.demoPhoneDelivery,
-      MockApiClient.validCode,
-    );
-    final order = await client.getCurrentOrder();
-    expect(order, isNotNull);
-    expect(order!.status, OrderStatus.delivery);
-    expect(order.ratingState, OrderRatingState.notApplicable);
+  test('getCurrentOrder returns null before createOrder', () async {
+    await client.verifySmsCode(_testPhone, MockApiClient.validCode);
+    expect(await client.getCurrentOrder(), isNull);
   });
 
-  test('demo phone rating pending returns completed order', () async {
-    await client.verifySmsCode(
-      MockApiClient.demoPhoneRatingPending,
-      MockApiClient.validCode,
-    );
-    final order = await client.getCurrentOrder();
-    expect(order?.status, OrderStatus.completed);
-    expect(order?.ratingState, OrderRatingState.pending);
+  test('createOrder then completeOrderForRating returns completed pending order',
+      () async {
+    final order = await _createOrderForRating(client);
+    expect(order.status, OrderStatus.completed);
+    expect(order.ratingState, OrderRatingState.pending);
+    expect(order.deliveryAt, isNotNull);
   });
 
   test('submitOrderRating updates order', () async {
-    await client.verifySmsCode(
-      MockApiClient.demoPhoneRatingPending,
-      MockApiClient.validCode,
-    );
-    final order = await client.getCurrentOrder();
+    final order = await _createOrderForRating(client);
     final updated = await client.submitOrderRating(
-      order!.id,
+      order.id,
       const SubmitOrderRatingRequest(stars: 5, comment: 'Отлично'),
     );
     expect(updated.ratingState, OrderRatingState.submitted);
     expect(updated.ratingStars, 5);
   });
 
-  test('submitOrderRating throws 409 on duplicate', () async {
-    await client.verifySmsCode(
-      MockApiClient.demoPhoneRatingPending,
-      MockApiClient.validCode,
-    );
-    final order = await client.getCurrentOrder();
+  test('submitOrderRating throws on duplicate', () async {
+    final order = await _createOrderForRating(client);
     await client.submitOrderRating(
-      order!.id,
+      order.id,
       const SubmitOrderRatingRequest(stars: 4),
     );
     expect(
@@ -79,32 +80,57 @@ void main() {
         order.id,
         const SubmitOrderRatingRequest(stars: 3),
       ),
-      throwsA(isA<ApiException>()),
+      throwsA(
+        predicate<ApiException>((e) => e.code == 'rating_already_set'),
+      ),
     );
   });
 
   test('skipOrderRating updates order', () async {
-    await client.verifySmsCode(
-      MockApiClient.demoPhoneRatingPending,
-      MockApiClient.validCode,
-    );
-    final order = await client.getCurrentOrder();
-    final updated = await client.skipOrderRating(order!.id);
+    final order = await _createOrderForRating(client);
+    final updated = await client.skipOrderRating(order.id);
     expect(updated.ratingState, OrderRatingState.skipped);
   });
 
-  test('submitOrderRating rejects invalid stars', () async {
-    await client.verifySmsCode(
-      MockApiClient.demoPhoneRatingPending,
-      MockApiClient.validCode,
+  test('skipOrderRating throws when rating period expired', () async {
+    final order = await _createOrderForRating(client);
+    client.expireOrderRatingPeriod(order.id);
+    expect(
+      () => client.skipOrderRating(order.id),
+      throwsA(
+        predicate<ApiException>((e) => e.code == 'rating_period_expired'),
+      ),
     );
-    final order = await client.getCurrentOrder();
+  });
+
+  test('submitOrderRating rejects invalid stars', () async {
+    final order = await _createOrderForRating(client);
     expect(
       () => client.submitOrderRating(
-        order!.id,
+        order.id,
         const SubmitOrderRatingRequest(stars: 0),
       ),
       throwsA(isA<ApiException>()),
     );
+  });
+
+  test('submitOrderRating throws when rating period expired', () async {
+    final order = await _createOrderForRating(client);
+    client.expireOrderRatingPeriod(order.id);
+    expect(
+      () => client.submitOrderRating(
+        order.id,
+        const SubmitOrderRatingRequest(stars: 5),
+      ),
+      throwsA(
+        predicate<ApiException>((e) => e.code == 'rating_period_expired'),
+      ),
+    );
+  });
+
+  test('getCurrentOrder returns null for expired unrated order', () async {
+    final order = await _createOrderForRating(client);
+    client.expireOrderRatingPeriod(order.id);
+    expect(await client.getCurrentOrder(), isNull);
   });
 }

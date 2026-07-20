@@ -17,7 +17,15 @@ class CategoryChips extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final sorted = List<CatalogCategory>.from(categories)
-      ..sort((a, b) => a.sortOrder.compareTo(b.sortOrder));
+      ..sort((a, b) {
+        if (a.id == kAllCategoriesId) {
+          return -1;
+        }
+        if (b.id == kAllCategoriesId) {
+          return 1;
+        }
+        return a.sortOrder.compareTo(b.sortOrder);
+      });
 
     return SizedBox(
       height: 48,

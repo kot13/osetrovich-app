@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:osetrovich/core/l10n/app_strings.dart';
+import 'package:osetrovich/core/network/api_exception.dart';
 import 'package:osetrovich/core/theme/app_colors.dart';
 import 'package:osetrovich/core/utils/price_formatter.dart';
 import 'package:osetrovich/features/cart/data/order_repository.dart';
@@ -10,6 +11,7 @@ import 'package:osetrovich/features/cart/domain/order.dart';
 import 'package:osetrovich/features/cart/domain/order_status_label.dart';
 import 'package:osetrovich/features/catalog/data/catalog_repository.dart';
 import 'package:osetrovich/features/home/domain/home_order_ui_state.dart';
+import 'package:osetrovich/features/home/domain/order_rating_error.dart';
 import 'package:osetrovich/features/home/domain/repeat_order.dart';
 import 'package:osetrovich/features/home/presentation/order_rating_sheet.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -175,6 +177,8 @@ class _HomeOrderHistorySectionState
     try {
       await ref.read(orderRepositoryProvider).skipOrderRating(widget.order.id);
       ref.invalidate(currentOrderProvider);
+    } on ApiException catch (e) {
+      _showRatingError(e);
     } finally {
       if (mounted) {
         setState(() => _isSubmittingRating = false);
@@ -195,6 +199,9 @@ class _HomeOrderHistorySectionState
                 SubmitOrderRatingRequest(stars: stars, comment: comment),
               );
           ref.invalidate(currentOrderProvider);
+          _showRatingThankYou();
+        } on ApiException catch (e) {
+          _showRatingError(e);
         } finally {
           if (mounted) {
             setState(() => _isSubmittingRating = false);
@@ -202,6 +209,25 @@ class _HomeOrderHistorySectionState
         }
       },
     );
+  }
+
+  void _showRatingError(ApiException exception) {
+    if (!mounted) {
+      return;
+    }
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(orderRatingErrorMessage(exception))),
+    );
+    if (shouldRefreshOrderAfterRatingError(exception)) {
+      ref.invalidate(currentOrderProvider);
+    }
+  }
+
+  void _showRatingThankYou() {
+    if (!mounted) {
+      return;
+    }
+    showRatingThankYouSnackBar(context);
   }
 
   Future<void> _onRepeatOrder() async {

@@ -71,10 +71,15 @@ class _OrderRatingSheetState extends State<OrderRatingSheet> {
             ),
             TextField(
               controller: _commentController,
+              textCapitalization: TextCapitalization.sentences,
               decoration: const InputDecoration(
-                hintText: AppStrings.homeOrderRatingCommentHint,
+                labelText: AppStrings.cartCommentLabel,
+                border: OutlineInputBorder(),
               ),
-              maxLines: 3,
+              minLines: 2,
+              maxLines: 4,
+              maxLength: 500,
+              onTapOutside: (_) => FocusManager.instance.primaryFocus?.unfocus(),
             ),
             const SizedBox(height: 16),
             Row(

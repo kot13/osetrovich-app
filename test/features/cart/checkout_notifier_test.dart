@@ -6,6 +6,7 @@ import 'package:osetrovich/core/network/mock_api_client.dart';
 import 'package:osetrovich/core/network/providers.dart';
 import 'package:osetrovich/features/auth/domain/auth_session.dart';
 import 'package:osetrovich/features/auth/domain/auth_session_provider.dart';
+import 'package:osetrovich/features/cart/data/order_repository.dart';
 import 'package:osetrovich/features/cart/domain/cart_notifier.dart';
 import 'package:osetrovich/features/cart/domain/checkout_notifier.dart';
 import 'package:osetrovich/features/cart/domain/order.dart';
@@ -192,6 +193,30 @@ void main() {
       capturingClient.lastRequest?.toJson().containsKey('apartment'),
       isFalse,
     );
+  });
+
+  test('submit invalidates currentOrderProvider', () async {
+    final mock = MockApiClient()..ensureProfile('+79001234567');
+    final container = ProviderContainer(
+      overrides: [
+        apiClientProvider.overrideWithValue(mock),
+        authSessionProvider.overrideWith(
+          () => _FakeAuthSessionNotifier(session),
+        ),
+      ],
+    );
+    addTearDown(container.dispose);
+
+    container.read(cartNotifierProvider.notifier).increment(1000);
+    expect(await container.read(currentOrderProvider.future), isNull);
+
+    await container.read(checkoutNotifierProvider.notifier).submit(
+          address: 'г. Санкт-Петербург, ул. Тестовая, 1',
+        );
+
+    final order = await container.read(currentOrderProvider.future);
+    expect(order, isNotNull);
+    expect(order!.status, OrderStatus.accepted);
   });
 }
 

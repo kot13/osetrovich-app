@@ -5,14 +5,18 @@ import 'package:osetrovich/features/catalog/domain/catalog_category.dart';
 class CategoriesNotifier extends AsyncNotifier<List<CatalogCategory>> {
   @override
   Future<List<CatalogCategory>> build() async {
-    return ref.read(catalogRepositoryProvider).getCategories();
+    final categories =
+        await ref.read(catalogRepositoryProvider).getCategories();
+    return withAllCategoryFirst(categories);
   }
 
   Future<void> reload() async {
     state = const AsyncLoading();
-    state = await AsyncValue.guard(
-      () => ref.read(catalogRepositoryProvider).getCategories(),
-    );
+    state = await AsyncValue.guard(() async {
+      final categories =
+          await ref.read(catalogRepositoryProvider).getCategories();
+      return withAllCategoryFirst(categories);
+    });
   }
 }
 
