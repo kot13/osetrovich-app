@@ -4,4 +4,6 @@ abstract class PushService {
   void listenForTokenUpdates(
     void Function(Map<String, String?> tokens) onTokens,
   );
+
+  Future<Map<String, String?>> getTokens();
 }

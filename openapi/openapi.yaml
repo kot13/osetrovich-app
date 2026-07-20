@@ -2,7 +2,7 @@ openapi: 3.0.3
 info:
   title: Osetrovich Mobile API
   description: REST API мобильного приложения osetrovich.ru (фаза home-screen-content)
-  version: 0.9.0
+  version: 0.10.0
 
 servers:
   - url: https://api.osetrovich.ru/v1
@@ -303,6 +303,37 @@ paths:
                 $ref: '#/components/schemas/ProfilePreferences'
         '401':
           $ref: '#/components/responses/Unauthorized'
+
+  /profile/push-token:
+    put:
+      tags: [profile]
+      summary: Зарегистрировать FCM push-токен устройства
+      operationId: registerPushToken
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PushTokenRequest'
+      responses:
+        '204':
+          description: Токен сохранён
+        '400':
+          description: Некорректный запрос
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '422':
+          description: Пустой или невалидный token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
 
   /catalog/categories:
     get:
@@ -864,6 +895,18 @@ components:
       properties:
         pushEnabled:
           type: boolean
+
+    PushTokenRequest:
+      type: object
+      required: [token, platform]
+      properties:
+        token:
+          type: string
+          minLength: 1
+          maxLength: 512
+        platform:
+          type: string
+          enum: [ios, android]
 
     CatalogCategory:
       type: object

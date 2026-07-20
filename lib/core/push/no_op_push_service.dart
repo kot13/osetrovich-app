@@ -8,4 +8,7 @@ class NoOpPushService implements PushService {
 
   @override
   Future<void> syncPushEnabled(bool enabled) async {}
+
+  @override
+  Future<Map<String, String?>> getTokens() async => const {};
 }

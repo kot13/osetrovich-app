@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:osetrovich/core/bootstrap/app_bootstrap.dart';
+import 'package:osetrovich/core/push/push_foreground_handler.dart';
 import 'package:osetrovich/core/push/push_navigation_setup.dart';
+import 'package:osetrovich/core/push/push_registration_bootstrap.dart';
 import 'package:osetrovich/core/router/app_router.dart';
 import 'package:osetrovich/core/theme/app_theme.dart';
 
@@ -28,6 +30,8 @@ class App extends ConsumerWidget {
           ),
       data: (_) {
         final router = ref.watch(routerProvider);
+        ref.watch(pushRegistrationBootstrapProvider);
+        ref.watch(pushForegroundSetupProvider);
         ref.watch(pushNavigationSetupProvider(router));
         return MaterialApp.router(
           title: 'Осетрович',

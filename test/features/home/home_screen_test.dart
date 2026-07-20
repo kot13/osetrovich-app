@@ -12,6 +12,7 @@ import 'package:osetrovich/features/cart/data/order_repository.dart';
 import 'package:osetrovich/features/cart/domain/order.dart';
 import 'package:osetrovich/features/home/presentation/auth_prompt_banner.dart';
 import 'package:osetrovich/features/home/presentation/home_screen.dart';
+import 'package:osetrovich/features/notifications/domain/unread_count_notifier.dart';
 
 class _FakeAuthSessionNotifier extends AuthSessionNotifier {
   _FakeAuthSessionNotifier(this._session);
@@ -33,7 +34,10 @@ void main() {
 
     await tester.pumpWidget(
       ProviderScope(
-        overrides: [apiClientProvider.overrideWithValue(MockApiClient())],
+        overrides: [
+          apiClientProvider.overrideWithValue(MockApiClient()),
+          unreadCountProvider.overrideWith((ref) => 3),
+        ],
         child: MaterialApp(theme: AppTheme.light, home: const HomeScreen()),
       ),
     );

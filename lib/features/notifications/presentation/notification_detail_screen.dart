@@ -4,6 +4,10 @@ import 'package:go_router/go_router.dart';
 import 'package:osetrovich/core/l10n/app_strings.dart';
 import 'package:osetrovich/core/theme/app_colors.dart';
 import 'package:osetrovich/core/widgets/loading_indicator.dart';
+import 'package:osetrovich/features/cart/data/order_repository.dart';
+import 'package:osetrovich/features/cart/domain/order.dart';
+import 'package:osetrovich/features/home/presentation/order_rating_sheet.dart';
+import 'package:osetrovich/features/notifications/domain/notification_action.dart';
 import 'package:osetrovich/features/notifications/domain/notifications_notifier.dart';
 import 'package:osetrovich/features/notifications/presentation/notifications_list_screen.dart';
 
@@ -20,6 +24,7 @@ class NotificationDetailScreen extends ConsumerStatefulWidget {
 class _NotificationDetailScreenState
     extends ConsumerState<NotificationDetailScreen> {
   var _markedRead = false;
+  var _isOpeningRating = false;
 
   @override
   Widget build(BuildContext context) {
@@ -51,8 +56,15 @@ class _NotificationDetailScreenState
           final notification =
               items.where((n) => n.id == widget.notificationId).firstOrNull;
           if (notification == null) {
-            return const Center(child: Text(AppStrings.requestFailed));
+            return Center(
+              child: Text(
+                AppStrings.notificationUnavailable,
+                style: TextStyle(color: AppColors.dark.withValues(alpha: 0.7)),
+              ),
+            );
           }
+
+          final action = notificationActionFor(notification);
 
           return Padding(
             padding: const EdgeInsets.all(24),
@@ -83,11 +95,62 @@ class _NotificationDetailScreenState
                     color: AppColors.dark,
                   ),
                 ),
+                if (action == NotificationAction.rateOrder) ...[
+                  const SizedBox(height: 24),
+                  FilledButton(
+                    style: FilledButton.styleFrom(
+                      backgroundColor: AppColors.accent,
+                      foregroundColor: AppColors.dark,
+                    ),
+                    onPressed: _isOpeningRating ? null : _onRateOrder,
+                    child:
+                        _isOpeningRating
+                            ? const SizedBox(
+                              height: 20,
+                              width: 20,
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            )
+                            : const Text(AppStrings.rateOrderFromNotification),
+                  ),
+                ],
               ],
             ),
           );
         },
       ),
     );
+  }
+
+  Future<void> _onRateOrder() async {
+    setState(() => _isOpeningRating = true);
+    try {
+      final order = await ref.read(orderRepositoryProvider).getCurrentOrder();
+      if (!mounted) {
+        return;
+      }
+      if (order == null || order.ratingState != OrderRatingState.pending) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text(AppStrings.ratingUnavailable)),
+        );
+        return;
+      }
+
+      await showOrderRatingSheet(
+        context,
+        onSubmit: (stars, comment) async {
+          await ref
+              .read(orderRepositoryProvider)
+              .submitOrderRating(
+                order.id,
+                SubmitOrderRatingRequest(stars: stars, comment: comment),
+              );
+          ref.invalidate(currentOrderProvider);
+        },
+      );
+    } finally {
+      if (mounted) {
+        setState(() => _isOpeningRating = false);
+      }
+    }
   }
 }

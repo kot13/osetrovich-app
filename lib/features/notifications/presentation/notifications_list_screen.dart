@@ -6,6 +6,7 @@ import 'package:osetrovich/core/theme/app_colors.dart';
 import 'package:osetrovich/core/widgets/empty_state.dart';
 import 'package:osetrovich/core/widgets/loading_indicator.dart';
 import 'package:osetrovich/features/notifications/domain/app_notification.dart';
+import 'package:osetrovich/features/notifications/domain/notification_action.dart';
 import 'package:osetrovich/features/notifications/domain/notifications_notifier.dart';
 
 class NotificationsListScreen extends ConsumerWidget {
@@ -90,7 +91,7 @@ class _NotificationListTile extends StatelessWidget {
         ),
       ),
       subtitle: Text(
-        notification.body,
+        notificationPreviewLine(notification.body),
         maxLines: 2,
         overflow: TextOverflow.ellipsis,
         style: TextStyle(

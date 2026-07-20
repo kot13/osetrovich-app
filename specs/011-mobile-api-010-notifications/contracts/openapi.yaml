@@ -1,0 +1,212 @@
+openapi: 3.0.3
+info:
+  title: Osetrovich Mobile API
+  description: |
+    Дельта контракта для фичи 011-mobile-api-010-notifications.
+    Полная спецификация — `openapi/openapi.yaml` в корне репозитория.
+    Версия API: 0.9.0 → 0.10.0.
+  version: 0.10.0
+
+servers:
+  - url: https://api.osetrovich.ru/v1
+    description: Production
+
+tags:
+  - name: profile
+    description: Профиль и push-токен
+  - name: notifications
+    description: In-app уведомления (реальные данные)
+
+paths:
+  /profile/push-token:
+    put:
+      tags: [profile]
+      summary: Зарегистрировать FCM push-токен устройства
+      description: |
+        Обязателен для доставки push с сервера. Вызывать после входа,
+        при onTokenRefresh и после включения pushEnabled.
+      operationId: registerPushToken
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PushTokenRequest'
+            examples:
+              android:
+                value:
+                  token: fcm-registration-token-example
+                  platform: android
+              ios:
+                value:
+                  token: fcm-registration-token-example
+                  platform: ios
+      responses:
+        '204':
+          description: Токен сохранён
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '422':
+          description: Пустой или невалидный token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /notifications:
+    get:
+      tags: [notifications]
+      summary: Список in-app уведомлений (реальные ID из БД)
+      operationId: getNotifications
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Список уведомлений
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [items]
+                properties:
+                  items:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Notification'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /notifications/unread-count:
+    get:
+      tags: [notifications]
+      summary: Количество непрочитанных (источник бейджа)
+      operationId: getUnreadNotificationCount
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Счётчик
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnreadCountResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /notifications/{id}/read:
+    post:
+      tags: [notifications]
+      summary: Отметить уведомление прочитанным
+      operationId: markNotificationRead
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Реальный ID из БД (например "42")
+      responses:
+        '204':
+          description: Отмечено прочитанным
+        '404':
+          description: Уведомление не найдено или чужое
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /notifications/read-all:
+    post:
+      tags: [notifications]
+      summary: Отметить все уведомления прочитанными
+      operationId: markAllNotificationsRead
+      security:
+        - bearerAuth: []
+      responses:
+        '204':
+          description: Все отмечены прочитанными
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    PushTokenRequest:
+      type: object
+      required: [token, platform]
+      properties:
+        token:
+          type: string
+          minLength: 1
+          description: FCM registration token
+        platform:
+          type: string
+          enum: [ios, android]
+
+    Notification:
+      type: object
+      required: [id, title, body, createdAt, isRead]
+      properties:
+        id:
+          type: string
+          description: ID из БД, не stub (n1, n2)
+          example: "42"
+        title:
+          type: string
+          example: Заказ принят
+        body:
+          type: string
+          example: Ваш заказ принят в обработку.
+        createdAt:
+          type: string
+          format: date-time
+        isRead:
+          type: boolean
+
+    UnreadCountResponse:
+      type: object
+      required: [unreadCount]
+      properties:
+        unreadCount:
+          type: integer
+          minimum: 0
+
+    ErrorResponse:
+      type: object
+      required: [code, message]
+      properties:
+        code:
+          type: string
+        message:
+          type: string
+
+  responses:
+    Unauthorized:
+      description: Недействительный или отсутствующий access token
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+
+client_integration:
+  register_triggers:
+    - post_login: /auth/sms/verify success
+    - on_token_refresh: AppMetricaPush.tokenStream
+    - push_enabled: PATCH /profile/preferences pushEnabled true
+  push_delivery:
+    note: Сервер выбирает push vs SMS; без зарегистрированного token push не придёт
+  push_payload_from_backend:
+    fields: [title, body]
+    id_in_payload: false
+    tap_navigation: /home/notifications

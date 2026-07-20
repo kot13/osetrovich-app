@@ -1,17 +1,24 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:osetrovich/core/l10n/app_strings.dart';
 import 'package:osetrovich/core/network/api_exception.dart';
+import 'package:osetrovich/core/push/push_registration_bootstrap.dart';
 import 'package:osetrovich/core/push/push_providers.dart';
 import 'package:osetrovich/core/push/push_service.dart';
+import 'package:osetrovich/core/push/push_token_registration_service.dart';
 import 'package:osetrovich/features/profile/data/profile_repository.dart';
 import 'package:osetrovich/features/profile/domain/profile_notifier.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 class PushPreferencesService {
-  PushPreferencesService(this._repository, this._pushService);
+  PushPreferencesService(
+    this._repository,
+    this._pushService,
+    this._registrationService,
+  );
 
   final ProfileRepository _repository;
   final PushService _pushService;
+  final PushTokenRegistrationService _registrationService;
 
   Future<bool> isOsPermissionGranted() async {
     final status = await Permission.notification.status;
@@ -34,6 +41,12 @@ class PushPreferencesService {
     }
     await _repository.updatePushEnabled(enabled);
     await _pushService.syncPushEnabled(enabled);
+    if (enabled) {
+      final tokens = await _pushService.getTokens();
+      await _registrationService.registerFromTokenMap(tokens);
+    } else {
+      _registrationService.clearLastRegistered();
+    }
     return true;
   }
 }
@@ -42,5 +55,6 @@ final pushPreferencesServiceProvider = Provider<PushPreferencesService>((ref) {
   return PushPreferencesService(
     ref.watch(profileRepositoryProvider),
     ref.watch(pushServiceProvider),
+    ref.watch(pushTokenRegistrationServiceProvider),
   );
 });

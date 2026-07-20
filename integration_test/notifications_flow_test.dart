@@ -6,14 +6,42 @@ import 'package:osetrovich/app.dart';
 import 'package:osetrovich/core/l10n/app_strings.dart';
 import 'package:osetrovich/core/network/mock_api_client.dart';
 import 'package:osetrovich/core/network/providers.dart';
+import 'package:osetrovich/features/auth/domain/auth_session.dart';
+import 'package:osetrovich/features/auth/domain/auth_session_provider.dart';
+
+class _FakeAuthSessionNotifier extends AuthSessionNotifier {
+  _FakeAuthSessionNotifier(this._session);
+
+  final AuthSession? _session;
+
+  @override
+  AuthSession? build() => _session;
+}
 
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
-  testWidgets('notifications flow from home', (tester) async {
+  testWidgets('notifications flow from home with authenticated session', (
+    tester,
+  ) async {
+    final mockClient = MockApiClient();
+    await mockClient.verifySmsCode('+79001234567', MockApiClient.validCode);
+
     await tester.pumpWidget(
       ProviderScope(
-        overrides: [apiClientProvider.overrideWithValue(MockApiClient())],
+        overrides: [
+          apiClientProvider.overrideWithValue(mockClient),
+          authSessionProvider.overrideWith(
+            () => _FakeAuthSessionNotifier(
+              AuthSession(
+                accessToken: 'mock.access.token.+79001234567',
+                refreshToken: 'r',
+                expiresAt: AuthSession.neverExpiresAt,
+                phone: '+79001234567',
+              ),
+            ),
+          ),
+        ],
         child: const App(),
       ),
     );
@@ -25,15 +53,12 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text(AppStrings.notificationsTitle), findsOneWidget);
-    expect(find.text('Скидка на икру'), findsOneWidget);
+    expect(find.text('Заказ принят'), findsOneWidget);
 
-    await tester.tap(find.text('Скидка на икру'));
+    await tester.tap(find.text('Заказ принят'));
     await tester.pumpAndSettle();
 
-    expect(
-      find.text('До конца недели скидка 15% на красную икру.'),
-      findsOneWidget,
-    );
+    expect(find.text('Ваш заказ принят в обработку.'), findsOneWidget);
 
     await tester.tap(find.byIcon(Icons.arrow_back));
     await tester.pumpAndSettle();
@@ -42,7 +67,6 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('2'), findsOneWidget);
-    expect(find.text(AppStrings.contactUs), findsOneWidget);
-    expect(find.text(AppStrings.tabPromotions), findsWidgets);
+    expect(mockClient.registeredPushToken, isNotNull);
   });
 }

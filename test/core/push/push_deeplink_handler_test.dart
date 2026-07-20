@@ -13,8 +13,8 @@ void main() {
 
   test('resolves notification deep link', () {
     expect(
-      handler.resolveRoute({'type': 'notification', 'targetId': 'n-7'}),
-      '/home/notifications/n-7',
+      handler.resolveRoute({'type': 'notification', 'targetId': '7'}),
+      '/home/notifications/7',
     );
   });
 
@@ -25,12 +25,12 @@ void main() {
     );
   });
 
-  test('falls back to home for unknown type', () {
-    expect(handler.resolveRoute({'type': 'unknown'}), '/home');
+  test('falls back to notifications list for unknown type', () {
+    expect(handler.resolveRoute({'type': 'unknown'}), '/home/notifications');
   });
 
-  test('falls back to home when targetId missing for promotion', () {
-    expect(handler.resolveRoute({'type': 'promotion'}), '/home');
+  test('falls back to notifications list when type missing', () {
+    expect(handler.resolveRoute({}), '/home/notifications');
   });
 
   test('parses JSON payload string', () {
@@ -40,5 +40,10 @@ void main() {
       ),
       '/home',
     );
+  });
+
+  test('empty payload opens notifications list', () {
+    expect(handler.resolveRouteFromPayloadString(null), '/home/notifications');
+    expect(handler.resolveRouteFromPayloadString(''), '/home/notifications');
   });
 }

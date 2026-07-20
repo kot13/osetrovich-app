@@ -44,6 +44,11 @@ abstract final class AppStrings {
   static const notificationsTitle = 'Уведомления';
   static const markAllRead = 'Отметить все прочитанным';
   static const notificationsEmpty = 'Уведомлений пока нет';
+  static const notificationUnavailable = 'Уведомление недоступно';
+  static const orderDeliveredNotificationTitle = 'Заказ доставлен';
+  static const rateOrderFromNotification = 'Оценить заказ';
+  static const ratingUnavailable = 'Оценка недоступна';
+  static const pushNotificationReceived = 'Новое уведомление';
   static const contactUs = 'Связаться';
 
   static const profileName = 'Имя';

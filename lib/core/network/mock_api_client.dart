@@ -95,30 +95,31 @@ class MockApiClient implements ApiClient {
 
   static final List<AppNotification> _initialNotifications = [
     AppNotification(
-      id: 'n1',
-      title: 'Скидка на икру',
-      body: 'До конца недели скидка 15% на красную икру.',
+      id: '1',
+      title: 'Заказ принят',
+      body: 'Ваш заказ принят в обработку.',
       createdAt: DateTime.utc(2026, 7, 14, 10),
       isRead: false,
     ),
     AppNotification(
-      id: 'n2',
-      title: 'Новая поставка крабов',
-      body: 'Камчатский краб уже в каталоге.',
+      id: '2',
+      title: 'Заказ на доставке',
+      body: 'Сёмга холодного курения — 1 шт.\nИтого: 1 190 ₽',
       createdAt: DateTime.utc(2026, 7, 13, 14, 30),
       isRead: false,
     ),
     AppNotification(
-      id: 'n3',
-      title: 'Ваш заказ доставлен',
-      body: 'Заказ №12345 успешно доставлен.',
+      id: '3',
+      title: 'Водитель назначен',
+      body: 'Иван Петров',
       createdAt: DateTime.utc(2026, 7, 12, 9, 15),
       isRead: false,
     ),
     AppNotification(
-      id: 'n4',
-      title: 'Акция выходного дня',
-      body: 'Скидки на рыбу в субботу и воскресенье.',
+      id: '4',
+      title: 'Заказ доставлен',
+      body:
+          'Оставьте отзыв — нам важно ваше мнение о качестве продуктов и сервиса.',
       createdAt: DateTime.utc(2026, 7, 10, 8),
       isRead: true,
     ),
@@ -235,6 +236,8 @@ class MockApiClient implements ApiClient {
   static const _publishedNewsIds = {'news-1', 'news-2', 'news-3', 'news-4'};
 
   late List<AppNotification> _notifications;
+  String? _registeredPushToken;
+  String? _registeredPushPlatform;
   int _orderSequence = 1000;
   final Map<String, List<CurrentOrder>> _ordersByUserId = {};
 
@@ -709,6 +712,33 @@ class MockApiClient implements ApiClient {
     _profile = _requireProfile().copyWith(pushEnabled: pushEnabled);
     return ProfilePreferences(pushEnabled: pushEnabled);
   }
+
+  @override
+  Future<void> registerPushToken({
+    required String token,
+    required String platform,
+  }) async {
+    await Future<void>.delayed(const Duration(milliseconds: 50));
+    _requireProfile();
+    if (token.isEmpty) {
+      throw ApiException(
+        code: 'VALIDATION_ERROR',
+        message: 'Пустой push-токен',
+      );
+    }
+    if (platform != 'ios' && platform != 'android') {
+      throw ApiException(
+        code: 'VALIDATION_ERROR',
+        message: 'Некорректная платформа',
+      );
+    }
+    _registeredPushToken = token;
+    _registeredPushPlatform = platform;
+  }
+
+  String? get registeredPushToken => _registeredPushToken;
+
+  String? get registeredPushPlatform => _registeredPushPlatform;
 
   @override
   Future<Order> createOrder(CreateOrderRequest request) async {

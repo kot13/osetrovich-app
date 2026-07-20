@@ -8,6 +8,9 @@ class PushDeeplinkHandler {
 
   String resolveRoute(Map<String, dynamic> payload) {
     final type = payload['type'] as String?;
+    if (type == null || type.isEmpty) {
+      return '/home/notifications';
+    }
     final targetId = payload['targetId'] as String?;
 
     return switch (type) {
@@ -16,22 +19,22 @@ class PushDeeplinkHandler {
       'promotion' => _routeWithTarget('/promotions/article', targetId),
       'notification' => _routeWithTarget('/home/notifications', targetId),
       'product' => _routeWithTarget('/catalog/product', targetId),
-      _ => '/home',
+      _ => '/home/notifications',
     };
   }
 
   String resolveRouteFromPayloadString(String? payload) {
     if (payload == null || payload.trim().isEmpty) {
-      return '/home';
+      return '/home/notifications';
     }
     try {
       final decoded = jsonDecode(payload);
       if (decoded is! Map<String, dynamic>) {
-        return '/home';
+        return '/home/notifications';
       }
       return resolveRoute(decoded);
     } on Object {
-      return '/home';
+      return '/home/notifications';
     }
   }
 
@@ -42,7 +45,7 @@ class PushDeeplinkHandler {
 
   String _routeWithTarget(String prefix, String? targetId) {
     if (targetId == null || targetId.isEmpty) {
-      return '/home';
+      return prefix == '/home/notifications' ? '/home/notifications' : '/home';
     }
     return '$prefix/$targetId';
   }

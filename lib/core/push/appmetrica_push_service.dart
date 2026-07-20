@@ -10,17 +10,20 @@ class AppMetricaPushService implements PushService {
     PushEnabledSync? syncPushEnabledToAnalytics,
     void Function(void Function(Map<String, String?>) listener)?
     tokenStreamBinder,
+    Future<Map<String, String?>> Function()? tokenReader,
   }) : _syncPushEnabledToAnalytics =
            syncPushEnabledToAnalytics ?? analytics.setPushEnabled,
        _tokenStreamBinder =
            tokenStreamBinder ??
            ((listener) {
              AppMetricaPush.tokenStream.listen(listener);
-           });
+           }),
+       _tokenReader = tokenReader ?? AppMetricaPush.getTokens;
 
   final PushEnabledSync _syncPushEnabledToAnalytics;
   final void Function(void Function(Map<String, String?>) listener)
   _tokenStreamBinder;
+  final Future<Map<String, String?>> Function() _tokenReader;
 
   @override
   void listenForTokenUpdates(
@@ -33,4 +36,7 @@ class AppMetricaPushService implements PushService {
   Future<void> syncPushEnabled(bool enabled) {
     return _syncPushEnabledToAnalytics(enabled);
   }
+
+  @override
+  Future<Map<String, String?>> getTokens() => _tokenReader();
 }

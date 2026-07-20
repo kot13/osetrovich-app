@@ -72,6 +72,11 @@ abstract class ApiClient {
     required bool pushEnabled,
   });
 
+  Future<void> registerPushToken({
+    required String token,
+    required String platform,
+  });
+
   Future<Order> createOrder(CreateOrderRequest request);
 
   Future<List<PromotionArticleSummary>> getPromotionArticles(
@@ -406,6 +411,21 @@ class DioApiClient implements ApiClient {
         data: {'pushEnabled': pushEnabled},
       );
       return ProfilePreferences.fromJson(response.data!);
+    } on Object catch (e) {
+      throw _mapError(e);
+    }
+  }
+
+  @override
+  Future<void> registerPushToken({
+    required String token,
+    required String platform,
+  }) async {
+    try {
+      await _dio.put<void>(
+        '/profile/push-token',
+        data: {'token': token, 'platform': platform},
+      );
     } on Object catch (e) {
       throw _mapError(e);
     }

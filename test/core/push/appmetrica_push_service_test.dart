@@ -20,4 +20,15 @@ void main() {
 
     verify(() => analytics.setPushEnabled(true)).called(1);
   });
+
+  test('getTokens delegates to token reader', () async {
+    service = AppMetricaPushService(
+      analytics,
+      tokenReader: () async => const {'android': 'token'},
+    );
+
+    final tokens = await service.getTokens();
+
+    expect(tokens['android'], 'token');
+  });
 }

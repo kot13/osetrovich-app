@@ -3,6 +3,7 @@ import 'package:osetrovich/core/analytics/analytics_user_id.dart';
 import 'package:osetrovich/core/network/mock_api_client.dart';
 import 'package:osetrovich/core/network/mock_profile_sync.dart';
 import 'package:osetrovich/core/network/providers.dart';
+import 'package:osetrovich/core/push/push_registration_bootstrap.dart';
 import 'package:osetrovich/features/auth/data/auth_dto.dart';
 import 'package:osetrovich/features/auth/data/auth_repository.dart';
 import 'package:osetrovich/features/auth/data/secure_token_storage.dart';
@@ -57,6 +58,7 @@ class AuthSessionNotifier extends Notifier<AuthSession?> {
     ref
         .read(analyticsServiceProvider)
         .setUserId(analyticsUserIdFromPhone(phone));
+    await registerPushTokenAfterAuthFromRef(ref);
   }
 
   Future<void> applyRefreshedTokens(TokenResponse tokens) async {
