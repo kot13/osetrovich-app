@@ -20,6 +20,7 @@ void main() {
     categoryIds: [1],
     sale: false,
     special: false,
+    productOfWeek: false,
   );
 
   testWidgets('product card shows price button when not in cart', (
@@ -85,6 +86,7 @@ void main() {
       categoryIds: [1],
       sale: true,
       special: false,
+      productOfWeek: false,
     );
 
     await tester.pumpWidget(
@@ -118,6 +120,7 @@ void main() {
       categoryIds: [2],
       sale: false,
       special: true,
+      productOfWeek: false,
     );
     const bothProduct = ProductSummary(
       id: 1001,
@@ -129,6 +132,7 @@ void main() {
       categoryIds: [1],
       sale: true,
       special: true,
+      productOfWeek: false,
     );
 
     await tester.pumpWidget(
@@ -187,6 +191,39 @@ void main() {
           .first,
     );
     expect(addBar.height, kCompactBarHeight);
+  });
+
+  testWidgets('product card shows product of week badge', (tester) async {
+    const weekProduct = ProductSummary(
+      id: 1000,
+      name: 'Сёмга недели',
+      weightLabel: '500 г',
+      priceRub: 300,
+      oldPriceRub: 450,
+      imageUrl: 'https://example.com/1.jpg',
+      categoryIds: [1],
+      sale: false,
+      special: false,
+      productOfWeek: true,
+    );
+
+    await tester.pumpWidget(
+      ProviderScope(
+        child: MaterialApp(
+          theme: AppTheme.light,
+          home: const Scaffold(
+            body: SizedBox(
+              width: 168,
+              height: 300,
+              child: ProductCard(product: weekProduct),
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.pump();
+
+    expect(find.text(AppStrings.badgeProductOfWeek), findsOneWidget);
   });
 }
 

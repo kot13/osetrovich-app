@@ -22,6 +22,7 @@ dependencies:
   flutter_html: ^3.0.0
   appmetrica_plugin: ^3.4.0
   appmetrica_push_plugin: ^2.4.0
+  app_links: ^6.3.2
   shared_preferences: ^2.5.3
 
 dev_dependencies:

@@ -188,6 +188,8 @@ class MockApiClient implements ApiClient {
       bodyHtml:
           '<p>Успейте купить <strong>красную икру</strong> со скидкой! 🎉</p>'
           '<ul><li>До 31 июля</li><li>Онлайн и в магазине</li></ul>'
+          '<p><a href="osetrovich://catalog/product/2000">Красная икра в каталоге</a></p>'
+          '<p><a href="osetrovich://catalog/category/2">Все икры</a></p>'
           '<p><a href="https://osetrovich.ru">Подробнее на сайте</a></p>',
     ),
     'promo-2': PromotionArticleDetail(
@@ -379,6 +381,7 @@ class MockApiClient implements ApiClient {
           categoryIds: const [kCategoryFish],
           sale: i == 0 || i == 1,
           special: i == 1,
+          productOfWeek: id == 1000 || id == 1001,
         ),
       );
     }
@@ -430,6 +433,7 @@ class MockApiClient implements ApiClient {
             categoryIds: [entry.key],
             sale: false,
             special: entry.key == kCategoryCaviar && i == 0,
+            productOfWeek: entry.key == kCategoryCaviar && i == 0,
           ),
         );
       }
@@ -463,6 +467,7 @@ class MockApiClient implements ApiClient {
       categoryIds: summary.categoryIds,
       sale: summary.sale,
       special: summary.special,
+      productOfWeek: summary.productOfWeek,
     );
   }
 

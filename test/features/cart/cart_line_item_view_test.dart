@@ -15,6 +15,7 @@ void main() {
       categoryIds: [13],
       sale: false,
       special: false,
+      productOfWeek: false,
     );
 
     final line = CartLineItemView.fromProduct(product, 2);

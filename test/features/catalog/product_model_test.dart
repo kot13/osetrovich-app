@@ -14,13 +14,32 @@ void main() {
         'categoryIds': [1],
         'sale': true,
         'special': false,
+        'productOfWeek': true,
       });
 
       expect(product.id, 1001);
       expect(product.categoryIds, [1]);
       expect(product.sale, isTrue);
       expect(product.special, isFalse);
+      expect(product.productOfWeek, isTrue);
       expect(product.oldPriceRub, 450);
+    });
+
+    test('throws when productOfWeek missing', () {
+      expect(
+        () => ProductSummary.fromJson({
+          'id': 1,
+          'name': 'x',
+          'weightLabel': '1 кг',
+          'priceRub': 1,
+          'oldPriceRub': 1,
+          'imageUrl': 'https://example.com/1.jpg',
+          'categoryIds': [1],
+          'sale': false,
+          'special': false,
+        }),
+        throwsA(isA<TypeError>()),
+      );
     });
   });
 
@@ -37,6 +56,7 @@ void main() {
         'categoryIds': [2],
         'sale': false,
         'special': true,
+        'productOfWeek': false,
       });
 
       expect(detail.id, 2000);
@@ -57,6 +77,7 @@ void main() {
         'categoryIds': [13],
         'sale': false,
         'special': false,
+        'productOfWeek': false,
       });
 
       expect(detail.imageUrls, ['https://example.com/fallback.jpg']);
@@ -75,6 +96,7 @@ void main() {
         'categoryIds': [13],
         'sale': false,
         'special': false,
+        'productOfWeek': false,
       });
 
       expect(detail.imageUrls, isEmpty);

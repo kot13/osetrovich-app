@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:osetrovich/core/l10n/app_strings.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:osetrovich/core/theme/app_theme.dart';
@@ -68,7 +67,7 @@ void main() {
     expect(container.read(cartNotifierProvider)[1000], 3);
   });
 
-  testWidgets('gift cart line shows label without quantity controls', (
+  testWidgets('gift cart line shows product name and gift price', (
     tester,
   ) async {
     const giftLine = CartLineItemView(
@@ -76,7 +75,8 @@ void main() {
       name: 'Икра горбуши',
       weightLabel: '50 г',
       priceRub: 0,
-      imageUrl: '',
+      originalPriceRub: 749,
+      imageUrl: 'https://example.com/ikra.jpg',
       quantity: 1,
       sale: false,
       isGift: true,
@@ -89,8 +89,10 @@ void main() {
       ),
     );
 
-    expect(find.text(AppStrings.cartGiftLabel), findsOneWidget);
+    expect(find.text('Икра горбуши'), findsOneWidget);
+    expect(find.text('749\u00A0₽'), findsOneWidget);
     expect(find.text('0\u00A0₽'), findsOneWidget);
+    expect(find.byIcon(Icons.card_giftcard), findsOneWidget);
     expect(find.byIcon(Icons.add), findsNothing);
     expect(find.byIcon(Icons.remove), findsNothing);
   });

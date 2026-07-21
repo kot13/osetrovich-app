@@ -46,4 +46,29 @@ void main() {
     expect(handler.resolveRouteFromPayloadString(null), '/home/notifications');
     expect(handler.resolveRouteFromPayloadString(''), '/home/notifications');
   });
+
+  test('raw osetrovich URL', () {
+    expect(
+      handler.resolveRouteFromPayloadString('osetrovich://catalog/product/1000'),
+      '/catalog/product/1000',
+    );
+  });
+
+  test('JSON deeplink field has priority over type', () {
+    expect(
+      handler.resolveRouteFromPayloadString(
+        '{"deeplink":"osetrovich://profile","type":"home"}',
+      ),
+      '/profile',
+    );
+  });
+
+  test('JSON url field resolves deeplink', () {
+    expect(
+      handler.resolveRouteFromPayloadString(
+        '{"url":"osetrovich://promotions"}',
+      ),
+      '/promotions',
+    );
+  });
 }

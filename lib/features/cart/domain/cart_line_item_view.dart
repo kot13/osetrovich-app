@@ -11,6 +11,7 @@ class CartLineItemView {
     required this.quantity,
     required this.sale,
     this.isGift = false,
+    this.originalPriceRub,
   });
 
   factory CartLineItemView.fromProduct(ProductDetail product, int quantity) {
@@ -25,12 +26,16 @@ class CartLineItemView {
     );
   }
 
-  factory CartLineItemView.fromLemonGift(LemonGiftPreview gift) {
+  factory CartLineItemView.fromLemonGift(
+    LemonGiftPreview gift, {
+    required int originalPriceRub,
+  }) {
     return CartLineItemView(
       productId: gift.productId,
       name: gift.name,
       weightLabel: gift.weightLabel,
       priceRub: 0,
+      originalPriceRub: originalPriceRub,
       imageUrl: gift.imageUrl ?? '',
       quantity: 1,
       sale: false,
@@ -46,6 +51,7 @@ class CartLineItemView {
   final int quantity;
   final bool sale;
   final bool isGift;
+  final int? originalPriceRub;
 
   int get lineTotalRub => priceRub * quantity;
 }

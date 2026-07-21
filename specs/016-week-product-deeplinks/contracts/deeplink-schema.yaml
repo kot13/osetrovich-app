@@ -1,0 +1,144 @@
+# Контракт диплинков osetrovich://
+# Фича: 016-week-product-deeplinks
+# Версия: 1.0.0
+#
+# Единая схема навигации для статей, push и внешних ссылок.
+
+version: "1.0.0"
+scheme: osetrovich
+description: Custom URL scheme для навигации в мобильном приложении osetrovich.ru
+
+url_format:
+  pattern: "osetrovich://{path}"
+  path_separator: "/"
+  examples:
+    - osetrovich://home
+    - osetrovich://catalog/category/100
+    - osetrovich://catalog/product/1000
+    - osetrovich://promotions/articles/promo-1
+    - osetrovich://notifications/notif-7
+
+routes:
+  - deeplink: home
+    go_router: /home
+    tab: home
+    id_required: false
+
+  - deeplink: catalog
+    go_router: /catalog
+    tab: catalog
+    category_filter: all
+    id_required: false
+
+  - deeplink: catalog/category/{id}
+    go_router: /catalog
+    tab: catalog
+    category_filter: "{id}"
+    id_type: integer
+    id_required: true
+
+  - deeplink: catalog/product/{id}
+    go_router: /catalog/product/{id}
+    tab: catalog
+    id_type: integer
+    id_required: true
+
+  - deeplink: promotions
+    go_router: /promotions
+    tab: promotions
+    id_required: false
+
+  - deeplink: promotions/articles/{id}
+    go_router: /promotions/article/{id}
+    tab: promotions
+    id_type: string
+    id_required: true
+    note: Внешний path — articles (мн.ч.); внутренний go_router — article (ед.ч.)
+
+  - deeplink: profile
+    go_router: /profile
+    tab: profile
+    id_required: false
+
+  - deeplink: notifications
+    go_router: /home/notifications
+    tab: home
+    id_required: false
+
+  - deeplink: notifications/{id}
+    go_router: /home/notifications/{id}
+    tab: home
+    id_type: string
+    id_required: true
+
+fallback:
+  invalid_url: /home
+  invalid_id_type: /home
+  unknown_path: /home
+
+validation:
+  scheme_must_be: osetrovich
+  reject_empty_path: true
+  product_id_must_parse_as_int: true
+  category_id_must_parse_as_int: true
+
+sources:
+  - html_articles
+  - push_notification_data
+  - os_intent
+
+client:
+  resolver: lib/core/deeplink/deeplink_resolver.dart
+  navigation: lib/core/deeplink/deeplink_navigation.dart
+  entrypoints:
+    - app_links_initial
+    - app_links_stream
+    - push_tap
+    - promotion_html_link_tap
+
+native_registration:
+  android:
+    file: android/app/src/main/AndroidManifest.xml
+    intent_filter:
+      action: android.intent.action.VIEW
+      category: [DEFAULT, BROWSABLE]
+      data_scheme: osetrovich
+  ios:
+    file: ios/Runner/Info.plist
+    key: CFBundleURLTypes
+    url_scheme: osetrovich
+
+examples:
+  - input: osetrovich://home
+    expected_route: /home
+
+  - input: osetrovich://catalog
+    expected_route: /catalog
+    side_effect: selectedCategoryId=0
+
+  - input: osetrovich://catalog/category/200
+    expected_route: /catalog
+    side_effect: selectedCategoryId=200
+
+  - input: osetrovich://catalog/product/1000
+    expected_route: /catalog/product/1000
+
+  - input: osetrovich://promotions/articles/news-1
+    expected_route: /promotions/article/news-1
+
+  - input: osetrovich://profile
+    expected_route: /profile
+
+  - input: osetrovich://notifications
+    expected_route: /home/notifications
+
+  - input: osetrovich://notifications/notif-1
+    expected_route: /home/notifications/notif-1
+
+  - input: osetrovich://unknown
+    expected_route: /home
+    fallback: true
+
+  - input: osetrovich://catalog/product/abc
+    expected_route: /home
+    fallback: true

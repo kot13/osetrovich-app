@@ -56,6 +56,7 @@ void main() {
         categoryIds: [1],
         sale: false,
         special: false,
+        productOfWeek: false,
       ),
     );
 
@@ -91,6 +92,7 @@ void main() {
         categoryIds: [1],
         sale: false,
         special: false,
+        productOfWeek: false,
       ),
     );
     cart.add(1001);

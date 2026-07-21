@@ -197,4 +197,5 @@ abstract final class AppStrings {
 
   static const badgeSale = 'Акция';
   static const badgeSpecialPrice = 'СПЕЦЦЕНА';
+  static const badgeProductOfWeek = 'Товар недели';
 }

@@ -1,0 +1,38 @@
+# OpenAPI delta: productOfWeek
+# Фича: 016-week-product-deeplinks
+# Полная спецификация: openapi/openapi.yaml (уже обновлена)
+# Версия: reference
+
+description: >
+  Дельта схем товара — добавлено поле productOfWeek. Изменение уже присутствует в
+  openapi/openapi.yaml; этот файл — reference для tasks и тестов контракта.
+
+schemas:
+
+  ProductSummary:
+    added_fields:
+      productOfWeek:
+        type: boolean
+        required: true
+        description: Признак «Товар недели» из ERP
+
+  ProductDetail:
+    added_fields:
+      productOfWeek:
+        type: boolean
+        required: true
+        description: Признак «Товар недели» из ERP
+
+  WeeklyProductsResponse:
+    note: >
+      GET /home/weekly-products — items[] типа ProductSummary; сервер сортирует:
+      сначала productOfWeek=true, затем special=true
+
+client_changes:
+  - lib/features/catalog/domain/product.dart
+  - lib/core/network/mock_api_client.dart
+  - lib/features/catalog/presentation/widgets/product_promo_badges.dart
+
+mock_requirements:
+  - Часть товаров MUST иметь productOfWeek: true
+  - Weekly products list MUST содержать mix true/false для тестов бейджа

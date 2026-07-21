@@ -74,6 +74,7 @@ class ProductCard extends ConsumerWidget {
                             top: 8,
                             left: 8,
                             child: ProductPromoBadges(
+                              productOfWeek: product.productOfWeek,
                               sale: product.sale,
                               special: product.special,
                             ),

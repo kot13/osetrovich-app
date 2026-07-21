@@ -50,4 +50,19 @@ void main() {
 
     expect(container.read(cartDistinctCountProvider), 1);
   });
+
+  testWidgets('shows product of week badge on weekly cards', (tester) async {
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [apiClientProvider.overrideWithValue(MockApiClient())],
+        child: MaterialApp(
+          theme: AppTheme.light,
+          home: Scaffold(body: HomeWeeklyProductsSection()),
+        ),
+      ),
+    );
+    await tester.pump(const Duration(seconds: 1));
+
+    expect(find.text(AppStrings.badgeProductOfWeek), findsWidgets);
+  });
 }

@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_html/flutter_html.dart';
+import 'package:go_router/go_router.dart';
+import 'package:osetrovich/core/deeplink/deeplink_navigation.dart';
+import 'package:osetrovich/core/deeplink/deeplink_providers.dart';
 import 'package:osetrovich/core/theme/app_colors.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-class PromotionHtmlBody extends StatelessWidget {
+class PromotionHtmlBody extends ConsumerWidget {
   const PromotionHtmlBody({super.key, required this.html});
 
   final String html;
@@ -24,13 +28,25 @@ class PromotionHtmlBody extends StatelessWidget {
   };
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final resolver = ref.watch(deepLinkResolverProvider);
+
     return Html(
       data: html,
       shrinkWrap: true,
       onlyRenderTheseTags: _allowedTags,
       onLinkTap: (url, _, __) {
         if (url == null) {
+          return;
+        }
+        if (url.startsWith('osetrovich://')) {
+          final router = GoRouter.of(context);
+          DeepLinkNavigation.navigateFromUrl(
+            router,
+            ref.read,
+            url,
+            resolver: resolver,
+          );
           return;
         }
         launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication);

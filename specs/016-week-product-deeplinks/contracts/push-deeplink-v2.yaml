@@ -1,0 +1,95 @@
+# Расширение контракта push-deeplink (v2)
+# Фича: 016-week-product-deeplinks
+# Базовый контракт: specs/008-yandex-appmetrica/contracts/push-deeplink.yaml (v1, legacy JSON)
+# Версия: 2.0.0
+
+version: "2.0.0"
+platform: appmetrica_push
+description: >
+  Push payload для навигации. URL osetrovich:// имеет приоритет над legacy JSON type/targetId.
+  Пустой payload → /home/notifications (фича 011).
+
+resolution_order:
+  1_raw_url:
+    condition: payload.trim().startsWith("osetrovich://")
+    handler: DeepLinkResolver
+  2_json_url_fields:
+    condition: JSON contains deeplink or url with osetrovich://
+    fields: [deeplink, url]
+    handler: DeepLinkResolver
+  3_legacy_json:
+    condition: JSON contains type
+    contract: push-deeplink.yaml v1
+    handler: PushDeeplinkHandler (legacy mapping)
+  4_fallback:
+    route: /home/notifications
+
+payload_formats:
+
+  raw_url:
+    type: string
+    example: osetrovich://catalog/product/1000
+    description: Весь payload — URL диплинка
+
+  json_with_deeplink:
+    type: object
+    properties:
+      deeplink:
+        type: string
+        pattern: "^osetrovich://"
+      url:
+        type: string
+        pattern: "^osetrovich://"
+    example:
+      deeplink: osetrovich://promotions/articles/promo-1
+
+  legacy_json:
+  # Сохраняется без изменений — см. specs/008-yandex-appmetrica/contracts/push-deeplink.yaml
+    type: object
+    required: [type]
+    properties:
+      type:
+        enum: [home, order, promotion, notification, product]
+      targetId:
+        type: string
+
+legacy_routing:
+  home: /home
+  order: /home
+  promotion: /promotions/article/{targetId}
+  notification: /home/notifications/{targetId}
+  product: /catalog/product/{targetId}
+
+examples:
+  - description: URL в поле deeplink (приоритет)
+    payload:
+      deeplink: osetrovich://profile
+      type: home
+    expected_route: /profile
+
+  - description: Raw URL string
+    payload: osetrovich://notifications/notif-1
+    expected_route: /home/notifications/notif-1
+
+  - description: Legacy JSON без URL
+    payload:
+      type: product
+      targetId: "1000"
+    expected_route: /catalog/product/1000
+
+  - description: Пустой payload (011)
+    payload: ""
+    expected_route: /home/notifications
+
+client_handler:
+  module: lib/core/push/push_deeplink_handler.dart
+  resolver: lib/core/deeplink/deeplink_resolver.dart
+  entrypoints:
+    - cold_start
+    - background_tap
+    - foreground_receive
+
+panel_setup:
+  note: >
+    Для маркетинговых рассылок рекомендуется поле deeplink со значением osetrovich://….
+    Legacy JSON type/targetId продолжает работать для существующих кампаний.

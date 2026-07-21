@@ -21,14 +21,14 @@ final pushNavigationSetupProvider = Provider.family<void, GoRouter>((
 
   subscriptions.add(
     AppMetricaPush.pushClickStream.listen((info) {
-      handler.navigate(router, info.payload);
+      handler.navigate(router, ref, info.payload);
     }),
   );
 
   AppMetricaPush.getLaunchPushInfo()
       .then((info) {
         if (info.payload != null && info.payload!.isNotEmpty) {
-          handler.navigate(router, info.payload);
+          handler.navigate(router, ref, info.payload);
         }
       })
       .catchError((Object error, StackTrace stack) {

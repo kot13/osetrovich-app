@@ -19,6 +19,7 @@ void main() {
       categoryIds: [kCategoryFish],
       sale: false,
       special: false,
+      productOfWeek: false,
     ),
     ProductSummary(
       id: 1002,
@@ -30,6 +31,7 @@ void main() {
       categoryIds: [kCategoryFish],
       sale: false,
       special: false,
+      productOfWeek: false,
     ),
   ];
 

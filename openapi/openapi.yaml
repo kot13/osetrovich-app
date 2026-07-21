@@ -2,7 +2,7 @@ openapi: 3.0.3
 info:
   title: Osetrovich Mobile API
   description: REST API мобильного приложения osetrovich.ru (фаза order-lemon-gamification)
-  version: 0.12.5
+  version: 0.12.6
 
 servers:
   - url: https://api.osetrovich.ru/v1
@@ -429,7 +429,7 @@ paths:
   /home/weekly-products:
     get:
       tags: [home]
-      summary: Товары недели для горизонтальной ленты на главной
+      summary: Товары недели — сначала помеченные «Товар недели», затем со спецценой
       operationId: getWeeklyProducts
       responses:
         '200':
@@ -994,7 +994,7 @@ components:
 
     ProductSummary:
       type: object
-      required: [id, name, weightLabel, priceRub, oldPriceRub, imageUrl, categoryIds, sale, special]
+      required: [id, name, weightLabel, priceRub, oldPriceRub, imageUrl, categoryIds, sale, special, productOfWeek]
       properties:
         id:
           type: integer
@@ -1029,10 +1029,13 @@ components:
         special:
           type: boolean
           description: true, если задана спеццена для мобильного канала
+        productOfWeek:
+          type: boolean
+          description: Признак «Товар недели» из ERP
 
     ProductDetail:
       type: object
-      required: [id, name, weightLabel, priceRub, oldPriceRub, imageUrls, description, categoryIds, sale, special]
+      required: [id, name, weightLabel, priceRub, oldPriceRub, imageUrls, description, categoryIds, sale, special, productOfWeek]
       properties:
         id:
           type: integer
@@ -1066,6 +1069,8 @@ components:
         sale:
           type: boolean
         special:
+          type: boolean
+        productOfWeek:
           type: boolean
 
     ProductListResponse:

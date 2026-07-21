@@ -9,6 +9,7 @@ class ProductSummary {
     required this.categoryIds,
     required this.sale,
     required this.special,
+    required this.productOfWeek,
   });
 
   factory ProductSummary.fromJson(Map<String, dynamic> json) {
@@ -23,6 +24,7 @@ class ProductSummary {
           (json['categoryIds'] as List<dynamic>).map((e) => e as int).toList(),
       sale: json['sale'] as bool,
       special: json['special'] as bool,
+      productOfWeek: json['productOfWeek'] as bool,
     );
   }
 
@@ -35,6 +37,7 @@ class ProductSummary {
   final List<int> categoryIds;
   final bool sale;
   final bool special;
+  final bool productOfWeek;
 }
 
 class ProductDetail {
@@ -49,6 +52,7 @@ class ProductDetail {
     required this.categoryIds,
     required this.sale,
     required this.special,
+    required this.productOfWeek,
   });
 
   factory ProductDetail.fromJson(Map<String, dynamic> json) {
@@ -78,6 +82,7 @@ class ProductDetail {
           (json['categoryIds'] as List<dynamic>).map((e) => e as int).toList(),
       sale: json['sale'] as bool,
       special: json['special'] as bool,
+      productOfWeek: json['productOfWeek'] as bool,
     );
   }
 
@@ -91,6 +96,7 @@ class ProductDetail {
   final List<int> categoryIds;
   final bool sale;
   final bool special;
+  final bool productOfWeek;
 }
 
 class ProductListPage {
