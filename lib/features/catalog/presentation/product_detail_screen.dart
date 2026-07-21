@@ -48,13 +48,7 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
     final detailAsync = ref.watch(productDetailProvider(widget.productId));
 
     return Scaffold(
-      // Внутри MainShell — не конфликтовать с внешним Scaffold и его Tab Bar.
-      primary: false,
       appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () => context.pop(),
-        ),
         title: const Text(AppStrings.tabCatalog),
       ),
       body: detailAsync.when(

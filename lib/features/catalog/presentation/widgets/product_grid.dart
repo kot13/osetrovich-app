@@ -21,6 +21,7 @@ class _ProductGridState extends ConsumerState<ProductGrid> {
   @override
   void initState() {
     super.initState();
+    _lastCategoryId = widget.productsState.categoryId;
     _scrollController.addListener(_onScroll);
   }
 
@@ -28,12 +29,12 @@ class _ProductGridState extends ConsumerState<ProductGrid> {
   void didUpdateWidget(covariant ProductGrid oldWidget) {
     super.didUpdateWidget(oldWidget);
     final categoryId = widget.productsState.categoryId;
-    if (_lastCategoryId != categoryId) {
-      _lastCategoryId = categoryId;
+    if (_lastCategoryId != null && _lastCategoryId != categoryId) {
       if (_scrollController.hasClients) {
         _scrollController.jumpTo(0);
       }
     }
+    _lastCategoryId = categoryId;
   }
 
   @override

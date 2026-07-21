@@ -58,7 +58,7 @@ class ProductsNotifier extends Notifier<ProductsUiState> {
   @override
   ProductsUiState build() {
     ref.listen(selectedCategoryIdProvider, (previous, next) {
-      if (previous != next) {
+      if (previous != null && previous != next) {
         selectCategory(next);
       }
     });

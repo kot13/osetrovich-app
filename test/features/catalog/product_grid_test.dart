@@ -64,4 +64,80 @@ void main() {
       2,
     );
   });
+
+  testWidgets('product grid keeps scroll position after load more', (
+    tester,
+  ) async {
+    List<ProductSummary> makeProducts(int count) {
+      return List.generate(
+        count,
+        (index) => ProductSummary(
+          id: 1000 + index,
+          name: 'Товар $index',
+          weightLabel: '500 г',
+          priceRub: 300 + index,
+          oldPriceRub: 300 + index,
+          imageUrl: 'https://example.com/$index.jpg',
+          categoryIds: const [kCategoryFish],
+          sale: false,
+          special: false,
+          productOfWeek: false,
+        ),
+      );
+    }
+
+    var productsState = ProductsUiState(
+      items: makeProducts(20),
+      categoryId: kCategoryFish,
+      hasMore: true,
+    );
+
+    await tester.pumpWidget(
+      ProviderScope(
+        child: MaterialApp(
+          theme: AppTheme.light,
+          home: Scaffold(
+            body: SizedBox(
+              height: 600,
+              child: ProductGrid(productsState: productsState),
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.drag(find.byType(GridView), const Offset(0, -500));
+    await tester.pumpAndSettle();
+
+    final offsetBefore =
+        tester.state<ScrollableState>(find.byType(Scrollable)).position.pixels;
+    expect(offsetBefore, greaterThan(0));
+
+    productsState = ProductsUiState(
+      items: makeProducts(40),
+      categoryId: kCategoryFish,
+      hasMore: false,
+    );
+
+    await tester.pumpWidget(
+      ProviderScope(
+        child: MaterialApp(
+          theme: AppTheme.light,
+          home: Scaffold(
+            body: SizedBox(
+              height: 600,
+              child: ProductGrid(productsState: productsState),
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    final offsetAfter =
+        tester.state<ScrollableState>(find.byType(Scrollable)).position.pixels;
+    expect(offsetAfter, greaterThan(0));
+    expect(offsetAfter, closeTo(offsetBefore, 1));
+  });
 }
