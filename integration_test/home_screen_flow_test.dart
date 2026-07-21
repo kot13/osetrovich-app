@@ -6,6 +6,7 @@ import 'package:osetrovich/app.dart';
 import 'package:osetrovich/core/l10n/app_strings.dart';
 import 'package:osetrovich/core/network/mock_api_client.dart';
 import 'package:osetrovich/core/network/providers.dart';
+import 'package:osetrovich/features/home/presentation/home_lemon_gamification_card.dart';
 
 Future<void> _signInWithPhone(WidgetTester tester, String digits) async {
   await tester.tap(find.text(AppStrings.homeAuthButton));
@@ -150,5 +151,58 @@ void main() {
     await tester.pumpAndSettle(const Duration(seconds: 2));
 
     expect(find.text(AppStrings.cartCheckout), findsOneWidget);
+  });
+
+  testWidgets('home shows lemon gamification after login', (tester) async {
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [apiClientProvider.overrideWithValue(MockApiClient())],
+        child: const App(),
+      ),
+    );
+    await tester.pumpAndSettle(const Duration(seconds: 3));
+
+    await _signInWithPhone(tester, '9005555555');
+
+    await tester.tap(find.text(AppStrings.tabHome));
+    await tester.pumpAndSettle(const Duration(seconds: 2));
+
+    expect(find.text(AppStrings.homeLemonGamificationTitle), findsOneWidget);
+    expect(find.byKey(HomeLemonGamificationCard.cardKey), findsOneWidget);
+  });
+
+  testWidgets('guest home hides lemon gamification block', (tester) async {
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [apiClientProvider.overrideWithValue(MockApiClient())],
+        child: const App(),
+      ),
+    );
+    await tester.pumpAndSettle(const Duration(seconds: 3));
+
+    expect(find.text(AppStrings.homeLemonGamificationTitle), findsNothing);
+  });
+
+  testWidgets('gift appears in cart for user with 10 lemons', (tester) async {
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [apiClientProvider.overrideWithValue(MockApiClient())],
+        child: const App(),
+      ),
+    );
+    await tester.pumpAndSettle(const Duration(seconds: 3));
+
+    await _signInWithPhone(tester, '9006666666');
+
+    await tester.tap(find.text(AppStrings.tabCatalog));
+    await tester.pumpAndSettle(const Duration(seconds: 2));
+
+    await tester.tap(find.textContaining('₽ +').first);
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text(AppStrings.tabCart));
+    await tester.pumpAndSettle(const Duration(seconds: 2));
+
+    expect(find.text(AppStrings.cartGiftLabel), findsOneWidget);
   });
 }

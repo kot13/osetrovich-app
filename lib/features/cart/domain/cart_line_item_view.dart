@@ -1,4 +1,5 @@
 import 'package:osetrovich/features/catalog/domain/product.dart';
+import 'package:osetrovich/features/profile/domain/lemon_gift_preview.dart';
 
 class CartLineItemView {
   const CartLineItemView({
@@ -9,6 +10,7 @@ class CartLineItemView {
     required this.imageUrl,
     required this.quantity,
     required this.sale,
+    this.isGift = false,
   });
 
   factory CartLineItemView.fromProduct(ProductDetail product, int quantity) {
@@ -23,6 +25,19 @@ class CartLineItemView {
     );
   }
 
+  factory CartLineItemView.fromLemonGift(LemonGiftPreview gift) {
+    return CartLineItemView(
+      productId: gift.productId,
+      name: gift.name,
+      weightLabel: gift.weightLabel,
+      priceRub: 0,
+      imageUrl: gift.imageUrl ?? '',
+      quantity: 1,
+      sale: false,
+      isGift: true,
+    );
+  }
+
   final int productId;
   final String name;
   final String weightLabel;
@@ -30,6 +45,7 @@ class CartLineItemView {
   final String imageUrl;
   final int quantity;
   final bool sale;
+  final bool isGift;
 
   int get lineTotalRub => priceRub * quantity;
 }

@@ -5,7 +5,7 @@ import 'package:osetrovich/core/analytics/analytics_providers.dart';
 import 'package:osetrovich/core/l10n/app_strings.dart';
 import 'package:osetrovich/core/widgets/empty_state.dart';
 import 'package:osetrovich/features/auth/domain/auth_session_provider.dart';
-import 'package:osetrovich/features/cart/domain/cart_lines_provider.dart';
+import 'package:osetrovich/features/cart/domain/cart_display_lines_provider.dart';
 import 'package:osetrovich/features/cart/domain/cart_notifier.dart';
 import 'package:osetrovich/features/cart/domain/checkout_notifier.dart';
 import 'package:osetrovich/features/cart/domain/order.dart';
@@ -215,7 +215,7 @@ class _FilledCartBody extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final linesAsync = ref.watch(cartLinesProvider);
+    final linesAsync = ref.watch(cartDisplayLinesProvider);
     final totals = ref.watch(orderTotalsProvider);
     final checkoutState = ref.watch(checkoutNotifierProvider);
 
@@ -229,7 +229,7 @@ class _FilledCartBody extends ConsumerWidget {
                 Text(AppStrings.cartLoadFailed),
                 const SizedBox(height: 12),
                 FilledButton(
-                  onPressed: () => ref.invalidate(cartLinesProvider),
+                  onPressed: () => ref.invalidate(cartDisplayLinesProvider),
                   child: const Text(AppStrings.retry),
                 ),
               ],

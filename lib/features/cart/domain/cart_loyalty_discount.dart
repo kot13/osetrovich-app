@@ -49,6 +49,9 @@ OrderTotals calculateOrderTotalsFromLines({
   var itemsSubtotalRub = 0;
 
   for (final line in lines) {
+    if (line.isGift) {
+      continue;
+    }
     itemsSubtotalBeforeDiscountRub += line.lineTotalRub;
     itemsSubtotalRub += discountedLineTotalRub(
       line: line,

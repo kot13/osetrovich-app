@@ -125,11 +125,9 @@ void main() {
 
   testWidgets('copy button shows copied snackbar', (tester) async {
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
-        .setMockMethodCallHandler(SystemChannels.platform, (
-      methodCall,
-    ) async {
-      return null;
-    });
+        .setMockMethodCallHandler(SystemChannels.platform, (methodCall) async {
+          return null;
+        });
     addTearDown(
       () => TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
           .setMockMethodCallHandler(SystemChannels.platform, null),

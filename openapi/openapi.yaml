@@ -1,8 +1,8 @@
 openapi: 3.0.3
 info:
   title: Osetrovich Mobile API
-  description: REST API мобильного приложения osetrovich.ru (фаза home-loyalty-status)
-  version: 0.12.4
+  description: REST API мобильного приложения osetrovich.ru (фаза order-lemon-gamification)
+  version: 0.12.5
 
 servers:
   - url: https://api.osetrovich.ru/v1
@@ -821,7 +821,7 @@ components:
 
     UserProfile:
       type: object
-      required: [id, name, phone, emailVerified, pushEnabled, discount]
+      required: [id, name, phone, emailVerified, pushEnabled, discount, lemons]
       properties:
         id:
           type: string
@@ -860,6 +860,39 @@ components:
           nullable: true
           example: "1234567890"
           description: Номер дисконтной / клубной карты; null — карта не указана
+        lemons:
+          type: integer
+          minimum: 0
+          maximum: 10
+          example: 3
+          description: |
+            Прогресс в акции «Делай заказы — получай призы».
+            10 — накоплено, доступен подарок к следующему заказу.
+        lemonGift:
+          allOf:
+            - $ref: '#/components/schemas/LemonGiftPreview'
+          nullable: true
+          description: |
+            Данные подарка для корзины. null при lemons < 10;
+            объект при lemons == 10.
+
+    LemonGiftPreview:
+      type: object
+      required: [productId, name, weightLabel]
+      properties:
+        productId:
+          type: integer
+          minimum: 1
+        name:
+          type: string
+          example: Икра горбуши
+        weightLabel:
+          type: string
+          example: 50 г
+        imageUrl:
+          type: string
+          format: uri
+          nullable: true
 
     LoyaltyStatus:
       type: string
@@ -1351,6 +1384,10 @@ components:
         lineTotalRub:
           type: integer
           minimum: 0
+        isGift:
+          type: boolean
+          default: false
+          description: true — подарочная позиция по акции лимонов
 
     OrderStatus:
       type: string

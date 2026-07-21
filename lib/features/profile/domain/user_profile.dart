@@ -1,4 +1,5 @@
 import 'package:osetrovich/features/profile/domain/loyalty_status.dart';
+import 'package:osetrovich/features/profile/domain/lemon_gift_preview.dart';
 
 class UserProfile {
   const UserProfile({
@@ -8,12 +9,15 @@ class UserProfile {
     required this.emailVerified,
     required this.pushEnabled,
     required this.discount,
+    this.lemons = 0,
     this.email,
     this.loyaltyStatus,
     this.card,
+    this.lemonGift,
   });
 
   factory UserProfile.fromJson(Map<String, dynamic> json) {
+    final lemonGiftJson = json['lemonGift'];
     return UserProfile(
       id: json['id'] as String,
       name: json['name'] as String,
@@ -24,6 +28,13 @@ class UserProfile {
       loyaltyStatus: loyaltyStatusFromJson(json['loyaltyStatus'] as String?),
       discount: json['discount'] as int? ?? 0,
       card: json['card'] as String?,
+      lemons: json['lemons'] as int? ?? 0,
+      lemonGift:
+          lemonGiftJson == null
+              ? null
+              : LemonGiftPreview.fromJson(
+                lemonGiftJson as Map<String, dynamic>,
+              ),
     );
   }
 
@@ -36,6 +47,8 @@ class UserProfile {
   final LoyaltyStatus? loyaltyStatus;
   final int discount;
   final String? card;
+  final int lemons;
+  final LemonGiftPreview? lemonGift;
 
   UserProfile copyWith({
     String? id,
@@ -47,9 +60,12 @@ class UserProfile {
     LoyaltyStatus? loyaltyStatus,
     int? discount,
     String? card,
+    int? lemons,
+    LemonGiftPreview? lemonGift,
     bool clearEmail = false,
     bool clearLoyaltyStatus = false,
     bool clearCard = false,
+    bool clearLemonGift = false,
   }) {
     return UserProfile(
       id: id ?? this.id,
@@ -62,6 +78,8 @@ class UserProfile {
           clearLoyaltyStatus ? null : (loyaltyStatus ?? this.loyaltyStatus),
       discount: discount ?? this.discount,
       card: clearCard ? null : (card ?? this.card),
+      lemons: lemons ?? this.lemons,
+      lemonGift: clearLemonGift ? null : (lemonGift ?? this.lemonGift),
     );
   }
 }

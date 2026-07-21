@@ -7,6 +7,7 @@ import 'package:osetrovich/features/catalog/domain/product.dart';
 import 'package:osetrovich/features/home/domain/banner.dart';
 import 'package:osetrovich/features/home/domain/notification_badge.dart';
 import 'package:osetrovich/features/notifications/domain/app_notification.dart';
+import 'package:osetrovich/features/profile/domain/lemon_gift_preview.dart';
 import 'package:osetrovich/features/profile/domain/loyalty_status.dart';
 import 'package:osetrovich/features/profile/domain/user_profile.dart';
 import 'package:osetrovich/features/cart/domain/delivery_fee.dart';
@@ -43,6 +44,7 @@ class MockApiClient implements ApiClient {
       return;
     }
     final loyalty = _loyaltyForPhone(normalized);
+    final lemons = _lemonsForPhone(normalized);
     _profile = UserProfile(
       id: _userIdForPhone(normalized),
       name: 'Покупатель',
@@ -53,6 +55,33 @@ class MockApiClient implements ApiClient {
       loyaltyStatus: loyalty.$1,
       discount: loyalty.$2,
       card: loyalty.$3,
+      lemons: lemons,
+      lemonGift: lemons == 10 ? _defaultLemonGift : null,
+    );
+  }
+
+  static const _defaultLemonGift = LemonGiftPreview(
+    productId: 1005,
+    name: 'Икра горбуши',
+    weightLabel: '50 г',
+    imageUrl: 'https://picsum.photos/seed/osetrovich-gift/400/400',
+  );
+
+  static int _lemonsForPhone(String phone) {
+    return switch (phone) {
+      '+79004444444' => 0,
+      '+79005555555' => 7,
+      '+79006666666' => 10,
+      _ => 3,
+    };
+  }
+
+  UserProfile _profileWithLemons(int lemons) {
+    final profile = _requireProfile();
+    return profile.copyWith(
+      lemons: lemons,
+      lemonGift: lemons == 10 ? _defaultLemonGift : null,
+      clearLemonGift: lemons != 10,
     );
   }
 
@@ -138,6 +167,18 @@ class MockApiClient implements ApiClient {
   ];
 
   static final Map<String, PromotionArticleDetail> _promotionArticles = {
+    '1': PromotionArticleDetail(
+      id: '1',
+      type: PromotionType.promotion,
+      title: 'Акция «Делай заказы — получай призы»',
+      publishedAt: DateTime.utc(2026, 7, 1, 9),
+      imageUrl: 'https://picsum.photos/seed/lemon-promo/800/450',
+      bodyHtml:
+          '<p>За каждый заказ в приложении вы получаете один лимон. '
+          'Соберите 10 лимонов — и к следующему заказу добавим подарок.</p>'
+          '<ul><li>Учитываются только заказы через приложение</li>'
+          '<li>После получения подарка счётчик начинается заново</li></ul>',
+    ),
     'promo-1': PromotionArticleDetail(
       id: 'promo-1',
       type: PromotionType.promotion,
@@ -237,6 +278,7 @@ class MockApiClient implements ApiClient {
   };
 
   static const _publishedPromotionIds = {
+    '1',
     'promo-1',
     'promo-2',
     'promo-3',
@@ -856,6 +898,26 @@ class MockApiClient implements ApiClient {
     _orderSequence += 1;
     final profile = _requireProfile();
     final trimmedApartment = request.apartment?.trim();
+    final hadGift = profile.lemons == 10 && profile.lemonGift != null;
+
+    if (hadGift) {
+      final gift = profile.lemonGift!;
+      orderLines.add(
+        OrderLine(
+          id: gift.productId,
+          name: gift.name,
+          weightLabel: gift.weightLabel,
+          priceRub: 0,
+          quantity: 1,
+          lineTotalRub: 0,
+          isGift: true,
+        ),
+      );
+    }
+
+    _profile = _profileWithLemons(
+      hadGift ? 1 : (profile.lemons + 1).clamp(0, 10),
+    );
 
     final currentOrder = CurrentOrder(
       id: 'ord-$_orderSequence',

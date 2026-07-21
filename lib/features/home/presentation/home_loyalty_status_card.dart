@@ -79,9 +79,7 @@ class _StatusSection extends StatelessWidget {
           decoration: BoxDecoration(
             shape: BoxShape.circle,
             color: Colors.white.withValues(alpha: 0.08),
-            border: Border.all(
-              color: AppColors.accent.withValues(alpha: 0.35),
-            ),
+            border: Border.all(color: AppColors.accent.withValues(alpha: 0.35)),
           ),
           child: const Icon(
             Icons.workspace_premium,
@@ -114,8 +112,10 @@ class _StatusSection extends StatelessWidget {
               if (model.showsMaximumLevelBadge) ...[
                 const SizedBox(height: 10),
                 Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 6,
+                  ),
                   decoration: BoxDecoration(
                     color: Colors.white.withValues(alpha: 0.08),
                     borderRadius: BorderRadius.circular(20),

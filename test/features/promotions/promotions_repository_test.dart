@@ -13,7 +13,7 @@ void main() {
   test('getArticles returns all types for all filter', () async {
     final articles = await repository.getArticles(PromotionType.all);
 
-    expect(articles.length, 10);
+    expect(articles.length, 11);
     expect(articles.any((a) => a.type == PromotionType.promotion), isTrue);
     expect(articles.any((a) => a.type == PromotionType.news), isTrue);
   });
@@ -21,7 +21,7 @@ void main() {
   test('getArticles returns promotions sorted newest first', () async {
     final articles = await repository.getArticles(PromotionType.promotion);
 
-    expect(articles.length, 6);
+    expect(articles.length, 7);
     expect(articles.first.id, 'promo-1');
     expect(
       articles.first.publishedAt.isAfter(articles.last.publishedAt) ||

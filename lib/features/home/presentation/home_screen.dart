@@ -9,7 +9,9 @@ import 'package:osetrovich/features/home/data/home_repository.dart';
 import 'package:osetrovich/features/home/domain/home_profile_slot_ui_state.dart';
 import 'package:osetrovich/features/home/presentation/banner_carousel.dart';
 import 'package:osetrovich/features/home/presentation/home_order_history_section.dart';
+import 'package:osetrovich/features/home/presentation/home_lemon_gamification_card.dart';
 import 'package:osetrovich/features/home/presentation/home_profile_slot.dart';
+import 'package:osetrovich/features/home/domain/home_lemon_gamification_ui_model.dart';
 import 'package:osetrovich/features/home/presentation/home_weekly_products_section.dart';
 import 'package:osetrovich/features/notifications/domain/notifications_notifier.dart';
 import 'package:osetrovich/features/profile/domain/profile_notifier.dart';
@@ -103,6 +105,16 @@ class HomeScreen extends ConsumerWidget {
               mode: profileSlotState.mode,
               profile: profileSlotState.profile,
             ),
+            if (isAuthenticated &&
+                profileAsync != null &&
+                profileAsync.hasValue &&
+                !profileAsync.hasError &&
+                profileAsync.requireValue != null)
+              HomeLemonGamificationCard(
+                model: buildHomeLemonGamificationUiModel(
+                  profileAsync.requireValue!.lemons,
+                ),
+              ),
             const HomeWeeklyProductsSection(),
             if (isAuthenticated)
               currentOrderAsync.when(

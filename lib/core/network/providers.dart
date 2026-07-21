@@ -6,7 +6,7 @@ import 'package:osetrovich/core/network/mock_api_client.dart';
 import 'package:osetrovich/features/auth/data/secure_token_storage.dart';
 import 'package:osetrovich/features/auth/domain/auth_session_provider.dart';
 
-const useMockApi = false;
+const useMockApi = true;
 
 final tokenStorageProvider = Provider<TokenStorage>((ref) {
   return SecureTokenStorage();

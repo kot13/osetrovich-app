@@ -10,6 +10,8 @@ import 'package:osetrovich/features/cart/data/order_repository.dart';
 import 'package:osetrovich/features/cart/domain/cart_notifier.dart';
 import 'package:osetrovich/features/cart/domain/checkout_notifier.dart';
 import 'package:osetrovich/features/cart/domain/order.dart';
+import 'package:osetrovich/features/profile/domain/profile_notifier.dart';
+import 'package:osetrovich/features/profile/domain/user_profile.dart';
 
 class _FakeAuthSessionNotifier extends AuthSessionNotifier {
   _FakeAuthSessionNotifier(this._session);
@@ -222,6 +224,54 @@ void main() {
     expect(order, isNotNull);
     expect(order!.status, OrderStatus.accepted);
   });
+
+  test('submit refreshes profile after successful order', () async {
+    final refreshCounter = _RefreshCountingProfileNotifier();
+
+    final container = ProviderContainer(
+      overrides: [
+        apiClientProvider.overrideWithValue(
+          MockApiClient()..ensureProfile('+79004444444'),
+        ),
+        authSessionProvider.overrideWith(
+          () => _FakeAuthSessionNotifier(session),
+        ),
+        profileNotifierProvider.overrideWith(() => refreshCounter),
+      ],
+    );
+    addTearDown(container.dispose);
+
+    container.read(cartNotifierProvider.notifier).increment(1000);
+
+    await container
+        .read(checkoutNotifierProvider.notifier)
+        .submit(address: 'г. Санкт-Петербург, ул. Тестовая, 1');
+
+    expect(refreshCounter.refreshCount, 1);
+  });
+}
+
+class _RefreshCountingProfileNotifier extends ProfileNotifier {
+  int refreshCount = 0;
+
+  @override
+  Future<UserProfile?> build() async {
+    return const UserProfile(
+      id: 'u1',
+      name: 'Покупатель',
+      phone: '+79004444444',
+      emailVerified: false,
+      pushEnabled: true,
+      discount: 0,
+      lemons: 0,
+    );
+  }
+
+  @override
+  Future<void> refresh() async {
+    refreshCount += 1;
+    await super.refresh();
+  }
 }
 
 class _SlowMockApiClient extends MockApiClient {

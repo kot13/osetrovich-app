@@ -39,6 +39,34 @@ abstract final class AppStrings {
 
   static String homeLoyaltyCard(String number) => 'Карта $number';
 
+  static const homeLemonGamificationTitle = 'Делай заказы — получай призы';
+  static const homeLemonGamificationCaption = 'Один заказ = один лимон';
+  static const homeLemonGamificationGiftTitle =
+      'Собери 10 лимонов — получи подарок!';
+  static const homeLemonGamificationGiftReady =
+      'Подарок будет добавлен в корзину к следующему заказу';
+  static const homeLemonGamificationLemonsCounterLabel = 'лимонов';
+  static const homeLemonGamificationTermsLink = 'Полные условия акции';
+  static const homeLemonGamificationTermsArticleId = '1';
+  static const cartGiftLabel = 'Подарок';
+
+  static String homeLemonGamificationRemaining(int count) {
+    final word = _lemonCountLabel(count);
+    return 'Ещё $count $word до подарка';
+  }
+
+  static String _lemonCountLabel(int count) {
+    final mod10 = count % 10;
+    final mod100 = count % 100;
+    if (mod10 == 1 && mod100 != 11) {
+      return 'лимон';
+    }
+    if (mod10 >= 2 && mod10 <= 4 && (mod100 < 12 || mod100 > 14)) {
+      return 'лимона';
+    }
+    return 'лимонов';
+  }
+
   static const invalidPhone = 'Некорректный номер телефона';
   static const invalidCode = 'Неверный код';
   static const requestFailed =

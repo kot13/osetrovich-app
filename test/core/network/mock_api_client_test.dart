@@ -31,6 +31,73 @@ void main() {
       expect(profile.loyaltyStatus?.name, LoyaltyStatus.premium.name);
       expect(profile.discount, 10);
       expect(profile.card, '1234567890123456');
+      expect(profile.lemons, 3);
+      expect(profile.lemonGift, isNull);
+    });
+
+    test('ensureProfile seeds lemons for gamification demo phones', () async {
+      final client = MockApiClient();
+
+      client.ensureProfile('+79004444444');
+      expect((await client.getProfile()).lemons, 0);
+
+      client.ensureProfile('+79005555555');
+      expect((await client.getProfile()).lemons, 7);
+
+      client.ensureProfile('+79006666666');
+      final giftProfile = await client.getProfile();
+      expect(giftProfile.lemons, 10);
+      expect(giftProfile.lemonGift, isNotNull);
+    });
+
+    test('createOrder increments lemons and applies gift at 10', () async {
+      final client = MockApiClient();
+      client.ensureProfile('+79004444444');
+
+      await client.createOrder(
+        const CreateOrderRequest(
+          items: [OrderLineInput(id: 1000, quantity: 1)],
+          deliveryAddress: 'г. Санкт-Петербург, ул. Тестовая, 1',
+        ),
+      );
+      expect((await client.getProfile()).lemons, 1);
+
+      client.ensureProfile('+79005555555');
+      for (var i = 0; i < 3; i++) {
+        await client.createOrder(
+          const CreateOrderRequest(
+            items: [OrderLineInput(id: 1000, quantity: 1)],
+            deliveryAddress: 'г. Санкт-Петербург, ул. Тестовая, 1',
+          ),
+        );
+      }
+      expect((await client.getProfile()).lemons, 10);
+
+      client.ensureProfile('+79006666666');
+      final order = await client.createOrder(
+        const CreateOrderRequest(
+          items: [OrderLineInput(id: 1000, quantity: 1)],
+          deliveryAddress: 'г. Санкт-Петербург, ул. Тестовая, 1',
+        ),
+      );
+      expect(order.items.any((line) => line.isGift), isTrue);
+      expect((await client.getProfile()).lemons, 1);
+    });
+
+    test('createOrder does not change lemons on validation error', () async {
+      final client = MockApiClient();
+      client.ensureProfile('+79004444444');
+
+      expect(
+        () => client.createOrder(
+          const CreateOrderRequest(
+            items: [OrderLineInput(id: 1000, quantity: 1)],
+            deliveryAddress: '   ',
+          ),
+        ),
+        throwsA(isA<ApiException>()),
+      );
+      expect((await client.getProfile()).lemons, 0);
     });
 
     test('ensureProfile does not seed demo orders', () async {

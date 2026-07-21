@@ -106,6 +106,7 @@ class OrderLine {
     required this.priceRub,
     required this.quantity,
     required this.lineTotalRub,
+    this.isGift = false,
   });
 
   factory OrderLine.fromJson(Map<String, dynamic> json) {
@@ -116,6 +117,7 @@ class OrderLine {
       priceRub: json['priceRub'] as int,
       quantity: json['quantity'] as int,
       lineTotalRub: json['lineTotalRub'] as int,
+      isGift: json['isGift'] as bool? ?? false,
     );
   }
 
@@ -125,6 +127,7 @@ class OrderLine {
   final int priceRub;
   final int quantity;
   final int lineTotalRub;
+  final bool isGift;
 }
 
 DateTime? _deliveryAtFromJson(Map<String, dynamic> json) {

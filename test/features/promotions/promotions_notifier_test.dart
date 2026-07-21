@@ -19,7 +19,7 @@ void main() {
 
     final articles = container.read(promotionsNotifierProvider).valueOrNull;
     expect(articles, isNotNull);
-    expect(articles!.length, 10);
+    expect(articles!.length, 11);
     expect(articles.any((a) => a.type == PromotionType.promotion), isTrue);
     expect(articles.any((a) => a.type == PromotionType.news), isTrue);
   });

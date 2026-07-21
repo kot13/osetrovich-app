@@ -8,6 +8,7 @@ import 'package:osetrovich/features/cart/data/order_repository.dart';
 import 'package:osetrovich/features/cart/domain/cart_lines_provider.dart';
 import 'package:osetrovich/features/cart/domain/cart_notifier.dart';
 import 'package:osetrovich/features/cart/domain/order.dart';
+import 'package:osetrovich/features/profile/domain/profile_notifier.dart';
 
 class CheckoutState {
   const CheckoutState({
@@ -101,6 +102,7 @@ class CheckoutNotifier extends Notifier<CheckoutState> {
           .reportOrderSuccess(orderId: order.id, orderTotalRub: order.totalRub);
       ref.read(cartNotifierProvider.notifier).clear();
       ref.invalidate(currentOrderProvider);
+      await ref.read(profileNotifierProvider.notifier).refresh();
       state = state.copyWith(
         isSubmitting: false,
         lastSuccessOrder: order,

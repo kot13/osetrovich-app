@@ -1,0 +1,312 @@
+openapi: 3.0.3
+info:
+  title: Osetrovich Mobile API
+  description: |
+    REST API мобильного приложения osetrovich.ru.
+    Дельта фичи 015-order-lemon-gamification: счётчик лимонов в профиле и подарок к 11-му заказу.
+  version: 0.12.5
+
+servers:
+  - url: https://api.osetrovich.ru/v1
+    description: Production (будущее)
+  - url: http://localhost:0/mock
+    description: Mock (клиентский мок, не реальный сервер)
+
+tags:
+  - name: profile
+    description: Профиль пользователя
+  - name: orders
+    description: Заказы
+
+paths:
+  /profile/me:
+    get:
+      tags: [profile]
+      summary: Текущий профиль (расширен полями геймификации)
+      operationId: getProfile
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Профиль пользователя
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserProfile'
+              examples:
+                withLemonsProgress:
+                  summary: Покупатель с 7 лимонами
+                  value:
+                    id: u1
+                    name: Покупатель
+                    phone: "+79005555555"
+                    email: null
+                    emailVerified: false
+                    pushEnabled: true
+                    loyaltyStatus: premium
+                    discount: 10
+                    card: "1234567890"
+                    lemons: 7
+                    lemonGift: null
+                withGiftEligible:
+                  summary: Покупатель с 10 лимонами (доступен подарок)
+                  value:
+                    id: u2
+                    name: Покупатель
+                    phone: "+79006666666"
+                    email: null
+                    emailVerified: false
+                    pushEnabled: true
+                    loyaltyStatus: club_member
+                    discount: 5
+                    card: null
+                    lemons: 10
+                    lemonGift:
+                      productId: 501
+                      name: Икра горбуши
+                      weightLabel: 50 г
+                      imageUrl: https://cdn.osetrovich.ru/mock/ikra-50.jpg
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /orders:
+    post:
+      tags: [orders]
+      summary: Создать заказ (с учётом лимонной акции)
+      operationId: createOrder
+      description: |
+        При `lemons == 10` сервер добавляет подарочную позицию в состав заказа
+        (`OrderLine.isGift = true`, `priceRub = 0`) и после успешного создания
+        устанавливает `lemons = 1` в профиле покупателя.
+        При `lemons` 0–9 сервер увеличивает счётчик на 1.
+        Подарок не передаётся в `CreateOrderRequest.items` — только товары покупателя.
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateOrderRequest'
+      responses:
+        '201':
+          description: Заказ создан
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Order'
+        '400':
+          description: Некорректный запрос
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  responses:
+    Unauthorized:
+      description: Не авторизован
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+
+  schemas:
+    ErrorResponse:
+      type: object
+      required: [code, message]
+      properties:
+        code:
+          type: string
+        message:
+          type: string
+
+    UserProfile:
+      type: object
+      required:
+        - id
+        - name
+        - phone
+        - emailVerified
+        - pushEnabled
+        - discount
+        - lemons
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        phone:
+          type: string
+          pattern: '^\+7\d{10}$'
+        email:
+          type: string
+          format: email
+          nullable: true
+        emailVerified:
+          type: boolean
+        pushEnabled:
+          type: boolean
+        loyaltyStatus:
+          allOf:
+            - $ref: '#/components/schemas/LoyaltyStatus'
+          nullable: true
+        discount:
+          type: integer
+          minimum: 0
+          maximum: 100
+        card:
+          type: string
+          nullable: true
+        lemons:
+          type: integer
+          minimum: 0
+          maximum: 10
+          description: |
+            Текущий прогресс в акции «Делай заказы — получай призы».
+            0 — до первого заказа в цикле; 10 — накоплено, доступен подарок к следующему заказу.
+          example: 3
+        lemonGift:
+          allOf:
+            - $ref: '#/components/schemas/LemonGiftPreview'
+          nullable: true
+          description: |
+            Данные подарка для отображения в корзине.
+            MUST быть null при lemons < 10; MUST быть объект при lemons == 10.
+
+    LoyaltyStatus:
+      type: string
+      enum:
+        - super_vip
+        - vip
+        - elite
+        - premium
+        - friend
+        - club_member
+
+    LemonGiftPreview:
+      type: object
+      required: [productId, name, weightLabel]
+      properties:
+        productId:
+          type: integer
+          minimum: 1
+          description: Идентификатор товара-подарка
+        name:
+          type: string
+          description: Название товара от сервера
+          example: Икра горбуши
+        weightLabel:
+          type: string
+          example: 50 г
+        imageUrl:
+          type: string
+          format: uri
+          nullable: true
+
+    CreateOrderRequest:
+      type: object
+      required: [items, deliveryAddress]
+      properties:
+        items:
+          type: array
+          minItems: 1
+          items:
+            $ref: '#/components/schemas/OrderLineInput'
+        deliveryAddress:
+          type: string
+          minLength: 1
+        apartment:
+          type: string
+          nullable: true
+        comment:
+          type: string
+          nullable: true
+
+    OrderLineInput:
+      type: object
+      required: [id, quantity]
+      properties:
+        id:
+          type: integer
+          minimum: 1
+        quantity:
+          type: integer
+          minimum: 1
+
+    Order:
+      type: object
+      required:
+        - id
+        - orderNumber
+        - items
+        - itemsSubtotalRub
+        - deliveryFeeRub
+        - totalRub
+        - deliveryAddress
+        - status
+        - createdAt
+      properties:
+        id:
+          type: string
+        orderNumber:
+          type: string
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/OrderLine'
+        itemsSubtotalRub:
+          type: integer
+          minimum: 0
+        deliveryFeeRub:
+          type: integer
+          minimum: 0
+        totalRub:
+          type: integer
+          minimum: 0
+        deliveryAddress:
+          type: string
+        status:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+
+    OrderLine:
+      type: object
+      required:
+        - id
+        - name
+        - weightLabel
+        - priceRub
+        - quantity
+        - lineTotalRub
+      properties:
+        id:
+          type: integer
+          minimum: 1
+        name:
+          type: string
+        weightLabel:
+          type: string
+        priceRub:
+          type: integer
+          minimum: 0
+        quantity:
+          type: integer
+          minimum: 1
+        lineTotalRub:
+          type: integer
+          minimum: 0
+        isGift:
+          type: boolean
+          default: false
+          description: true — подарочная позиция по акции лимонов
