@@ -62,7 +62,9 @@ class ProductDetail {
     final imageUrls =
         imageUrlsFromJson.isNotEmpty
             ? imageUrlsFromJson
-            : (imageUrl != null && imageUrl.isNotEmpty ? [imageUrl] : <String>[]);
+            : (imageUrl != null && imageUrl.isNotEmpty
+                ? [imageUrl]
+                : <String>[]);
 
     return ProductDetail(
       id: json['id'] as int,

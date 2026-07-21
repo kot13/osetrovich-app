@@ -127,4 +127,45 @@ void main() {
 
     expect(find.byType(InkWell), findsWidgets);
   });
+
+  testWidgets('banner keeps 20:9 aspect ratio on wide screen', (tester) async {
+    const screenWidth = 800.0;
+
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: SizedBox(
+            width: screenWidth,
+            child: BannerCarousel(banners: placeholderBanners),
+          ),
+        ),
+      ),
+    );
+
+    final aspectRatios = tester.widgetList<AspectRatio>(
+      find.descendant(
+        of: find.byType(BannerCarousel),
+        matching: find.byType(AspectRatio),
+      ),
+    );
+    expect(aspectRatios, isNotEmpty);
+    expect(aspectRatios.first.aspectRatio, kBannerAspectRatio);
+
+    final carouselBox = tester.renderObject<RenderBox>(
+      find.byType(BannerCarousel),
+    );
+    final slideWidth = screenWidth * 0.88 - 12;
+    expect(
+      carouselBox.size.height,
+      closeTo(slideWidth / kBannerAspectRatio, 0.01),
+    );
+  });
+
+  test('bannerCarouselHeightForWidth scales with width not fixed height', () {
+    final narrow = bannerCarouselHeightForWidth(375, 3);
+    final wide = bannerCarouselHeightForWidth(800, 3);
+
+    expect(wide, greaterThan(narrow));
+    expect(wide / 800, closeTo(narrow / 375, 0.01));
+  });
 }

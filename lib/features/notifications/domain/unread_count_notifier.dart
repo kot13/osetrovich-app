@@ -44,7 +44,11 @@ final unreadCountNotifierProvider =
 
 final unreadCountProvider = Provider<int>((ref) {
   final unreadAsync = ref.watch(unreadCountNotifierProvider);
-  return unreadAsync.when(data: (count) => count, loading: () => 0, error: (_, __) => 0);
+  return unreadAsync.when(
+    data: (count) => count,
+    loading: () => 0,
+    error: (_, __) => 0,
+  );
 });
 
 final hasUnreadNotificationsProvider = Provider<bool>((ref) {

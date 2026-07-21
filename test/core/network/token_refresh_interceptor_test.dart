@@ -64,26 +64,22 @@ void main() {
   test('401 triggers refresh and updates stored tokens', () async {
     dioAdapter.onGet(
       '/profile/me',
-      (server) => server.reply(
-        401,
-        {'code': 'unauthorized', 'message': 'Требуется авторизация'},
-      ),
+      (server) => server.reply(401, {
+        'code': 'unauthorized',
+        'message': 'Требуется авторизация',
+      }),
     );
 
     var refreshCalls = 0;
-    refreshAdapter.onPost(
-      '/auth/refresh',
-      (server) {
-        refreshCalls++;
-        server.reply(200, {
-          'access_token': 'new-access',
-          'refresh_token': 'new-refresh',
-          'expires_in': 3600,
-          'token_type': 'Bearer',
-        });
-      },
-      data: Matchers.any,
-    );
+    refreshAdapter.onPost('/auth/refresh', (server) {
+      refreshCalls++;
+      server.reply(200, {
+        'access_token': 'new-access',
+        'refresh_token': 'new-refresh',
+        'expires_in': 3600,
+        'token_type': 'Bearer',
+      });
+    }, data: Matchers.any);
 
     try {
       await dio.get<Map<String, dynamic>>('/profile/me');
@@ -100,26 +96,22 @@ void main() {
   test('parallel 401 requests perform single refresh', () async {
     dioAdapter.onGet(
       '/profile/me',
-      (server) => server.reply(
-        401,
-        {'code': 'unauthorized', 'message': 'Требуется авторизация'},
-      ),
+      (server) => server.reply(401, {
+        'code': 'unauthorized',
+        'message': 'Требуется авторизация',
+      }),
     );
 
     var refreshCalls = 0;
-    refreshAdapter.onPost(
-      '/auth/refresh',
-      (server) {
-        refreshCalls++;
-        server.reply(200, {
-          'access_token': 'new-access',
-          'refresh_token': 'new-refresh',
-          'expires_in': 3600,
-          'token_type': 'Bearer',
-        });
-      },
-      data: Matchers.any,
-    );
+    refreshAdapter.onPost('/auth/refresh', (server) {
+      refreshCalls++;
+      server.reply(200, {
+        'access_token': 'new-access',
+        'refresh_token': 'new-refresh',
+        'expires_in': 3600,
+        'token_type': 'Bearer',
+      });
+    }, data: Matchers.any);
 
     Future<void> requestProfile() async {
       try {
@@ -136,19 +128,25 @@ void main() {
   });
 
   test('auth paths do not trigger auto-refresh on 401', () async {
-    for (final path in ['/auth/sms/request', '/auth/sms/verify', '/auth/refresh']) {
+    for (final path in [
+      '/auth/sms/request',
+      '/auth/sms/verify',
+      '/auth/refresh',
+    ]) {
       dioAdapter.onPost(
         path,
-        (server) => server.reply(401, {'code': 'unauthorized', 'message': 'Ошибка'}),
+        (server) =>
+            server.reply(401, {'code': 'unauthorized', 'message': 'Ошибка'}),
         data: Matchers.any,
       );
     }
 
-    for (final path in ['/auth/sms/request', '/auth/sms/verify', '/auth/refresh']) {
-      await expectLater(
-        dio.post<void>(path),
-        throwsA(isA<DioException>()),
-      );
+    for (final path in [
+      '/auth/sms/request',
+      '/auth/sms/verify',
+      '/auth/refresh',
+    ]) {
+      await expectLater(dio.post<void>(path), throwsA(isA<DioException>()));
     }
 
     expect(sessionExpiredCalled, isFalse);
@@ -157,21 +155,17 @@ void main() {
   test('refresh 401 calls onSessionExpired and does not retry', () async {
     dioAdapter.onGet(
       '/profile/me',
-      (server) => server.reply(
-        401,
-        {'code': 'unauthorized', 'message': 'Требуется авторизация'},
-      ),
+      (server) => server.reply(401, {
+        'code': 'unauthorized',
+        'message': 'Требуется авторизация',
+      }),
     );
 
     var refreshCalls = 0;
-    refreshAdapter.onPost(
-      '/auth/refresh',
-      (server) {
-        refreshCalls++;
-        server.reply(401, {'code': 'unauthorized', 'message': 'Сессия истекла'});
-      },
-      data: Matchers.any,
-    );
+    refreshAdapter.onPost('/auth/refresh', (server) {
+      refreshCalls++;
+      server.reply(401, {'code': 'unauthorized', 'message': 'Сессия истекла'});
+    }, data: Matchers.any);
 
     await expectLater(
       dio.get<Map<String, dynamic>>('/profile/me'),
@@ -182,33 +176,36 @@ void main() {
     expect(sessionExpiredCalled, isTrue);
   });
 
-  test('401 without refresh token calls onSessionExpired without refresh', () async {
-    await storage.clear();
-    expect(await storage.readRefreshToken(), isNull);
+  test(
+    '401 without refresh token calls onSessionExpired without refresh',
+    () async {
+      await storage.clear();
+      expect(await storage.readRefreshToken(), isNull);
 
-    dioAdapter.onGet(
-      '/profile/me',
-      (server) => server.reply(
-        401,
-        {'code': 'unauthorized', 'message': 'Требуется авторизация'},
-      ),
-    );
+      dioAdapter.onGet(
+        '/profile/me',
+        (server) => server.reply(401, {
+          'code': 'unauthorized',
+          'message': 'Требуется авторизация',
+        }),
+      );
 
-    await expectLater(
-      dio.get<Map<String, dynamic>>('/profile/me'),
-      throwsA(isA<DioException>()),
-    );
+      await expectLater(
+        dio.get<Map<String, dynamic>>('/profile/me'),
+        throwsA(isA<DioException>()),
+      );
 
-    expect(sessionExpiredCalled, isTrue);
-  });
+      expect(sessionExpiredCalled, isTrue);
+    },
+  );
 
   test('network error during refresh does not clear session', () async {
     dioAdapter.onGet(
       '/profile/me',
-      (server) => server.reply(
-        401,
-        {'code': 'unauthorized', 'message': 'Требуется авторизация'},
-      ),
+      (server) => server.reply(401, {
+        'code': 'unauthorized',
+        'message': 'Требуется авторизация',
+      }),
     );
 
     refreshAdapter.onPost(
@@ -241,25 +238,21 @@ void main() {
   test('logout during refresh skips applying tokens', () async {
     dioAdapter.onGet(
       '/profile/me',
-      (server) => server.reply(
-        401,
-        {'code': 'unauthorized', 'message': 'Требуется авторизация'},
-      ),
+      (server) => server.reply(401, {
+        'code': 'unauthorized',
+        'message': 'Требуется авторизация',
+      }),
     );
 
-    refreshAdapter.onPost(
-      '/auth/refresh',
-      (server) {
-        isSessionActive = false;
-        server.reply(200, {
-          'access_token': 'new-access',
-          'refresh_token': 'new-refresh',
-          'expires_in': 3600,
-          'token_type': 'Bearer',
-        });
-      },
-      data: Matchers.any,
-    );
+    refreshAdapter.onPost('/auth/refresh', (server) {
+      isSessionActive = false;
+      server.reply(200, {
+        'access_token': 'new-access',
+        'refresh_token': 'new-refresh',
+        'expires_in': 3600,
+        'token_type': 'Bearer',
+      });
+    }, data: Matchers.any);
 
     await expectLater(
       dio.get<Map<String, dynamic>>('/profile/me'),

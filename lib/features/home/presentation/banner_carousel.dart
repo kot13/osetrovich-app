@@ -6,6 +6,19 @@ import 'package:osetrovich/core/theme/app_colors.dart';
 import 'package:osetrovich/features/home/domain/banner.dart' as home;
 import 'package:osetrovich/features/home/domain/banner_link_handler.dart';
 
+/// Соотношение сторон баннеров (800×360) — совпадает с рекомендуемым размером изображения.
+const kBannerAspectRatio = 800 / 360;
+
+const _itemHorizontalPadding = 6.0;
+const _viewportFraction = 0.88;
+
+/// Высота карусели при заданной ширине контейнера и числе баннеров.
+double bannerCarouselHeightForWidth(double width, int bannerCount) {
+  final viewportFraction = bannerCount <= 1 ? 1.0 : _viewportFraction;
+  final slideWidth = width * viewportFraction - _itemHorizontalPadding * 2;
+  return slideWidth / kBannerAspectRatio;
+}
+
 class BannerCarousel extends StatefulWidget {
   const BannerCarousel({super.key, required this.banners});
 
@@ -18,7 +31,6 @@ class BannerCarousel extends StatefulWidget {
 class _BannerCarouselState extends State<BannerCarousel> {
   static const _loopItemCount = 10000;
   static const _autoScrollInterval = Duration(seconds: 5);
-  static const _viewportFraction = 0.88;
 
   late final PageController _controller;
   Timer? _autoScrollTimer;
@@ -75,25 +87,42 @@ class _BannerCarouselState extends State<BannerCarousel> {
       return const SizedBox.shrink();
     }
 
-    return SizedBox(
-      height: 180,
-      width: double.infinity,
-      child: PageView.builder(
-        controller: _controller,
-        padEnds: false,
-        itemCount: widget.banners.length * _loopItemCount,
-        itemBuilder: (context, index) {
-          final banner = widget.banners[index % widget.banners.length];
-          final bannerIndex = index % widget.banners.length;
-          return Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 6),
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(12),
-              child: _BannerContent(banner: banner, bannerIndex: bannerIndex),
-            ),
-          );
-        },
-      ),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final height = bannerCarouselHeightForWidth(
+          constraints.maxWidth,
+          widget.banners.length,
+        );
+
+        return SizedBox(
+          height: height,
+          width: double.infinity,
+          child: PageView.builder(
+            controller: _controller,
+            padEnds: false,
+            itemCount: widget.banners.length * _loopItemCount,
+            itemBuilder: (context, index) {
+              final banner = widget.banners[index % widget.banners.length];
+              final bannerIndex = index % widget.banners.length;
+              return Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: _itemHorizontalPadding,
+                ),
+                child: AspectRatio(
+                  aspectRatio: kBannerAspectRatio,
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(12),
+                    child: _BannerContent(
+                      banner: banner,
+                      bannerIndex: bannerIndex,
+                    ),
+                  ),
+                ),
+              );
+            },
+          ),
+        );
+      },
     );
   }
 }

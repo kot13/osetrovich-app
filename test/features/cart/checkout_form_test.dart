@@ -31,7 +31,8 @@ void main() {
     expect(find.text(AppStrings.cartApartmentLabel), findsOneWidget);
     expect(find.text(AppStrings.cartCommentLabel), findsOneWidget);
 
-    final fields = tester.widgetList<TextField>(find.byType(TextField)).toList();
+    final fields =
+        tester.widgetList<TextField>(find.byType(TextField)).toList();
     expect(fields.length, 3);
     expect(fields[1].controller, apartmentController);
   });

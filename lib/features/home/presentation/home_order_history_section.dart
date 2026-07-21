@@ -215,9 +215,9 @@ class _HomeOrderHistorySectionState
     if (!mounted) {
       return;
     }
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(orderRatingErrorMessage(exception))),
-    );
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(orderRatingErrorMessage(exception))));
     if (shouldRefreshOrderAfterRatingError(exception)) {
       ref.invalidate(currentOrderProvider);
     }

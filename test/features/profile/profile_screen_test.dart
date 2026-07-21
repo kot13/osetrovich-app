@@ -19,6 +19,7 @@ const _testProfile = UserProfile(
   phone: '+79001234567',
   emailVerified: false,
   pushEnabled: true,
+  discount: 0,
 );
 
 class _FakeProfileNotifier extends ProfileNotifier {
@@ -38,10 +39,7 @@ class _FakeAuthSessionNotifier extends AuthSessionNotifier {
 class _FailingProfileNotifier extends ProfileNotifier {
   @override
   Future<UserProfile?> build() async {
-    throw ApiException(
-      code: 'NETWORK_ERROR',
-      message: AppStrings.networkError,
-    );
+    throw ApiException(code: 'NETWORK_ERROR', message: AppStrings.networkError);
   }
 }
 
@@ -133,7 +131,9 @@ void main() {
     expect(find.text(AppStrings.setPin), findsNothing);
   });
 
-  testWidgets('profile error state shows user-friendly message', (tester) async {
+  testWidgets('profile error state shows user-friendly message', (
+    tester,
+  ) async {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [

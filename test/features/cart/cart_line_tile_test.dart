@@ -14,6 +14,7 @@ void main() {
     priceRub: 450,
     imageUrl: 'https://example.com/image.jpg',
     quantity: 2,
+    sale: false,
   );
 
   testWidgets('cart line tile shows product info and quantity controls', (

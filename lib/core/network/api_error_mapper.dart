@@ -25,7 +25,10 @@ ApiException _mapDioException(DioException error) {
       error.type == DioExceptionType.sendTimeout ||
       error.type == DioExceptionType.receiveTimeout ||
       error.type == DioExceptionType.connectionError) {
-    return ApiException(code: 'NETWORK_ERROR', message: AppStrings.networkError);
+    return ApiException(
+      code: 'NETWORK_ERROR',
+      message: AppStrings.networkError,
+    );
   }
 
   if (statusCode == 401) {

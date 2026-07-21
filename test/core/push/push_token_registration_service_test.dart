@@ -43,7 +43,12 @@ void main() {
   test('skips empty token', () async {
     await service.registerIfNeeded(token: '', platform: 'android');
 
-    verifyNever(() => apiClient.registerPushToken(token: any(named: 'token'), platform: any(named: 'platform')));
+    verifyNever(
+      () => apiClient.registerPushToken(
+        token: any(named: 'token'),
+        platform: any(named: 'platform'),
+      ),
+    );
   });
 
   test('swallows validation errors', () async {

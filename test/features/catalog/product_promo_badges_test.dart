@@ -8,9 +8,7 @@ void main() {
   Widget buildBadges({required bool sale, required bool special}) {
     return MaterialApp(
       theme: AppTheme.light,
-      home: Scaffold(
-        body: ProductPromoBadges(sale: sale, special: special),
-      ),
+      home: Scaffold(body: ProductPromoBadges(sale: sale, special: special)),
     );
   }
 

@@ -14,8 +14,7 @@ class PushForegroundHandler {
     required void Function(String message) showMessage,
     required void Function() refreshNotifications,
   }) : _receiveStream =
-           receiveStream ??
-           (() => AppMetricaPush.pushClickStream.map((_) {})),
+           receiveStream ?? (() => AppMetricaPush.pushClickStream.map((_) {})),
        _showMessage = showMessage,
        _refreshNotifications = refreshNotifications;
 

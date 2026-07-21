@@ -15,7 +15,11 @@ void main() {
 
   test('withAllCategoryFirst deduplicates and normalizes All category', () {
     final result = withAllCategoryFirst([
-      const CatalogCategory(id: kAllCategoriesId, name: 'Старое', sortOrder: 99),
+      const CatalogCategory(
+        id: kAllCategoriesId,
+        name: 'Старое',
+        sortOrder: 99,
+      ),
       const CatalogCategory(id: kCategoryFish, name: 'Рыба', sortOrder: 1),
     ]);
 

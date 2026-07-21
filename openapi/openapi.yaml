@@ -1,8 +1,8 @@
 openapi: 3.0.3
 info:
   title: Osetrovich Mobile API
-  description: REST API мобильного приложения osetrovich.ru (фаза home-screen-content)
-  version: 0.12.1
+  description: REST API мобильного приложения osetrovich.ru (фаза home-loyalty-status)
+  version: 0.12.4
 
 servers:
   - url: https://api.osetrovich.ru/v1
@@ -128,6 +128,9 @@ paths:
                 email: null
                 emailVerified: false
                 pushEnabled: true
+                loyaltyStatus: premium
+                discount: 10
+                card: "1234567890"
         '401':
           $ref: '#/components/responses/Unauthorized'
     patch:
@@ -818,7 +821,7 @@ components:
 
     UserProfile:
       type: object
-      required: [id, name, phone, emailVerified, pushEnabled]
+      required: [id, name, phone, emailVerified, pushEnabled, discount]
       properties:
         id:
           type: string
@@ -841,6 +844,36 @@ components:
         pushEnabled:
           type: boolean
           example: true
+        loyaltyStatus:
+          allOf:
+            - $ref: '#/components/schemas/LoyaltyStatus'
+          nullable: true
+          description: Статус лояльности; null — статус не назначен
+        discount:
+          type: integer
+          minimum: 0
+          maximum: 100
+          example: 10
+          description: Персональная скидка покупателя в процентах (0 = нет скидки)
+        card:
+          type: string
+          nullable: true
+          example: "1234567890"
+          description: Номер дисконтной / клубной карты; null — карта не указана
+
+    LoyaltyStatus:
+      type: string
+      enum:
+        - super_vip
+        - vip
+        - elite
+        - premium
+        - friend
+        - club_member
+      description: |
+        Уровень лояльности покупателя. super_vip — Super VIP; vip — VIP;
+        elite — Elite; premium — Premium; friend — Друг;
+        club_member — Участник клуба.
 
     UpdateProfileBody:
       type: object

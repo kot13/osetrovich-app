@@ -5,9 +5,10 @@ import 'package:osetrovich/core/push/push_token_registration_service.dart';
 import 'package:osetrovich/features/auth/domain/auth_session.dart';
 import 'package:osetrovich/features/auth/domain/auth_session_provider.dart';
 
-final pushTokenRegistrationServiceProvider = Provider<PushTokenRegistrationService>(
-  (ref) => PushTokenRegistrationService(ref.watch(apiClientProvider)),
-);
+final pushTokenRegistrationServiceProvider =
+    Provider<PushTokenRegistrationService>(
+      (ref) => PushTokenRegistrationService(ref.watch(apiClientProvider)),
+    );
 
 final pushRegistrationBootstrapProvider = Provider<void>((ref) {
   final registrationService = ref.watch(pushTokenRegistrationServiceProvider);

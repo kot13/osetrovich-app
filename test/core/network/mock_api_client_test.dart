@@ -2,6 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:osetrovich/core/network/api_exception.dart';
 import 'package:osetrovich/core/network/mock_api_client.dart';
 import 'package:osetrovich/features/cart/domain/order.dart';
+import 'package:osetrovich/features/profile/domain/loyalty_status.dart';
 
 void main() {
   group('MockApiClient profile', () {
@@ -19,6 +20,17 @@ void main() {
 
       expect(profile.phone, '+79001234567');
       expect(profile.name, 'Покупатель');
+    });
+
+    test('ensureProfile seeds loyalty fields for demo phone', () async {
+      final client = MockApiClient();
+      client.ensureProfile('+79001111111');
+
+      final profile = await client.getProfile();
+
+      expect(profile.loyaltyStatus?.name, LoyaltyStatus.premium.name);
+      expect(profile.discount, 10);
+      expect(profile.card, '1234567890123456');
     });
 
     test('ensureProfile does not seed demo orders', () async {

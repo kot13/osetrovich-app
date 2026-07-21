@@ -15,9 +15,7 @@ class _MockApiClient extends Mock implements ApiClient {}
 
 void main() {
   setUpAll(() {
-    registerFallbackValue(
-      const SubmitOrderRatingRequest(stars: 1),
-    );
+    registerFallbackValue(const SubmitOrderRatingRequest(stars: 1));
   });
 
   CurrentOrder sampleOrder({
@@ -171,9 +169,7 @@ void main() {
     tester,
   ) async {
     final mockApi = _MockApiClient();
-    when(
-      () => mockApi.submitOrderRating('ord-1', any()),
-    ).thenThrow(
+    when(() => mockApi.submitOrderRating('ord-1', any())).thenThrow(
       ApiException(
         code: 'rating_already_set',
         message: AppStrings.ratingAlreadySet,

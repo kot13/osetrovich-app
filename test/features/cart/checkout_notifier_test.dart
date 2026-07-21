@@ -138,8 +138,8 @@ void main() {
   });
 
   test('submit passes integer product id and apartment', () async {
-    final capturingClient = _CapturingMockApiClient()
-      ..ensureProfile('+79001234567');
+    final capturingClient =
+        _CapturingMockApiClient()..ensureProfile('+79001234567');
 
     final container = ProviderContainer(
       overrides: [
@@ -153,7 +153,9 @@ void main() {
 
     container.read(cartNotifierProvider.notifier).increment(1000);
 
-    await container.read(checkoutNotifierProvider.notifier).submit(
+    await container
+        .read(checkoutNotifierProvider.notifier)
+        .submit(
           address: 'г. Санкт-Петербург, ул. Тестовая, 1',
           apartment: ' 42 ',
         );
@@ -168,8 +170,8 @@ void main() {
   });
 
   test('submit omits empty apartment', () async {
-    final capturingClient = _CapturingMockApiClient()
-      ..ensureProfile('+79001234567');
+    final capturingClient =
+        _CapturingMockApiClient()..ensureProfile('+79001234567');
 
     final container = ProviderContainer(
       overrides: [
@@ -183,7 +185,9 @@ void main() {
 
     container.read(cartNotifierProvider.notifier).increment(1000);
 
-    await container.read(checkoutNotifierProvider.notifier).submit(
+    await container
+        .read(checkoutNotifierProvider.notifier)
+        .submit(
           address: 'г. Санкт-Петербург, ул. Тестовая, 1',
           apartment: '   ',
         );
@@ -210,9 +214,9 @@ void main() {
     container.read(cartNotifierProvider.notifier).increment(1000);
     expect(await container.read(currentOrderProvider.future), isNull);
 
-    await container.read(checkoutNotifierProvider.notifier).submit(
-          address: 'г. Санкт-Петербург, ул. Тестовая, 1',
-        );
+    await container
+        .read(checkoutNotifierProvider.notifier)
+        .submit(address: 'г. Санкт-Петербург, ул. Тестовая, 1');
 
     final order = await container.read(currentOrderProvider.future);
     expect(order, isNotNull);

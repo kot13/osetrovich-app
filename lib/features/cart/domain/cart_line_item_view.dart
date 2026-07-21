@@ -8,6 +8,7 @@ class CartLineItemView {
     required this.priceRub,
     required this.imageUrl,
     required this.quantity,
+    required this.sale,
   });
 
   factory CartLineItemView.fromProduct(ProductDetail product, int quantity) {
@@ -18,6 +19,7 @@ class CartLineItemView {
       priceRub: product.priceRub,
       imageUrl: product.imageUrls.isNotEmpty ? product.imageUrls.first : '',
       quantity: quantity,
+      sale: product.sale,
     );
   }
 
@@ -27,6 +29,7 @@ class CartLineItemView {
   final int priceRub;
   final String imageUrl;
   final int quantity;
+  final bool sale;
 
   int get lineTotalRub => priceRub * quantity;
 }

@@ -15,9 +15,9 @@ void main() {
 
   setUp(() {
     apiClient = _MockApiClient();
-    when(() => apiClient.getUnreadNotificationCount()).thenAnswer(
-      (_) async => const NotificationBadge(unreadCount: 5),
-    );
+    when(
+      () => apiClient.getUnreadNotificationCount(),
+    ).thenAnswer((_) async => const NotificationBadge(unreadCount: 5));
   });
 
   test('loads unread count from API when authenticated', () async {
@@ -43,9 +43,9 @@ void main() {
   });
 
   test('refresh updates count after mutation', () async {
-    when(() => apiClient.getUnreadNotificationCount()).thenAnswer(
-      (_) async => const NotificationBadge(unreadCount: 2),
-    );
+    when(
+      () => apiClient.getUnreadNotificationCount(),
+    ).thenAnswer((_) async => const NotificationBadge(unreadCount: 2));
 
     final container = ProviderContainer(
       overrides: [
@@ -65,9 +65,9 @@ void main() {
     addTearDown(container.dispose);
 
     await container.read(unreadCountNotifierProvider.future);
-    when(() => apiClient.getUnreadNotificationCount()).thenAnswer(
-      (_) async => const NotificationBadge(unreadCount: 0),
-    );
+    when(
+      () => apiClient.getUnreadNotificationCount(),
+    ).thenAnswer((_) async => const NotificationBadge(unreadCount: 0));
 
     await container.read(unreadCountNotifierProvider.notifier).refresh();
 

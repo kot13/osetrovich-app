@@ -25,6 +25,19 @@ abstract final class AppStrings {
   static const resendInSeconds = 'Повторить через';
 
   static const authPrompt = 'Авторизуйтесь';
+  static const homeAuthButton = 'Авторизоваться';
+
+  static const homeLoyaltyStatusTitle = 'Ваш статус';
+  static const homeLoyaltyYourDiscount = 'Ваша скидка';
+  static const homeLoyaltyMaximumLevel = 'Максимальный уровень';
+  static const homeLoyaltyDiscountAllPurchases = 'на все покупки';
+  static const homeLoyaltyDiscountExceptPromo = 'кроме товаров по акции';
+  static const homeLoyaltyCardNumberLabel = 'Номер карты лояльности';
+  static const homeLoyaltyCardCopied = 'Номер карты скопирован';
+
+  static String homeLoyaltyDiscount(int percent) => 'Скидка $percent%';
+
+  static String homeLoyaltyCard(String number) => 'Карта $number';
 
   static const invalidPhone = 'Некорректный номер телефона';
   static const invalidCode = 'Неверный код';
@@ -97,6 +110,9 @@ abstract final class AppStrings {
   static const cartCommentLabel = 'Комментарий к заказу';
   static const cartCommentHint = 'Необязательно';
   static const cartItemsSubtotal = 'Товары';
+  static const cartSubtotalAfterDiscount = 'Товары со скидкой';
+
+  static String cartLoyaltyDiscount(int percent) => 'Скидка $percent%';
   static const cartDeliveryFee = 'Доставка';
   static const cartTotal = 'Итого';
   static const cartDeliveryFree = 'Бесплатно';

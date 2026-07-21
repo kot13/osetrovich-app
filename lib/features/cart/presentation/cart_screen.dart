@@ -15,6 +15,7 @@ import 'package:osetrovich/features/cart/presentation/widgets/cart_line_tile.dar
 import 'package:osetrovich/features/cart/presentation/widgets/cart_order_summary.dart';
 import 'package:osetrovich/features/cart/presentation/widgets/checkout_form.dart';
 import 'package:osetrovich/features/cart/presentation/widgets/delivery_terms_card.dart';
+import 'package:osetrovich/features/profile/domain/profile_notifier.dart';
 
 class CartScreen extends ConsumerStatefulWidget {
   const CartScreen({super.key});
@@ -175,6 +176,10 @@ class _CartScreenState extends ConsumerState<CartScreen> {
     });
 
     final distinctCount = ref.watch(cartDistinctCountProvider);
+    final isAuthenticated = ref.watch(isAuthenticatedProvider);
+    if (isAuthenticated) {
+      ref.watch(profileNotifierProvider);
+    }
 
     return Scaffold(
       appBar: AppBar(title: const Text(AppStrings.tabCart)),
@@ -242,23 +247,23 @@ class _FilledCartBody extends ConsumerWidget {
         return ListView(
           padding: const EdgeInsets.all(16),
           children: [
-              for (final line in lines) CartLineTile(line: line),
-              if (totals != null) ...[
-                const SizedBox(height: 8),
-                CartOrderSummary(totals: totals),
-              ],
-              const SizedBox(height: 16),
-              const DeliveryTermsCard(),
-              const SizedBox(height: 16),
-              CheckoutForm(
-                addressController: addressController,
-                apartmentController: apartmentController,
-                commentController: commentController,
-                onCheckout: onCheckout,
-                isSubmitting: checkoutState.isSubmitting,
-                errorMessage: checkoutState.errorMessage,
-              ),
+            for (final line in lines) CartLineTile(line: line),
+            if (totals != null) ...[
+              const SizedBox(height: 8),
+              CartOrderSummary(totals: totals),
             ],
+            const SizedBox(height: 16),
+            const DeliveryTermsCard(),
+            const SizedBox(height: 16),
+            CheckoutForm(
+              addressController: addressController,
+              apartmentController: apartmentController,
+              commentController: commentController,
+              onCheckout: onCheckout,
+              isSubmitting: checkoutState.isSubmitting,
+              errorMessage: checkoutState.errorMessage,
+            ),
+          ],
         );
       },
     );

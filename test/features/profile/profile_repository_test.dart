@@ -17,6 +17,7 @@ void main() {
     phone: '+79001234567',
     emailVerified: false,
     pushEnabled: true,
+    discount: 0,
   );
 
   setUp(() {

@@ -19,8 +19,27 @@ class CartOrderSummary extends StatelessWidget {
           children: [
             _SummaryRow(
               label: AppStrings.cartItemsSubtotal,
-              value: formatPriceRub(totals.itemsSubtotalRub),
+              value: formatPriceRub(
+                totals.hasLoyaltyDiscount
+                    ? totals.itemsSubtotalBeforeDiscountRub
+                    : totals.itemsSubtotalRub,
+              ),
             ),
+            if (totals.hasLoyaltyDiscount) ...[
+              const SizedBox(height: 8),
+              _SummaryRow(
+                label: AppStrings.cartLoyaltyDiscount(
+                  totals.loyaltyDiscountPercent!,
+                ),
+                value: '−${formatPriceRub(totals.loyaltyDiscountRub)}',
+                valueColor: AppColors.accent,
+              ),
+              const SizedBox(height: 8),
+              _SummaryRow(
+                label: AppStrings.cartSubtotalAfterDiscount,
+                value: formatPriceRub(totals.itemsSubtotalRub),
+              ),
+            ],
             const SizedBox(height: 8),
             _SummaryRow(
               label: AppStrings.cartDeliveryFee,
@@ -47,23 +66,33 @@ class _SummaryRow extends StatelessWidget {
     required this.label,
     required this.value,
     this.emphasized = false,
+    this.valueColor,
   });
 
   final String label;
   final String value;
   final bool emphasized;
+  final Color? valueColor;
 
   @override
   Widget build(BuildContext context) {
-    final style = TextStyle(
+    final labelStyle = TextStyle(
       color: AppColors.dark,
+      fontWeight: emphasized ? FontWeight.w700 : FontWeight.w500,
+      fontSize: emphasized ? 16 : 14,
+    );
+    final valueStyle = TextStyle(
+      color: valueColor ?? AppColors.dark,
       fontWeight: emphasized ? FontWeight.w700 : FontWeight.w500,
       fontSize: emphasized ? 16 : 14,
     );
 
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [Text(label, style: style), Text(value, style: style)],
+      children: [
+        Text(label, style: labelStyle),
+        Text(value, style: valueStyle),
+      ],
     );
   }
 }

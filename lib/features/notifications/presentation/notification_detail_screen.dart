@@ -73,8 +73,7 @@ class _NotificationDetailScreenState
               action == NotificationAction.rateOrder &&
               !_ratingSubmitted &&
               currentOrderAsync.maybeWhen(
-                data:
-                    (order) => order?.ratingState == OrderRatingState.pending,
+                data: (order) => order?.ratingState == OrderRatingState.pending,
                 orElse: () => false,
               );
 
@@ -167,9 +166,9 @@ class _NotificationDetailScreenState
             if (!mounted) {
               return;
             }
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(orderRatingErrorMessage(e))),
-            );
+            ScaffoldMessenger.of(
+              context,
+            ).showSnackBar(SnackBar(content: Text(orderRatingErrorMessage(e))));
             if (shouldRefreshOrderAfterRatingError(e)) {
               ref.invalidate(currentOrderProvider);
             }
@@ -180,9 +179,9 @@ class _NotificationDetailScreenState
       if (!mounted) {
         return;
       }
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(orderRatingErrorMessage(e))),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(orderRatingErrorMessage(e))));
     } finally {
       if (mounted) {
         setState(() => _isOpeningRating = false);

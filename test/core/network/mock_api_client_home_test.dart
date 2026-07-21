@@ -51,13 +51,15 @@ void main() {
     expect(await client.getCurrentOrder(), isNull);
   });
 
-  test('createOrder then completeOrderForRating returns completed pending order',
-      () async {
-    final order = await _createOrderForRating(client);
-    expect(order.status, OrderStatus.completed);
-    expect(order.ratingState, OrderRatingState.pending);
-    expect(order.deliveryAt, isNotNull);
-  });
+  test(
+    'createOrder then completeOrderForRating returns completed pending order',
+    () async {
+      final order = await _createOrderForRating(client);
+      expect(order.status, OrderStatus.completed);
+      expect(order.ratingState, OrderRatingState.pending);
+      expect(order.deliveryAt, isNotNull);
+    },
+  );
 
   test('submitOrderRating updates order', () async {
     final order = await _createOrderForRating(client);
@@ -80,9 +82,7 @@ void main() {
         order.id,
         const SubmitOrderRatingRequest(stars: 3),
       ),
-      throwsA(
-        predicate<ApiException>((e) => e.code == 'rating_already_set'),
-      ),
+      throwsA(predicate<ApiException>((e) => e.code == 'rating_already_set')),
     );
   });
 

@@ -15,6 +15,7 @@ void main() {
     phone: '+79001234567',
     emailVerified: false,
     pushEnabled: true,
+    discount: 0,
   );
 
   test('profile notifier loads profile when authenticated', () async {

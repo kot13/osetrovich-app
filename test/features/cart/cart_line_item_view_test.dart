@@ -20,6 +20,7 @@ void main() {
     final line = CartLineItemView.fromProduct(product, 2);
 
     expect(line.imageUrl, '');
+    expect(line.sale, isFalse);
     expect(line.lineTotalRub, 1498);
   });
 }

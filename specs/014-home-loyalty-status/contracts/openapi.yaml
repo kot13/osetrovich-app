@@ -1,0 +1,138 @@
+openapi: 3.0.3
+info:
+  title: Osetrovich Mobile API
+  description: |
+    REST API мобильного приложения osetrovich.ru.
+    Дельта фичи 014-home-loyalty-status: расширение UserProfile полями программы лояльности.
+  version: 0.12.4
+
+servers:
+  - url: https://api.osetrovich.ru/v1
+    description: Production (будущее)
+  - url: http://localhost:0/mock
+    description: Mock (клиентский мок, не реальный сервер)
+
+tags:
+  - name: profile
+    description: Профиль пользователя
+
+paths:
+  /profile/me:
+    get:
+      tags: [profile]
+      summary: Текущий профиль пользователя (расширен полями лояльности)
+      operationId: getProfile
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Профиль пользователя
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserProfile'
+              examples:
+                withLoyalty:
+                  summary: Покупатель со статусом Premium
+                  value:
+                    id: u1
+                    name: Покупатель
+                    phone: "+79001234567"
+                    email: null
+                    emailVerified: false
+                    pushEnabled: true
+                    loyaltyStatus: premium
+                    discount: 10
+                    card: "1234567890"
+                withoutLoyalty:
+                  summary: Покупатель без статуса
+                  value:
+                    id: u2
+                    name: Покупатель
+                    phone: "+79009999999"
+                    email: null
+                    emailVerified: false
+                    pushEnabled: true
+                    loyaltyStatus: null
+                    discount: 0
+                    card: null
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  responses:
+    Unauthorized:
+      description: Не авторизован
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+
+  schemas:
+    ErrorResponse:
+      type: object
+      required: [code, message]
+      properties:
+        code:
+          type: string
+        message:
+          type: string
+
+    UserProfile:
+      type: object
+      required: [id, name, phone, emailVerified, pushEnabled, discount]
+      properties:
+        id:
+          type: string
+          example: u1
+        name:
+          type: string
+          example: Покупатель
+        phone:
+          type: string
+          pattern: '^\+7\d{10}$'
+          example: "+79001234567"
+        email:
+          type: string
+          format: email
+          nullable: true
+        emailVerified:
+          type: boolean
+        pushEnabled:
+          type: boolean
+        loyaltyStatus:
+          allOf:
+            - $ref: '#/components/schemas/LoyaltyStatus'
+          nullable: true
+          description: Статус лояльности; null — статус не назначен
+        discount:
+          type: integer
+          minimum: 0
+          maximum: 100
+          example: 10
+          description: Персональная скидка покупателя в процентах (0 = нет скидки)
+        card:
+          type: string
+          nullable: true
+          example: "1234567890"
+          description: Номер дисконтной / клубной карты; null — карта не указана
+
+    LoyaltyStatus:
+      type: string
+      enum:
+        - super_vip
+        - vip
+        - elite
+        - premium
+        - friend
+        - club_member
+      description: |
+        Уровень лояльности покупателя. super_vip — Super VIP; vip — VIP;
+        elite — Elite; premium — Premium; friend — Друг;
+        club_member — Участник клуба.

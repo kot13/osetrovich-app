@@ -6,12 +6,13 @@ import 'package:osetrovich/core/widgets/loading_indicator.dart';
 import 'package:osetrovich/features/auth/domain/auth_session_provider.dart';
 import 'package:osetrovich/features/cart/data/order_repository.dart';
 import 'package:osetrovich/features/home/data/home_repository.dart';
-import 'package:osetrovich/features/home/presentation/auth_prompt_banner.dart';
+import 'package:osetrovich/features/home/domain/home_profile_slot_ui_state.dart';
 import 'package:osetrovich/features/home/presentation/banner_carousel.dart';
-import 'package:osetrovich/features/home/presentation/home_contact_button.dart';
 import 'package:osetrovich/features/home/presentation/home_order_history_section.dart';
+import 'package:osetrovich/features/home/presentation/home_profile_slot.dart';
 import 'package:osetrovich/features/home/presentation/home_weekly_products_section.dart';
 import 'package:osetrovich/features/notifications/domain/notifications_notifier.dart';
+import 'package:osetrovich/features/profile/domain/profile_notifier.dart';
 
 class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
@@ -23,6 +24,12 @@ class HomeScreen extends ConsumerWidget {
     final currentOrderAsync = ref.watch(currentOrderProvider);
     final unreadCount = ref.watch(unreadCountProvider);
     final isAuthenticated = ref.watch(isAuthenticatedProvider);
+    final profileAsync =
+        isAuthenticated ? ref.watch(profileNotifierProvider) : null;
+    final profileSlotState = buildHomeProfileSlotUiState(
+      isAuthenticated: isAuthenticated,
+      profile: profileAsync ?? const AsyncData(null),
+    );
 
     return Scaffold(
       appBar: AppBar(
@@ -71,38 +78,49 @@ class HomeScreen extends ConsumerWidget {
         child: ListView(
           physics: const AlwaysScrollableScrollPhysics(),
           children: [
-          Padding(
-            padding: const EdgeInsets.only(top: 16),
-            child: bannersAsync.when(
-              loading:
-                  () => const SizedBox(height: 180, child: LoadingIndicator()),
-              error:
-                  (_, __) => _HomeSectionError(
-                    onRetry: () => ref.invalidate(bannersProvider),
-                  ),
-              data: (banners) => BannerCarousel(banners: banners),
+            Padding(
+              padding: const EdgeInsets.only(top: 16),
+              child: bannersAsync.when(
+                loading:
+                    () => LayoutBuilder(
+                      builder:
+                          (context, constraints) => SizedBox(
+                            height: bannerCarouselHeightForWidth(
+                              constraints.maxWidth,
+                              2,
+                            ),
+                            child: const LoadingIndicator(),
+                          ),
+                    ),
+                error:
+                    (_, __) => _HomeSectionError(
+                      onRetry: () => ref.invalidate(bannersProvider),
+                    ),
+                data: (banners) => BannerCarousel(banners: banners),
+              ),
             ),
-          ),
-          const HomeContactButton(),
-          const HomeWeeklyProductsSection(),
-          if (isAuthenticated)
-            currentOrderAsync.when(
-              loading: () => const SizedBox.shrink(),
-              error:
-                  (_, __) => _HomeSectionError(
-                    onRetry: () => ref.invalidate(currentOrderProvider),
-                  ),
-              data: (order) {
-                if (order == null) {
-                  return const SizedBox.shrink();
-                }
-                return HomeOrderHistorySection(
-                  key: ValueKey(order.id),
-                  order: order,
-                );
-              },
+            HomeProfileSlot(
+              mode: profileSlotState.mode,
+              profile: profileSlotState.profile,
             ),
-          if (!isAuthenticated) const AuthPromptBanner(),
+            const HomeWeeklyProductsSection(),
+            if (isAuthenticated)
+              currentOrderAsync.when(
+                loading: () => const SizedBox.shrink(),
+                error:
+                    (_, __) => _HomeSectionError(
+                      onRetry: () => ref.invalidate(currentOrderProvider),
+                    ),
+                data: (order) {
+                  if (order == null) {
+                    return const SizedBox.shrink();
+                  }
+                  return HomeOrderHistorySection(
+                    key: ValueKey(order.id),
+                    order: order,
+                  );
+                },
+              ),
           ],
         ),
       ),
@@ -123,9 +141,8 @@ Future<void> _refreshHome(WidgetRef ref) async {
     ref.invalidate(currentOrderProvider);
     refreshTasks.add(ref.read(currentOrderProvider.future));
     refreshTasks.add(ref.read(unreadCountNotifierProvider.notifier).refresh());
-    refreshTasks.add(
-      ref.read(notificationsNotifierProvider.notifier).reload(),
-    );
+    refreshTasks.add(ref.read(notificationsNotifierProvider.notifier).reload());
+    refreshTasks.add(ref.read(profileNotifierProvider.notifier).refresh());
   }
 
   await Future.wait(refreshTasks);

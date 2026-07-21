@@ -25,9 +25,6 @@ void main() {
   });
 
   test('notificationPreviewLine uses first line', () {
-    expect(
-      notificationPreviewLine('Line 1\nLine 2'),
-      'Line 1',
-    );
+    expect(notificationPreviewLine('Line 1\nLine 2'), 'Line 1');
   });
 }

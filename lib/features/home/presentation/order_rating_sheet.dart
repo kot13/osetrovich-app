@@ -79,7 +79,8 @@ class _OrderRatingSheetState extends State<OrderRatingSheet> {
               minLines: 2,
               maxLines: 4,
               maxLength: 500,
-              onTapOutside: (_) => FocusManager.instance.primaryFocus?.unfocus(),
+              onTapOutside:
+                  (_) => FocusManager.instance.primaryFocus?.unfocus(),
             ),
             const SizedBox(height: 16),
             Row(

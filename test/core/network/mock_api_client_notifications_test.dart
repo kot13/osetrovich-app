@@ -12,14 +12,8 @@ void main() {
     expect(ids.contains('n1'), isFalse);
     expect(ids.contains('n2'), isFalse);
     expect(ids, containsAll(['1', '2', '3', '4']));
-    expect(
-      notifications.any((item) => item.title == 'Заказ принят'),
-      isTrue,
-    );
-    expect(
-      notifications.any((item) => item.body.contains('\n')),
-      isTrue,
-    );
+    expect(notifications.any((item) => item.title == 'Заказ принят'), isTrue);
+    expect(notifications.any((item) => item.body.contains('\n')), isTrue);
   });
 
   test('registerPushToken stores token for authorized user', () async {

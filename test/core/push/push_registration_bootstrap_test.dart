@@ -21,12 +21,15 @@ void main() {
   setUp(() {
     apiClient = _MockApiClient();
     pushService = _MockPushService();
-    when(() => pushService.getTokens()).thenAnswer(
-      (_) async => const {'android': 'token-1'},
-    );
+    when(
+      () => pushService.getTokens(),
+    ).thenAnswer((_) async => const {'android': 'token-1'});
     when(() => pushService.listenForTokenUpdates(any())).thenReturn(null);
     when(
-      () => apiClient.registerPushToken(token: any(named: 'token'), platform: any(named: 'platform')),
+      () => apiClient.registerPushToken(
+        token: any(named: 'token'),
+        platform: any(named: 'platform'),
+      ),
     ).thenAnswer((_) async {});
   });
 
@@ -53,7 +56,10 @@ void main() {
     await Future<void>.delayed(Duration.zero);
 
     verify(
-      () => apiClient.registerPushToken(token: 'token-1', platform: any(named: 'platform')),
+      () => apiClient.registerPushToken(
+        token: 'token-1',
+        platform: any(named: 'platform'),
+      ),
     ).called(1);
   });
 
@@ -62,8 +68,12 @@ void main() {
     addTearDown(container.dispose);
 
     void Function(Map<String, String?>)? listener;
-    when(() => pushService.listenForTokenUpdates(any())).thenAnswer((invocation) {
-      listener = invocation.positionalArguments.first as void Function(Map<String, String?>);
+    when(() => pushService.listenForTokenUpdates(any())).thenAnswer((
+      invocation,
+    ) {
+      listener =
+          invocation.positionalArguments.first
+              as void Function(Map<String, String?>);
     });
 
     container.read(pushRegistrationBootstrapProvider);
@@ -79,7 +89,10 @@ void main() {
     await Future<void>.delayed(Duration.zero);
 
     verify(
-      () => apiClient.registerPushToken(token: 'token-2', platform: any(named: 'platform')),
+      () => apiClient.registerPushToken(
+        token: 'token-2',
+        platform: any(named: 'platform'),
+      ),
     ).called(1);
   });
 }

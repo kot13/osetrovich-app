@@ -26,7 +26,7 @@ bool shouldRefreshOrderAfterRatingError(ApiException exception) {
 }
 
 void showRatingThankYouSnackBar(BuildContext context) {
-  ScaffoldMessenger.of(context).showSnackBar(
-    const SnackBar(content: Text(AppStrings.ratingThankYou)),
-  );
+  ScaffoldMessenger.of(
+    context,
+  ).showSnackBar(const SnackBar(content: Text(AppStrings.ratingThankYou)));
 }

@@ -36,9 +36,9 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
-        ref.read(analyticsServiceProvider).reportProductView(
-          widget.productId.toString(),
-        );
+        ref
+            .read(analyticsServiceProvider)
+            .reportProductView(widget.productId.toString());
       }
     });
   }

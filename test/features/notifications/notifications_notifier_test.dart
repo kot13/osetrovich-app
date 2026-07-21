@@ -36,10 +36,12 @@ void main() {
 
   setUp(() {
     apiClient = _MockApiClient();
-    when(() => apiClient.getNotifications()).thenAnswer((_) async => notifications);
-    when(() => apiClient.getUnreadNotificationCount()).thenAnswer(
-      (_) async => const NotificationBadge(unreadCount: 1),
-    );
+    when(
+      () => apiClient.getNotifications(),
+    ).thenAnswer((_) async => notifications);
+    when(
+      () => apiClient.getUnreadNotificationCount(),
+    ).thenAnswer((_) async => const NotificationBadge(unreadCount: 1));
     when(() => apiClient.markNotificationRead(any())).thenAnswer((_) async {});
     when(() => apiClient.markAllNotificationsRead()).thenAnswer((_) async {});
   });
@@ -82,9 +84,9 @@ void main() {
     when(() => apiClient.getNotifications()).thenAnswer(
       (_) async => [notifications[0].copyWith(isRead: true), notifications[1]],
     );
-    when(() => apiClient.getUnreadNotificationCount()).thenAnswer(
-      (_) async => const NotificationBadge(unreadCount: 0),
-    );
+    when(
+      () => apiClient.getUnreadNotificationCount(),
+    ).thenAnswer((_) async => const NotificationBadge(unreadCount: 0));
 
     await container.read(notificationsNotifierProvider.notifier).markRead('1');
     await Future<void>.delayed(Duration.zero);
@@ -97,15 +99,19 @@ void main() {
     addTearDown(container.dispose);
 
     await container.read(notificationsNotifierProvider.future);
-    when(() => apiClient.markNotificationRead('1')).thenThrow(
-      ApiException(code: 'NOT_FOUND', message: 'missing'),
-    );
-    when(() => apiClient.getNotifications()).thenAnswer((_) async => [notifications[1]]);
+    when(
+      () => apiClient.markNotificationRead('1'),
+    ).thenThrow(ApiException(code: 'NOT_FOUND', message: 'missing'));
+    when(
+      () => apiClient.getNotifications(),
+    ).thenAnswer((_) async => [notifications[1]]);
 
     await container.read(notificationsNotifierProvider.notifier).markRead('1');
     await Future<void>.delayed(Duration.zero);
 
-    expect(container.read(notificationsNotifierProvider).value, [notifications[1]]);
+    expect(container.read(notificationsNotifierProvider).value, [
+      notifications[1],
+    ]);
   });
 }
 

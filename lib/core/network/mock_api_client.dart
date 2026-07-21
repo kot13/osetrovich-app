@@ -7,6 +7,7 @@ import 'package:osetrovich/features/catalog/domain/product.dart';
 import 'package:osetrovich/features/home/domain/banner.dart';
 import 'package:osetrovich/features/home/domain/notification_badge.dart';
 import 'package:osetrovich/features/notifications/domain/app_notification.dart';
+import 'package:osetrovich/features/profile/domain/loyalty_status.dart';
 import 'package:osetrovich/features/profile/domain/user_profile.dart';
 import 'package:osetrovich/features/cart/domain/delivery_fee.dart';
 import 'package:osetrovich/features/cart/domain/order.dart';
@@ -41,6 +42,7 @@ class MockApiClient implements ApiClient {
     if (normalized.isEmpty) {
       return;
     }
+    final loyalty = _loyaltyForPhone(normalized);
     _profile = UserProfile(
       id: _userIdForPhone(normalized),
       name: 'Покупатель',
@@ -48,7 +50,19 @@ class MockApiClient implements ApiClient {
       email: null,
       emailVerified: false,
       pushEnabled: true,
+      loyaltyStatus: loyalty.$1,
+      discount: loyalty.$2,
+      card: loyalty.$3,
     );
+  }
+
+  static (LoyaltyStatus?, int, String?) _loyaltyForPhone(String phone) {
+    return switch (phone) {
+      '+79001111111' => (LoyaltyStatus.premium, 10, '1234567890123456'),
+      '+79002222222' => (LoyaltyStatus.vip, 0, null),
+      '+79003333333' => (null, 0, null),
+      _ => (LoyaltyStatus.clubMember, 5, '9876543210'),
+    };
   }
 
   static String _userIdForPhone(String phone) =>
@@ -73,7 +87,11 @@ class MockApiClient implements ApiClient {
     const CatalogCategory(id: kCategorySpices, name: 'Специи', sortOrder: 5),
     const CatalogCategory(id: kCategorySauces, name: 'Соусы', sortOrder: 6),
     const CatalogCategory(id: kCategoryShrimp, name: 'Креветки', sortOrder: 7),
-    const CatalogCategory(id: kCategoryMollusks, name: 'Моллюски', sortOrder: 8),
+    const CatalogCategory(
+      id: kCategoryMollusks,
+      name: 'Моллюски',
+      sortOrder: 8,
+    ),
     const CatalogCategory(id: kCategoryCanned, name: 'Консервы', sortOrder: 9),
     const CatalogCategory(
       id: kCategoryForFish,
@@ -331,7 +349,12 @@ class MockApiClient implements ApiClient {
         'Икра нерки',
         'Икра горбуши',
       ],
-      kCategoryCrabs: ['Камчатский краб', 'Стригун', 'Колючий краб', 'Краб-ванам'],
+      kCategoryCrabs: [
+        'Камчатский краб',
+        'Стригун',
+        'Колючий краб',
+        'Краб-ванам',
+      ],
       kCategorySeaweed: ['Вакаме', 'Нори', 'Комбу'],
       kCategorySpices: ['Соль морская', 'Перец душистый', 'Лавровый лист'],
       kCategorySauces: ['Соус терияки', 'Соус соевый', 'Икра тобико'],
@@ -357,7 +380,9 @@ class MockApiClient implements ApiClient {
             weightLabel: i.isEven ? '500 г' : '1 кг',
             priceRub: priceRub,
             oldPriceRub:
-                entry.key == kCategoryCaviar && i == 0 ? priceRub + 200 : priceRub,
+                entry.key == kCategoryCaviar && i == 0
+                    ? priceRub + 200
+                    : priceRub,
             imageUrl:
                 'https://picsum.photos/seed/osetrovich-${entry.key}$i/400/400',
             categoryIds: [entry.key],
@@ -403,9 +428,7 @@ class MockApiClient implements ApiClient {
     if (categoryId == kAllCategoriesId) {
       return List<ProductSummary>.from(_products);
     }
-    return _products
-        .where((p) => p.categoryIds.contains(categoryId))
-        .toList();
+    return _products.where((p) => p.categoryIds.contains(categoryId)).toList();
   }
 
   @override
@@ -466,10 +489,7 @@ class MockApiClient implements ApiClient {
         id: 'banner-3',
         imageUrl: 'https://picsum.photos/seed/osetrovich-banner3/800/360',
         sortOrder: 2,
-        link: const BannerLink(
-          type: BannerLinkType.product,
-          targetId: '1000',
-        ),
+        link: const BannerLink(type: BannerLinkType.product, targetId: '1000'),
       ),
       Banner(
         id: 'banner-4',

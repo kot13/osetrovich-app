@@ -28,7 +28,8 @@ class _RatingTestApiClient extends MockApiClient {
   Future<CurrentOrder> Function(
     String orderId,
     SubmitOrderRatingRequest request,
-  )? onSubmitRating;
+  )?
+  onSubmitRating;
 
   @override
   Future<CurrentOrder?> getCurrentOrder() async => currentOrder;
@@ -162,13 +163,16 @@ void main() {
     expect(find.text(AppStrings.rateOrderFromNotification), findsNothing);
   });
 
-  testWidgets('rate order button hides after successful rating', (tester) async {
+  testWidgets('rate order button hides after successful rating', (
+    tester,
+  ) async {
     final apiClient = _RatingTestApiClient(
       currentOrder: _pendingOrder(),
-      onSubmitRating: (_, __) async => _pendingOrder().copyWith(
-        ratingState: OrderRatingState.submitted,
-        ratingStars: 5,
-      ),
+      onSubmitRating:
+          (_, __) async => _pendingOrder().copyWith(
+            ratingState: OrderRatingState.submitted,
+            ratingStars: 5,
+          ),
     );
 
     await tester.pumpWidget(

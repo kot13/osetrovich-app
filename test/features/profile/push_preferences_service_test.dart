@@ -24,11 +24,14 @@ void main() {
     pushService = _MockPushService();
     apiClient = _MockApiClient();
     when(() => pushService.syncPushEnabled(any())).thenAnswer((_) async {});
-    when(() => pushService.getTokens()).thenAnswer(
-      (_) async => const {'android': 'token-1'},
-    );
     when(
-      () => apiClient.registerPushToken(token: any(named: 'token'), platform: any(named: 'platform')),
+      () => pushService.getTokens(),
+    ).thenAnswer((_) async => const {'android': 'token-1'});
+    when(
+      () => apiClient.registerPushToken(
+        token: any(named: 'token'),
+        platform: any(named: 'platform'),
+      ),
     ).thenAnswer((_) async {});
     service = PushPreferencesService(
       repository,

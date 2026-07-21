@@ -4,10 +4,11 @@ import 'package:osetrovich/features/cart/domain/order.dart';
 void main() {
   group('CreateOrderRequest.toJson', () {
     test('uses integer id in items', () {
-      final json = const CreateOrderRequest(
-        items: [OrderLineInput(id: 1000, quantity: 2)],
-        deliveryAddress: 'г. Санкт-Петербург, ул. Тестовая, 1',
-      ).toJson();
+      final json =
+          const CreateOrderRequest(
+            items: [OrderLineInput(id: 1000, quantity: 2)],
+            deliveryAddress: 'г. Санкт-Петербург, ул. Тестовая, 1',
+          ).toJson();
 
       expect(json['items'], [
         {'id': 1000, 'quantity': 2},
@@ -16,34 +17,37 @@ void main() {
     });
 
     test('omits empty apartment and comment', () {
-      final json = const CreateOrderRequest(
-        items: [OrderLineInput(id: 1000, quantity: 1)],
-        deliveryAddress: 'адрес',
-        apartment: '   ',
-        comment: '',
-      ).toJson();
+      final json =
+          const CreateOrderRequest(
+            items: [OrderLineInput(id: 1000, quantity: 1)],
+            deliveryAddress: 'адрес',
+            apartment: '   ',
+            comment: '',
+          ).toJson();
 
       expect(json.containsKey('apartment'), isFalse);
       expect(json.containsKey('comment'), isFalse);
     });
 
     test('includes trimmed apartment and comment when set', () {
-      final json = const CreateOrderRequest(
-        items: [OrderLineInput(id: 1000, quantity: 1)],
-        deliveryAddress: 'адрес',
-        apartment: '42',
-        comment: 'звонить',
-      ).toJson();
+      final json =
+          const CreateOrderRequest(
+            items: [OrderLineInput(id: 1000, quantity: 1)],
+            deliveryAddress: 'адрес',
+            apartment: '42',
+            comment: 'звонить',
+          ).toJson();
 
       expect(json['apartment'], '42');
       expect(json['comment'], 'звонить');
     });
 
     test('omits lat and lng when null', () {
-      final json = const CreateOrderRequest(
-        items: [OrderLineInput(id: 1000, quantity: 1)],
-        deliveryAddress: 'адрес',
-      ).toJson();
+      final json =
+          const CreateOrderRequest(
+            items: [OrderLineInput(id: 1000, quantity: 1)],
+            deliveryAddress: 'адрес',
+          ).toJson();
 
       expect(json.containsKey('lat'), isFalse);
       expect(json.containsKey('lng'), isFalse);

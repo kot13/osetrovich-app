@@ -5,9 +5,11 @@ void main() {
   test('order totals below free delivery threshold', () {
     final totals = calculateOrderTotals(1500);
 
+    expect(totals.itemsSubtotalBeforeDiscountRub, 1500);
     expect(totals.itemsSubtotalRub, 1500);
     expect(totals.deliveryFeeRub, 300);
     expect(totals.totalRub, 1800);
+    expect(totals.hasLoyaltyDiscount, isFalse);
   });
 
   test('order totals at free delivery threshold', () {

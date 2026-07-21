@@ -8,7 +8,7 @@ import 'package:osetrovich/core/network/mock_api_client.dart';
 import 'package:osetrovich/core/network/providers.dart';
 
 Future<void> _signInWithPhone(WidgetTester tester, String digits) async {
-  await tester.tap(find.text(AppStrings.authPrompt));
+  await tester.tap(find.text(AppStrings.homeAuthButton));
   await tester.pumpAndSettle();
 
   await tester.enterText(find.byType(TextField).first, digits);
@@ -26,6 +26,65 @@ Future<void> _signInWithPhone(WidgetTester tester, String digits) async {
 
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
+
+  testWidgets('guest home shows auth button instead of contact', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [apiClientProvider.overrideWithValue(MockApiClient())],
+        child: const App(),
+      ),
+    );
+    await tester.pumpAndSettle(const Duration(seconds: 3));
+
+    expect(find.text(AppStrings.homeAuthButton), findsOneWidget);
+    expect(find.text(AppStrings.contactUs), findsNothing);
+    expect(find.text(AppStrings.authPrompt), findsNothing);
+  });
+
+  testWidgets('home shows loyalty block after login with premium status', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [apiClientProvider.overrideWithValue(MockApiClient())],
+        child: const App(),
+      ),
+    );
+    await tester.pumpAndSettle(const Duration(seconds: 3));
+
+    await _signInWithPhone(tester, '9001111111');
+
+    await tester.tap(find.text(AppStrings.tabHome));
+    await tester.pumpAndSettle(const Duration(seconds: 2));
+
+    expect(find.text('Premium'), findsOneWidget);
+    expect(find.text(AppStrings.homeLoyaltyYourDiscount), findsOneWidget);
+    expect(find.text('10%'), findsOneWidget);
+    expect(find.text('1234 5678 9012 3456'), findsOneWidget);
+  });
+
+  testWidgets('home hides loyalty slot for user without status', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [apiClientProvider.overrideWithValue(MockApiClient())],
+        child: const App(),
+      ),
+    );
+    await tester.pumpAndSettle(const Duration(seconds: 3));
+
+    await _signInWithPhone(tester, '9003333333');
+
+    await tester.tap(find.text(AppStrings.tabHome));
+    await tester.pumpAndSettle(const Duration(seconds: 2));
+
+    expect(find.text('Premium'), findsNothing);
+    expect(find.text('VIP'), findsNothing);
+    expect(find.text(AppStrings.homeAuthButton), findsNothing);
+  });
 
   testWidgets('home weekly product opens detail and adds to cart', (
     tester,
