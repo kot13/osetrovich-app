@@ -226,7 +226,7 @@ class _CardNumberSection extends StatelessWidget {
         onTap: () => _copyCardNumber(context),
         borderRadius: BorderRadius.circular(12),
         child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+          padding: const EdgeInsets.fromLTRB(10, 4, 4, 4),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(12),
             border: Border.all(color: Colors.white.withValues(alpha: 0.12)),
@@ -238,7 +238,7 @@ class _CardNumberSection extends StatelessWidget {
                 color: Colors.white.withValues(alpha: 0.72),
                 size: 20,
               ),
-              const SizedBox(width: 12),
+              const SizedBox(width: 10),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -250,7 +250,7 @@ class _CardNumberSection extends StatelessWidget {
                         fontSize: 11,
                       ),
                     ),
-                    const SizedBox(height: 4),
+                    const SizedBox(height: 1),
                     Text(
                       formattedNumber,
                       style: const TextStyle(
@@ -265,9 +265,12 @@ class _CardNumberSection extends StatelessWidget {
               ),
               IconButton(
                 onPressed: () => _copyCardNumber(context),
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
                 icon: Icon(
                   Icons.copy_outlined,
                   color: Colors.white.withValues(alpha: 0.88),
+                  size: 20,
                 ),
                 tooltip: AppStrings.homeLoyaltyCardCopied,
               ),

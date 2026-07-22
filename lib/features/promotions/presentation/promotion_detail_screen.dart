@@ -1,4 +1,3 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -7,6 +6,7 @@ import 'package:osetrovich/core/theme/app_colors.dart';
 import 'package:osetrovich/core/utils/date_formatter.dart';
 import 'package:osetrovich/core/widgets/empty_state.dart';
 import 'package:osetrovich/core/widgets/loading_indicator.dart';
+import 'package:osetrovich/core/widgets/safe_cached_network_image.dart';
 import 'package:osetrovich/features/promotions/data/promotions_repository.dart';
 import 'package:osetrovich/features/promotions/domain/promotion_article.dart';
 import 'package:osetrovich/features/promotions/presentation/widgets/promotion_html_body.dart';
@@ -60,25 +60,9 @@ class _PromotionDetailBody extends StatelessWidget {
         children: [
           AspectRatio(
             aspectRatio: 16 / 9,
-            child: CachedNetworkImage(
+            child: SafeCachedNetworkImage(
               imageUrl: article.imageUrl,
               fit: BoxFit.cover,
-              placeholder:
-                  (_, __) => ColoredBox(
-                    color: AppColors.background,
-                    child: Icon(
-                      Icons.image_outlined,
-                      color: AppColors.dark.withValues(alpha: 0.4),
-                    ),
-                  ),
-              errorWidget:
-                  (_, __, ___) => ColoredBox(
-                    color: AppColors.background,
-                    child: Icon(
-                      Icons.image_not_supported_outlined,
-                      color: AppColors.dark.withValues(alpha: 0.4),
-                    ),
-                  ),
             ),
           ),
           Padding(

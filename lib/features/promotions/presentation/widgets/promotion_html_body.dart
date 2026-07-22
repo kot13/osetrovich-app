@@ -49,7 +49,10 @@ class PromotionHtmlBody extends ConsumerWidget {
           );
           return;
         }
-        launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication);
+        final uri = Uri.tryParse(url);
+        if (uri != null && uri.hasScheme && uri.host.isNotEmpty) {
+          launchUrl(uri, mode: LaunchMode.externalApplication);
+        }
       },
       style: {
         'body': Style(

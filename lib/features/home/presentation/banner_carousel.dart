@@ -1,8 +1,9 @@
 import 'dart:async';
 
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:osetrovich/core/theme/app_colors.dart';
+import 'package:osetrovich/core/utils/network_image_url.dart';
+import 'package:osetrovich/core/widgets/safe_cached_network_image.dart';
 import 'package:osetrovich/features/home/domain/banner.dart' as home;
 import 'package:osetrovich/features/home/domain/banner_link_handler.dart';
 
@@ -29,22 +30,20 @@ class BannerCarousel extends StatefulWidget {
 }
 
 class _BannerCarouselState extends State<BannerCarousel> {
-  static const _loopItemCount = 10000;
   static const _autoScrollInterval = Duration(seconds: 5);
 
   late final PageController _controller;
   Timer? _autoScrollTimer;
+  int _currentPage = 0;
+  bool _userDragging = false;
+
+  int get _bannerCount => widget.banners.length;
 
   @override
   void initState() {
     super.initState();
-    final initialPage =
-        widget.banners.isEmpty
-            ? 0
-            : widget.banners.length * (_loopItemCount ~/ 2);
     _controller = PageController(
-      initialPage: initialPage,
-      viewportFraction: widget.banners.length <= 1 ? 1.0 : _viewportFraction,
+      viewportFraction: _bannerCount <= 1 ? 1.0 : _viewportFraction,
     );
     _startAutoScroll();
   }
@@ -53,6 +52,10 @@ class _BannerCarouselState extends State<BannerCarousel> {
   void didUpdateWidget(covariant BannerCarousel oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.banners.length != widget.banners.length) {
+      _currentPage = 0;
+      if (_controller.hasClients) {
+        _controller.jumpToPage(0);
+      }
       _startAutoScroll();
     }
   }
@@ -66,19 +69,38 @@ class _BannerCarouselState extends State<BannerCarousel> {
 
   void _startAutoScroll() {
     _autoScrollTimer?.cancel();
-    if (widget.banners.length <= 1) {
+    if (_bannerCount <= 1) {
       return;
     }
 
-    _autoScrollTimer = Timer.periodic(_autoScrollInterval, (_) {
-      if (!_controller.hasClients) {
-        return;
-      }
-      _controller.nextPage(
-        duration: const Duration(milliseconds: 400),
-        curve: Curves.easeInOut,
-      );
-    });
+    _autoScrollTimer = Timer.periodic(_autoScrollInterval, (_) => _advancePage());
+  }
+
+  Future<void> _advancePage() async {
+    if (_userDragging || !_controller.hasClients || _bannerCount <= 1) {
+      return;
+    }
+
+    final nextPage = (_currentPage + 1) % _bannerCount;
+    await _controller.animateToPage(
+      nextPage,
+      duration: const Duration(milliseconds: 400),
+      curve: Curves.easeInOut,
+    );
+  }
+
+  bool _handleScrollNotification(ScrollNotification notification) {
+    if (_bannerCount <= 1) {
+      return false;
+    }
+
+    if (notification is ScrollStartNotification &&
+        notification.dragDetails != null) {
+      _userDragging = true;
+    } else if (notification is ScrollEndNotification) {
+      _userDragging = false;
+    }
+    return false;
   }
 
   @override
@@ -97,29 +119,32 @@ class _BannerCarouselState extends State<BannerCarousel> {
         return SizedBox(
           height: height,
           width: double.infinity,
-          child: PageView.builder(
-            controller: _controller,
-            padEnds: false,
-            itemCount: widget.banners.length * _loopItemCount,
-            itemBuilder: (context, index) {
-              final banner = widget.banners[index % widget.banners.length];
-              final bannerIndex = index % widget.banners.length;
-              return Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: _itemHorizontalPadding,
-                ),
-                child: AspectRatio(
-                  aspectRatio: kBannerAspectRatio,
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(12),
-                    child: _BannerContent(
-                      banner: banner,
-                      bannerIndex: bannerIndex,
+          child: NotificationListener<ScrollNotification>(
+            onNotification: _handleScrollNotification,
+            child: PageView.builder(
+              controller: _controller,
+              padEnds: false,
+              itemCount: _bannerCount,
+              onPageChanged: (page) => _currentPage = page,
+              itemBuilder: (context, index) {
+                final banner = widget.banners[index];
+                return Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: _itemHorizontalPadding,
+                  ),
+                  child: AspectRatio(
+                    aspectRatio: kBannerAspectRatio,
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(12),
+                      child: _BannerContent(
+                        banner: banner,
+                        bannerIndex: index,
+                      ),
                     ),
                   ),
-                ),
-              );
-            },
+                );
+              },
+            ),
           ),
         );
       },
@@ -136,7 +161,7 @@ class _BannerContent extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final child =
-        banner.imageUrl.isEmpty
+        !isResolvableNetworkImageUrl(banner.imageUrl)
             ? Container(
               width: double.infinity,
               color: AppColors.primary.withValues(alpha: 0.15),
@@ -151,7 +176,7 @@ class _BannerContent extends StatelessWidget {
                 ),
               ),
             )
-            : CachedNetworkImage(
+            : SafeCachedNetworkImage(
               imageUrl: banner.imageUrl,
               width: double.infinity,
               fit: BoxFit.cover,

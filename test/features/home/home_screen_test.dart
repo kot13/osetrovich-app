@@ -1,4 +1,3 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -7,6 +6,7 @@ import 'package:osetrovich/core/network/api_exception.dart';
 import 'package:osetrovich/core/network/mock_api_client.dart';
 import 'package:osetrovich/core/network/providers.dart';
 import 'package:osetrovich/core/theme/app_theme.dart';
+import 'package:osetrovich/core/widgets/safe_cached_network_image.dart';
 import 'package:osetrovich/features/auth/domain/auth_session.dart';
 import 'package:osetrovich/features/auth/domain/auth_session_provider.dart';
 import 'package:osetrovich/features/cart/data/order_repository.dart';
@@ -90,7 +90,7 @@ void main() {
     expect(find.text(AppStrings.authPrompt), findsNothing);
     expect(find.text(AppStrings.homeWeeklyProductsTitle), findsOneWidget);
     expect(find.text(AppStrings.homeLemonGamificationTitle), findsNothing);
-    expect(find.byType(CachedNetworkImage), findsWidgets);
+    expect(find.byType(SafeCachedNetworkImage), findsWidgets);
     expect(find.byType(RefreshIndicator), findsOneWidget);
   });
 

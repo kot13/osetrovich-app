@@ -1,6 +1,6 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:osetrovich/core/widgets/safe_cached_network_image.dart';
 import 'package:osetrovich/features/home/domain/banner.dart' as home;
 import 'package:osetrovich/features/home/presentation/banner_carousel.dart';
 
@@ -50,7 +50,7 @@ void main() {
     ),
   ];
 
-  testWidgets('banner carousel shows CachedNetworkImage when imageUrl set', (
+  testWidgets('banner carousel shows SafeCachedNetworkImage when imageUrl set', (
     tester,
   ) async {
     await tester.pumpWidget(
@@ -59,7 +59,7 @@ void main() {
       ),
     );
 
-    expect(find.byType(CachedNetworkImage), findsWidgets);
+    expect(find.byType(SafeCachedNetworkImage), findsWidgets);
   });
 
   testWidgets('banner carousel shows placeholder text when imageUrl empty', (
@@ -102,6 +102,29 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Баннер 2'), findsOneWidget);
+  });
+
+  testWidgets('banner carousel keeps page index bounded during long auto-scroll', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(body: BannerCarousel(banners: placeholderBanners)),
+      ),
+    );
+    await tester.pump();
+
+    final controller =
+        tester.widget<PageView>(find.byType(PageView)).controller!;
+
+    for (var i = 0; i < 120; i++) {
+      await tester.pump(const Duration(seconds: 5));
+      await tester.pump(const Duration(milliseconds: 400));
+    }
+    await tester.pumpAndSettle();
+
+    expect(controller.page, lessThan(placeholderBanners.length));
+    expect(controller.page, greaterThanOrEqualTo(0));
   });
 
   testWidgets('banner carousel uses peek viewport for multiple banners', (

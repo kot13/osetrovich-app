@@ -225,6 +225,55 @@ void main() {
 
     expect(find.text(AppStrings.badgeProductOfWeek), findsOneWidget);
   });
+
+  testWidgets('product card centers placeholder when image url is missing', (
+    tester,
+  ) async {
+    const noImageProduct = ProductSummary(
+      id: 3000,
+      name: 'Окунь морской',
+      weightLabel: '1 кг',
+      priceRub: 632,
+      oldPriceRub: 800,
+      imageUrl: '',
+      categoryIds: [1],
+      sale: true,
+      special: true,
+      productOfWeek: false,
+    );
+
+    await tester.pumpWidget(
+      ProviderScope(
+        child: MaterialApp(
+          theme: AppTheme.light,
+          home: const Scaffold(
+            body: SizedBox(
+              width: 168,
+              height: 300,
+              child: ProductCard(product: noImageProduct),
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.pump();
+
+    final iconFinder = find.byIcon(Icons.image_not_supported_outlined);
+    expect(iconFinder, findsOneWidget);
+    expect(
+      find.ancestor(of: iconFinder, matching: find.byType(Center)),
+      findsOneWidget,
+    );
+
+    final cardBox = tester.renderObject<RenderBox>(
+      find.byType(ProductCard),
+    );
+    final iconBox = tester.renderObject<RenderBox>(iconFinder);
+    final iconCenter = iconBox.localToGlobal(iconBox.size.center(Offset.zero));
+    final cardCenter = cardBox.localToGlobal(cardBox.size.center(Offset.zero));
+
+    expect(iconCenter.dx, closeTo(cardCenter.dx, 40));
+  });
 }
 
 class _SeededCartNotifier extends CartNotifier {

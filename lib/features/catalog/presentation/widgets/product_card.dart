@@ -1,8 +1,8 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:osetrovich/core/theme/app_colors.dart';
+import 'package:osetrovich/core/widgets/safe_cached_network_image.dart';
 import 'package:osetrovich/features/cart/domain/cart_notifier.dart';
 import 'package:osetrovich/features/catalog/domain/product.dart';
 import 'package:osetrovich/features/catalog/presentation/widgets/product_promo_badges.dart';
@@ -43,31 +43,11 @@ class ProductCard extends ConsumerWidget {
                         children: [
                           ClipRRect(
                             borderRadius: BorderRadius.circular(8),
-                            child: CachedNetworkImage(
+                            child: SafeCachedNetworkImage(
                               imageUrl: product.imageUrl,
                               fit: BoxFit.cover,
                               width: double.infinity,
                               height: double.infinity,
-                              placeholder:
-                                  (_, __) => ColoredBox(
-                                    color: AppColors.background,
-                                    child: Icon(
-                                      Icons.image_outlined,
-                                      color: AppColors.dark.withValues(
-                                        alpha: 0.4,
-                                      ),
-                                    ),
-                                  ),
-                              errorWidget:
-                                  (_, __, ___) => ColoredBox(
-                                    color: AppColors.background,
-                                    child: Icon(
-                                      Icons.image_not_supported_outlined,
-                                      color: AppColors.dark.withValues(
-                                        alpha: 0.4,
-                                      ),
-                                    ),
-                                  ),
                             ),
                           ),
                           Positioned(

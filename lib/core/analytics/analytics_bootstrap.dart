@@ -24,7 +24,8 @@ abstract final class AnalyticsBootstrap {
     return AppMetricaConfig(
       key,
       logs: kDebugMode,
-      flutterCrashReporting: true,
+      // В debug без отладчика перехват FlutterError может приводить к нестабильному старту.
+      flutterCrashReporting: !kDebugMode,
       crashReporting: true,
     );
   }

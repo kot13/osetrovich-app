@@ -1,6 +1,7 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:osetrovich/core/theme/app_colors.dart';
+import 'package:osetrovich/core/utils/network_image_url.dart';
+import 'package:osetrovich/core/widgets/safe_cached_network_image.dart';
 
 class ProductImageGallery extends StatelessWidget {
   const ProductImageGallery({super.key, required this.imageUrls});
@@ -9,11 +10,40 @@ class ProductImageGallery extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (imageUrls.length == 1) {
-      return _ProductImage(imageUrl: imageUrls.first);
+    final resolvedUrls =
+        imageUrls
+            .where(isResolvableNetworkImageUrl)
+            .toList(growable: false);
+
+    if (resolvedUrls.isEmpty) {
+      return const _ProductImagePlaceholder();
     }
 
-    return _MultiImageGallery(imageUrls: imageUrls);
+    if (resolvedUrls.length == 1) {
+      return _ProductImage(imageUrl: resolvedUrls.first);
+    }
+
+    return _MultiImageGallery(imageUrls: resolvedUrls);
+  }
+}
+
+class _ProductImagePlaceholder extends StatelessWidget {
+  const _ProductImagePlaceholder();
+
+  @override
+  Widget build(BuildContext context) {
+    return const AspectRatio(
+      aspectRatio: 1,
+      child: ColoredBox(
+        color: AppColors.background,
+        child: Center(
+          child: Icon(
+            Icons.image_not_supported_outlined,
+            color: AppColors.dark,
+          ),
+        ),
+      ),
+    );
   }
 }
 
@@ -26,25 +56,9 @@ class _ProductImage extends StatelessWidget {
   Widget build(BuildContext context) {
     return AspectRatio(
       aspectRatio: 1,
-      child: CachedNetworkImage(
+      child: SafeCachedNetworkImage(
         imageUrl: imageUrl,
         fit: BoxFit.cover,
-        placeholder:
-            (_, __) => ColoredBox(
-              color: AppColors.background,
-              child: Icon(
-                Icons.image_outlined,
-                color: AppColors.dark.withValues(alpha: 0.4),
-              ),
-            ),
-        errorWidget:
-            (_, __, ___) => ColoredBox(
-              color: AppColors.background,
-              child: Icon(
-                Icons.image_not_supported_outlined,
-                color: AppColors.dark.withValues(alpha: 0.4),
-              ),
-            ),
       ),
     );
   }

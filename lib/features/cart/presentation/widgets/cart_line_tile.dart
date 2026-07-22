@@ -1,8 +1,8 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:osetrovich/core/theme/app_colors.dart';
 import 'package:osetrovich/core/utils/price_formatter.dart';
+import 'package:osetrovich/core/widgets/safe_cached_network_image.dart';
 import 'package:osetrovich/features/cart/domain/cart_line_item_view.dart';
 import 'package:osetrovich/features/cart/domain/cart_notifier.dart';
 import 'package:osetrovich/features/catalog/presentation/widgets/quantity_price_bar.dart';
@@ -165,29 +165,19 @@ class _CartLineImage extends StatelessWidget {
       child: SizedBox(
         width: 72,
         height: 72,
-        child:
-            imageUrl.isEmpty
-                ? const ColoredBox(
-                  color: AppColors.background,
-                  child: Icon(
-                    Icons.image_not_supported_outlined,
-                    color: AppColors.dark,
-                  ),
-                )
-                : CachedNetworkImage(
-                  imageUrl: imageUrl,
-                  fit: BoxFit.cover,
-                  placeholder:
-                      (_, __) => const ColoredBox(color: AppColors.background),
-                  errorWidget:
-                      (_, __, ___) => const ColoredBox(
-                        color: AppColors.background,
-                        child: Icon(
-                          Icons.image_not_supported_outlined,
-                          color: AppColors.dark,
-                        ),
-                      ),
+        child: SafeCachedNetworkImage(
+          imageUrl: imageUrl,
+          fit: BoxFit.cover,
+          placeholder: (_, __) => const ColoredBox(color: AppColors.background),
+          errorWidget:
+              (_, __, ___) => const ColoredBox(
+                color: AppColors.background,
+                child: Icon(
+                  Icons.image_not_supported_outlined,
+                  color: AppColors.dark,
                 ),
+              ),
+        ),
       ),
     );
 

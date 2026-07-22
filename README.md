@@ -87,6 +87,14 @@ flutter run -d macos       # macOS desktop
 flutter run -d <deviceId>  # Android / iOS
 ```
 
+**iOS: запуск с иконки на телефоне.** Debug-сборка (`flutter run`) предназначена для разработки с подключённым Mac. Если после остановки отладки приложение сразу закрывается, установите **profile**-сборку — она стабильно работает без отладчика:
+
+```bash
+flutter run --profile -d <deviceId> --dart-define=APPMETRICA_API_KEY=<your_debug_api_key>
+```
+
+Для push на iOS: включите **Push Notifications** для bundle id в [Apple Developer](https://developer.apple.com/account), загрузите APNs-ключ в AppMetrica, затем подключите `ios/Runner/Runner.entitlements` в Xcode (`CODE_SIGN_ENTITLEMENTS`) и верните `remote-notification` в `Info.plist` (см. `specs/008-yandex-appmetrica/quickstart.md`).
+
 ### Yandex AppMetrica (аналитика, краши, push)
 
 Для сборок с аналитикой передайте API-ключ через `--dart-define` (ключи **не коммитить**):

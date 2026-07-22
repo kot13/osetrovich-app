@@ -33,6 +33,13 @@ class HomeScreen extends ConsumerWidget {
       profile: profileAsync ?? const AsyncData(null),
     );
 
+    final showOrderSection =
+        isAuthenticated &&
+        currentOrderAsync.maybeWhen(
+          data: (order) => order != null,
+          orElse: () => false,
+        );
+
     return Scaffold(
       appBar: AppBar(
         title: const Text(AppStrings.tabHome),
@@ -115,7 +122,10 @@ class HomeScreen extends ConsumerWidget {
                   profileAsync.requireValue!.lemons,
                 ),
               ),
-            const HomeWeeklyProductsSection(),
+            Padding(
+              padding: EdgeInsets.only(bottom: showOrderSection ? 0 : 16),
+              child: const HomeWeeklyProductsSection(),
+            ),
             if (isAuthenticated)
               currentOrderAsync.when(
                 loading: () => const SizedBox.shrink(),

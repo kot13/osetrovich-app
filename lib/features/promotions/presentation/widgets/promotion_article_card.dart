@@ -1,7 +1,7 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:osetrovich/core/theme/app_colors.dart';
 import 'package:osetrovich/core/utils/date_formatter.dart';
+import 'package:osetrovich/core/widgets/safe_cached_network_image.dart';
 import 'package:osetrovich/features/promotions/domain/promotion_article.dart';
 
 class PromotionArticleCard extends StatelessWidget {
@@ -26,25 +26,9 @@ class PromotionArticleCard extends StatelessWidget {
           children: [
             AspectRatio(
               aspectRatio: 16 / 9,
-              child: CachedNetworkImage(
+              child: SafeCachedNetworkImage(
                 imageUrl: article.imageUrl,
                 fit: BoxFit.cover,
-                placeholder:
-                    (_, __) => ColoredBox(
-                      color: AppColors.background,
-                      child: Icon(
-                        Icons.image_outlined,
-                        color: AppColors.dark.withValues(alpha: 0.4),
-                      ),
-                    ),
-                errorWidget:
-                    (_, __, ___) => ColoredBox(
-                      color: AppColors.background,
-                      child: Icon(
-                        Icons.image_not_supported_outlined,
-                        color: AppColors.dark.withValues(alpha: 0.4),
-                      ),
-                    ),
               ),
             ),
             Padding(

@@ -19,6 +19,25 @@ void main() {
     expect(find.byType(PageView), findsNothing);
   });
 
+  testWidgets('invalid image url shows placeholder without throwing', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: AppTheme.light,
+        home: const Scaffold(
+          body: ProductImageGallery(
+            imageUrls: ['', '/relative/path.jpg'],
+          ),
+        ),
+      ),
+    );
+    await tester.pump();
+
+    expect(find.byType(PageView), findsNothing);
+    expect(find.byIcon(Icons.image_not_supported_outlined), findsOneWidget);
+  });
+
   testWidgets('multi image gallery shows page view', (tester) async {
     tester.view.physicalSize = const Size(400, 600);
     tester.view.devicePixelRatio = 1.0;
