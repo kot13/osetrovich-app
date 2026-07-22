@@ -24,6 +24,13 @@ class PushDeeplinkHandler {
       return _resolver.resolve(deeplink);
     }
 
+    final notificationId = payload['notification_id'] as String?;
+    if (notificationId != null && notificationId.trim().isNotEmpty) {
+      return _resolver.resolve(
+        'osetrovich://notifications/${notificationId.trim()}',
+      );
+    }
+
     final type = payload['type'] as String?;
     if (type == null || type.isEmpty) {
       return const DeepLinkTarget(path: '/home/notifications');

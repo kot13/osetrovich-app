@@ -92,6 +92,20 @@ ProviderScope _scoped(Widget child, {ApiClient? apiClient}) {
 }
 
 void main() {
+  testWidgets('shows not found when notification id is missing', (tester) async {
+    await tester.pumpWidget(
+      _scoped(
+        MaterialApp(
+          theme: AppTheme.light,
+          home: const NotificationDetailScreen(notificationId: 'missing-id'),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text(AppStrings.notificationNotFound), findsOneWidget);
+  });
+
   testWidgets('detail screen shows title body and time', (tester) async {
     await tester.pumpWidget(
       _scoped(

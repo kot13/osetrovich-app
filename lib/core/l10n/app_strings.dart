@@ -86,6 +86,8 @@ abstract final class AppStrings {
   static const markAllRead = 'Отметить все прочитанным';
   static const notificationsEmpty = 'Уведомлений пока нет';
   static const notificationUnavailable = 'Уведомление недоступно';
+  static const notificationNotFound = 'Уведомление не найдено';
+  static const pushNotificationOpen = 'Открыть';
   static const orderDeliveredNotificationTitle = 'Заказ доставлен';
   static const rateOrderFromNotification = 'Оценить заказ';
   static const ratingUnavailable = 'Оценка недоступна';

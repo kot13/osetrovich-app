@@ -62,7 +62,7 @@ class _NotificationDetailScreenState
           if (notification == null) {
             return Center(
               child: Text(
-                AppStrings.notificationUnavailable,
+                AppStrings.notificationNotFound,
                 style: TextStyle(color: AppColors.dark.withValues(alpha: 0.7)),
               ),
             );

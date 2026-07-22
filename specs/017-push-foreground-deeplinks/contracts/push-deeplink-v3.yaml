@@ -1,0 +1,108 @@
+# Расширение контракта push-deeplink (v3)
+# Фича: 017-push-foreground-deeplinks
+# Базовые контракты:
+#   - specs/008-yandex-appmetrica/contracts/push-deeplink.yaml (v1 legacy JSON)
+#   - specs/016-week-product-deeplinks/contracts/push-deeplink-v2.yaml (v2 URL priority)
+# Версия: 3.0.0
+
+version: "3.0.0"
+platform: fcm_via_appmetrica
+description: >
+  Order push от бэкенда: поля data.deeplink и data.notification_id.
+  Расширяет v2 без изменения приоритетов URL и legacy JSON.
+
+resolution_order:
+  1_raw_url:
+    condition: payload.trim().startsWith("osetrovich://")
+    handler: DeepLinkResolver
+  2_json_url_fields:
+    condition: JSON contains deeplink or url with osetrovich://
+    fields: [deeplink, url]
+    handler: DeepLinkResolver
+  3_notification_id:
+    condition: JSON contains notification_id (non-empty string)
+    handler: synthetic deeplink osetrovich://notifications/{notification_id}
+    note: Используется когда deeplink отсутствует (FR-003 scenario 2)
+  4_legacy_json:
+    condition: JSON contains type
+    contract: push-deeplink.yaml v1
+  5_fallback:
+    route: /home/notifications
+
+payload_formats:
+
+  fcm_order_push_json:
+    type: object
+    required_for_order_push: [notification_id]
+    properties:
+      deeplink:
+        type: string
+        pattern: "^osetrovich://notifications/[0-9]+$"
+      notification_id:
+        type: string
+        pattern: "^[0-9]+$"
+    example:
+      deeplink: osetrovich://notifications/42
+      notification_id: "42"
+
+  notification_id_only:
+    type: object
+    properties:
+      notification_id:
+        type: string
+    example:
+      notification_id: "42"
+    expected_route: /home/notifications/42
+
+  inherits_from_v2:
+    - raw_url
+    - json_with_deeplink
+    - json_with_url
+    - legacy_json
+    - empty_fallback
+
+conflict_resolution:
+  deeplink_vs_notification_id:
+    rule: deeplink wins
+    example:
+      deeplink: osetrovich://notifications/1
+      notification_id: "2"
+    expected_route: /home/notifications/1
+
+client_modules:
+  mapper: lib/core/push/push_incoming_mapper.dart
+  handler: lib/core/push/push_deeplink_handler.dart
+  foreground: lib/core/push/push_foreground_handler.dart
+  fcm_service: lib/core/push/fcm_foreground_push_service.dart
+
+entrypoints:
+  - fcm_foreground_onMessage
+  - appmetrica_pushClickStream
+  - appmetrica_getLaunchPushInfo
+  - in_app_banner_tap
+
+examples:
+  - description: Order push JSON (tap)
+    payload:
+      deeplink: osetrovich://notifications/42
+      notification_id: "42"
+    expected_route: /home/notifications/42
+
+  - description: notification_id без deeplink
+    payload:
+      notification_id: "7"
+    expected_route: /home/notifications/7
+
+  - description: v2 raw URL (без изменений)
+    payload: osetrovich://catalog/product/1000
+    expected_route: /catalog/product/1000
+
+  - description: v1 legacy (без изменений)
+    payload:
+      type: notification
+      targetId: "5"
+    expected_route: /home/notifications/5
+
+  - description: Пустой payload
+    payload: ""
+    expected_route: /home/notifications

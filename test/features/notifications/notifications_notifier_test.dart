@@ -113,6 +113,25 @@ void main() {
       notifications[1],
     ]);
   });
+
+  test('markRead calls API when notification is not in local list', () async {
+    final container = createContainer();
+    addTearDown(container.dispose);
+
+    await container.read(notificationsNotifierProvider.future);
+    when(() => apiClient.getNotifications()).thenAnswer(
+      (_) async => [notifications[0].copyWith(isRead: true), notifications[1]],
+    );
+    when(
+      () => apiClient.getUnreadNotificationCount(),
+    ).thenAnswer((_) async => const NotificationBadge(unreadCount: 0));
+
+    await container.read(notificationsNotifierProvider.notifier).markRead('99');
+    await Future<void>.delayed(Duration.zero);
+
+    verify(() => apiClient.markNotificationRead('99')).called(1);
+    expect(container.read(unreadCountProvider), 0);
+  });
 }
 
 class _FakeAuthSessionNotifier extends AuthSessionNotifier {

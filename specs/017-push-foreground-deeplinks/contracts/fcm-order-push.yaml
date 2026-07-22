@@ -1,0 +1,112 @@
+# Контракт FCM order push (бэкенд → мобильный клиент)
+# Фича: 017-push-foreground-deeplinks
+# Версия: 1.0.0
+#
+# Описывает структуру сообщения, отправляемого через Firebase Cloud Messaging
+# при событиях заказа / in-app уведомления. REST OpenAPI не изменяется.
+
+version: "1.0.0"
+transport: fcm
+description: >
+  Order push с блоком notification (отображение) и data (навигация).
+  Клиент MUST использовать data для маршрутизации; notification — только для UI.
+
+message_schema:
+  type: object
+  required:
+    - token
+  properties:
+    token:
+      type: string
+      description: FCM device token зарегистрированный через PUT /v1/profile/push-token
+    notification:
+      $ref: "#/components/NotificationBlock"
+    data:
+      $ref: "#/components/DataBlock"
+
+components:
+  NotificationBlock:
+    type: object
+    required:
+      - title
+      - body
+    properties:
+      title:
+        type: string
+        description: Заголовок in-app уведомления (как в ERP/API)
+      body:
+        type: string
+        description: Текст in-app уведомления
+
+  DataBlock:
+    type: object
+    description: Все значения MUST быть строками (требование FCM data payload)
+    properties:
+      deeplink:
+        type: string
+        format: uri
+        pattern: "^osetrovich://notifications/[0-9]+$"
+        description: URI диплинка на деталь уведомления
+      notification_id:
+        type: string
+        pattern: "^[0-9]+$"
+        description: Идентификатор записи notifications; MUST совпадать с id в deeplink
+
+order_push_required_fields:
+  - data.deeplink
+  - data.notification_id
+
+client_behavior:
+  foreground:
+    - subscribe FirebaseMessaging.onMessage
+    - refresh GET /v1/notifications/unread-count
+    - reload GET /v1/notifications
+    - MAY show in-app banner with notification.title and notification.body
+  background_tap:
+    - read data.deeplink or data.notification_id
+    - navigate to notification detail screen
+  not_found:
+    - if GET /v1/notifications/{id} returns 404 show "Уведомление не найдено"
+
+navigation_rules:
+  must_not_use_for_routing:
+    - notification.title
+    - notification.body
+  priority:
+    - data.deeplink
+    - data.notification_id
+    - fallback /home/notifications
+
+examples:
+  - description: Стандартный order push
+    message:
+      token: "<fcm_device_token>"
+      notification:
+        title: "Заказ на доставке"
+        body: "Ваш заказ №12345 передан курьеру"
+      data:
+        deeplink: "osetrovich://notifications/42"
+        notification_id: "42"
+    expected_client_route: /home/notifications/42
+
+  - description: Только notification_id в data (допустимо)
+    message:
+      token: "<fcm_device_token>"
+      notification:
+        title: "Заказ доставлен"
+        body: "Оцените заказ"
+      data:
+        notification_id: "99"
+    expected_client_route: /home/notifications/99
+
+  - description: Без data — fallback
+    message:
+      token: "<fcm_device_token>"
+      notification:
+        title: "Новое уведомление"
+        body: "Откройте приложение"
+    expected_client_route: /home/notifications
+
+api_correlation:
+  endpoint: GET /v1/notifications/{id}
+  rule: data.notification_id MUST equal path parameter {id} for the same buyer

@@ -28,11 +28,8 @@ class NotificationsNotifier extends AsyncNotifier<List<AppNotification>> {
 
   Future<void> markRead(String id) async {
     final current = state.valueOrNull;
-    if (current == null) {
-      return;
-    }
-    final notification = current.where((n) => n.id == id).firstOrNull;
-    if (notification == null || notification.isRead) {
+    final notification = current?.where((n) => n.id == id).firstOrNull;
+    if (notification?.isRead == true) {
       return;
     }
 

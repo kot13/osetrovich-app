@@ -3,6 +3,7 @@ plugins {
     id("kotlin-android")
     // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
     id("dev.flutter.flutter-gradle-plugin")
+    id("com.google.gms.google-services")
 }
 
 android {
@@ -43,7 +44,8 @@ flutter {
     source = "../.."
 }
 
-// AppMetrica Push (FCM): раскомментируйте после добавления google-services.json
-// plugins {
-//     id("com.google.gms.google-services")
-// }
+dependencies {
+    implementation(platform("com.google.firebase:firebase-bom:33.9.0"))
+    implementation("com.google.firebase:firebase-messaging")
+    implementation("com.google.android.gms:play-services-base")
+}

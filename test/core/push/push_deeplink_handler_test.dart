@@ -71,4 +71,30 @@ void main() {
       '/promotions',
     );
   });
+
+  test('JSON notification_id resolves notification detail', () {
+    expect(
+      handler.resolveRoute({'notification_id': '42'}),
+      '/home/notifications/42',
+    );
+  });
+
+  test('deeplink has priority over notification_id', () {
+    expect(
+      handler.resolveRoute({
+        'deeplink': 'osetrovich://notifications/1',
+        'notification_id': '2',
+      }),
+      '/home/notifications/1',
+    );
+  });
+
+  test('order push JSON resolves detail route', () {
+    expect(
+      handler.resolveRouteFromPayloadString(
+        '{"deeplink":"osetrovich://notifications/42","notification_id":"42"}',
+      ),
+      '/home/notifications/42',
+    );
+  });
 }
