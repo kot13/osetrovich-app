@@ -369,19 +369,21 @@ class MockApiClient implements ApiClient {
     ];
     for (var i = 0; i < 30; i++) {
       final id = 1000 + i;
-      final priceRub = 450 + i * 30;
+      final pricePerKgRate = 1500 + i * 30;
       products.add(
         ProductSummary(
           id: id,
           name: '${fishNames[i % fishNames.length]} №${i + 1}',
-          weightLabel: '${300 + (i % 5) * 100} г',
-          priceRub: priceRub,
-          oldPriceRub: i == 0 ? priceRub + 150 : priceRub,
+          weightLabel: i == 2 ? '1 шт' : '${300 + (i % 5) * 100} г',
+          priceRub: pricePerKgRate,
+          oldPriceRub: _fishOldPriceRub(i, pricePerKgRate),
+          pricePerKgRub: _fishPricePerKgRub(i),
           imageUrl: 'https://picsum.photos/seed/osetrovich-fish$i/400/400',
           categoryIds: const [kCategoryFish],
           sale: i == 0 || i == 1,
           special: i == 1,
           productOfWeek: id == 1000 || id == 1001,
+          pieceProduct: i == 2,
         ),
       );
     }
@@ -428,12 +430,15 @@ class MockApiClient implements ApiClient {
                 entry.key == kCategoryCaviar && i == 0
                     ? priceRub + 200
                     : priceRub,
+            pricePerKgRub:
+                entry.key == kCategoryCaviar && i == 0 ? 12000 : 0,
             imageUrl:
                 'https://picsum.photos/seed/osetrovich-${entry.key}$i/400/400',
             categoryIds: [entry.key],
             sale: false,
             special: entry.key == kCategoryCaviar && i == 0,
             productOfWeek: entry.key == kCategoryCaviar && i == 0,
+            pieceProduct: false,
           ),
         );
       }
@@ -459,6 +464,7 @@ class MockApiClient implements ApiClient {
       weightLabel: summary.weightLabel,
       priceRub: summary.priceRub,
       oldPriceRub: summary.oldPriceRub,
+      pricePerKgRub: summary.pricePerKgRub,
       imageUrls: imageUrls,
       description:
           '${summary.name} — свежая продукция от osetrovich.ru. '
@@ -468,7 +474,31 @@ class MockApiClient implements ApiClient {
       sale: summary.sale,
       special: summary.special,
       productOfWeek: summary.productOfWeek,
+      pieceProduct: summary.pieceProduct,
     );
+  }
+
+  static int _fishOldPriceRub(int index, int priceRub) {
+    if (index == 0) {
+      return 2000;
+    }
+    if (index == 1) {
+      return priceRub + 120;
+    }
+    return priceRub;
+  }
+
+  static int _fishPricePerKgRub(int index) {
+    if (index == 0) {
+      return 2400;
+    }
+    if (index == 1) {
+      return 2400;
+    }
+    if (index == 2) {
+      return 1800;
+    }
+    return 0;
   }
 
   List<ProductSummary> _filterProducts(int categoryId) {

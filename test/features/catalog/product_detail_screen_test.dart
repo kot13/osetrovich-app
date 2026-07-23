@@ -23,14 +23,28 @@ void main() {
     await tester.pumpAndSettle(const Duration(seconds: 1));
 
     expect(find.textContaining('слабосолёная'), findsWidgets);
-    expect(find.textContaining('300 г'), findsOneWidget);
-    expect(find.textContaining('${formatPriceRub(450)} +'), findsOneWidget);
+    expect(find.text('300 г'), findsOneWidget);
+    expect(find.text(formatPricePerKgRub(2400)), findsOneWidget);
+
+    final oldPriceFinder = find.text(formatPriceForWeightLabel(600, '300 г'));
+    expect(oldPriceFinder, findsOneWidget);
+    expect(
+      tester.widget<Text>(oldPriceFinder).style?.decoration,
+      TextDecoration.lineThrough,
+    );
+    expect(find.text(formatPriceForWeightLabel(450, '300 г')), findsOneWidget);
+    expect(find.text('${formatPriceRub(450)} +'), findsOneWidget);
 
     await tester.tap(find.textContaining(' +').last);
     await tester.pumpAndSettle();
 
     expect(find.textContaining('1 ×'), findsOneWidget);
     expect(find.byIcon(Icons.remove), findsOneWidget);
+    expect(oldPriceFinder, findsOneWidget);
+    expect(
+      tester.widget<Text>(oldPriceFinder).style?.decoration,
+      TextDecoration.lineThrough,
+    );
   });
 
   testWidgets('product detail renders inside nested shell scaffold', (
@@ -61,7 +75,24 @@ void main() {
     expect(find.textContaining('слабосолёная'), findsWidgets);
     expect(find.byType(AppBar), findsOneWidget);
     expect(find.text(AppStrings.tabCatalog), findsOneWidget);
-    expect(find.textContaining('${formatPriceRub(450)} +'), findsOneWidget);
+    expect(find.text(formatPricePerKgRub(2400)), findsOneWidget);
+    expect(find.text(formatPriceForWeightLabel(450, '300 г')), findsOneWidget);
+    expect(find.text('${formatPriceRub(450)} +'), findsOneWidget);
+  });
+
+  testWidgets('product detail hides price per kg when zero', (tester) async {
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [apiClientProvider.overrideWithValue(MockApiClient())],
+        child: MaterialApp(
+          theme: AppTheme.light,
+          home: const ProductDetailScreen(productId: 1001),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle(const Duration(seconds: 1));
+
+    expect(find.textContaining('/кг'), findsNothing);
   });
 
   testWidgets('product detail increments via cart notifier', (tester) async {

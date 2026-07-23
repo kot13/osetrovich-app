@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:osetrovich/core/theme/app_colors.dart';
 import 'package:osetrovich/core/utils/price_formatter.dart';
+import 'package:osetrovich/core/utils/product_price_display.dart';
 
 enum QuantityPriceBarMode { compact, detail }
 
@@ -17,10 +18,12 @@ class QuantityPriceBar extends StatelessWidget {
     required this.quantity,
     required this.onIncrement,
     required this.onDecrement,
+    this.oldPriceRub = 0,
     this.mode = QuantityPriceBarMode.compact,
   });
 
   final int priceRub;
+  final int oldPriceRub;
   final int quantity;
   final VoidCallback onIncrement;
   final VoidCallback onDecrement;
@@ -33,10 +36,25 @@ class QuantityPriceBar extends StatelessWidget {
     final priceLabel = formatPriceRub(priceRub);
 
     if (quantity == 0) {
+      final showOldPrice = shouldShowStrikethroughOldPrice(
+        oldPriceRub: oldPriceRub,
+        priceRub: priceRub,
+      );
+
       return _BarButton(
-        label: '$priceLabel +',
         onTap: onIncrement,
         compact: _isCompact,
+        child:
+            showOldPrice
+                ? _AddPriceLabel(
+                  oldPriceRub: oldPriceRub,
+                  priceRub: priceRub,
+                  compact: _isCompact,
+                )
+                : Text(
+                  '$priceLabel +',
+                  style: _addButtonTextStyle(_isCompact),
+                ),
       );
     }
 
@@ -90,14 +108,67 @@ class QuantityPriceBar extends StatelessWidget {
   }
 }
 
+TextStyle _addButtonTextStyle(bool compact) {
+  return TextStyle(
+    color: AppColors.dark,
+    fontWeight: FontWeight.w600,
+    fontSize: compact ? 12 : 15,
+  );
+}
+
+class _AddPriceLabel extends StatelessWidget {
+  const _AddPriceLabel({
+    required this.oldPriceRub,
+    required this.priceRub,
+    required this.compact,
+  });
+
+  final int oldPriceRub;
+  final int priceRub;
+  final bool compact;
+
+  @override
+  Widget build(BuildContext context) {
+    final currentSize = compact ? 12.0 : 15.0;
+    final oldSize = currentSize - 1;
+
+    final row = Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Text(
+          formatPriceRub(oldPriceRub),
+          style: TextStyle(
+            color: AppColors.dark.withValues(alpha: 0.6),
+            fontWeight: FontWeight.w600,
+            fontSize: oldSize,
+            decoration: TextDecoration.lineThrough,
+            decorationColor: AppColors.dark.withValues(alpha: 0.6),
+          ),
+        ),
+        const SizedBox(width: 4),
+        Text(
+          '${formatPriceRub(priceRub)} +',
+          style: _addButtonTextStyle(compact),
+        ),
+      ],
+    );
+
+    if (compact) {
+      return FittedBox(fit: BoxFit.scaleDown, child: row);
+    }
+
+    return row;
+  }
+}
+
 class _BarButton extends StatelessWidget {
   const _BarButton({
-    required this.label,
     required this.onTap,
+    required this.child,
     this.compact = true,
   });
 
-  final String label;
+  final Widget child;
   final VoidCallback onTap;
   final bool compact;
 
@@ -116,16 +187,7 @@ class _BarButton extends StatelessWidget {
           borderRadius: BorderRadius.circular(radius),
           child: Padding(
             padding: EdgeInsets.symmetric(horizontal: compact ? 10 : 16),
-            child: Center(
-              child: Text(
-                label,
-                style: TextStyle(
-                  color: AppColors.dark,
-                  fontWeight: FontWeight.w600,
-                  fontSize: compact ? 12 : 15,
-                ),
-              ),
-            ),
+            child: Center(child: child),
           ),
         ),
       ),

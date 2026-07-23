@@ -15,11 +15,13 @@ void main() {
       weightLabel: '500 г',
       priceRub: 300,
       oldPriceRub: 300,
+      pricePerKgRub: 0,
       imageUrl: 'https://example.com/1.jpg',
       categoryIds: [kCategoryFish],
       sale: false,
       special: false,
       productOfWeek: false,
+      pieceProduct: false,
     ),
     ProductSummary(
       id: 1002,
@@ -27,11 +29,13 @@ void main() {
       weightLabel: '400 г',
       priceRub: 450,
       oldPriceRub: 450,
+      pricePerKgRub: 1800,
       imageUrl: 'https://example.com/2.jpg',
       categoryIds: [kCategoryFish],
       sale: false,
       special: false,
       productOfWeek: false,
+      pieceProduct: true,
     ),
   ];
 
@@ -77,11 +81,13 @@ void main() {
           weightLabel: '500 г',
           priceRub: 300 + index,
           oldPriceRub: 300 + index,
+          pricePerKgRub: 0,
           imageUrl: 'https://example.com/$index.jpg',
           categoryIds: const [kCategoryFish],
           sale: false,
           special: false,
           productOfWeek: false,
+          pieceProduct: false,
         ),
       );
     }

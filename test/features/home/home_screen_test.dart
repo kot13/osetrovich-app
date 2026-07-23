@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -11,7 +13,10 @@ import 'package:osetrovich/features/auth/domain/auth_session.dart';
 import 'package:osetrovich/features/auth/domain/auth_session_provider.dart';
 import 'package:osetrovich/features/cart/data/order_repository.dart';
 import 'package:osetrovich/features/cart/domain/order.dart';
+import 'package:osetrovich/features/home/presentation/banner_carousel.dart';
 import 'package:osetrovich/features/home/presentation/home_lemon_gamification_card.dart';
+import 'package:osetrovich/features/home/presentation/home_lemon_gamification_card_skeleton.dart';
+import 'package:osetrovich/features/home/presentation/home_loyalty_status_card_skeleton.dart';
 import 'package:osetrovich/features/home/presentation/home_profile_slot.dart';
 import 'package:osetrovich/features/home/presentation/home_screen.dart';
 import 'package:osetrovich/features/notifications/domain/unread_count_notifier.dart';
@@ -42,6 +47,19 @@ class _FakeLemonProfileNotifier extends ProfileNotifier {
   );
 }
 
+class _FakeLemonProfileWithoutStatusNotifier extends ProfileNotifier {
+  @override
+  Future<UserProfile?> build() async => const UserProfile(
+    id: 'u2',
+    name: 'Покупатель',
+    phone: '+79003333333',
+    emailVerified: false,
+    pushEnabled: true,
+    discount: 0,
+    lemons: 3,
+  );
+}
+
 class _FakeLoyaltyProfileNotifier extends ProfileNotifier {
   @override
   Future<UserProfile?> build() async => const UserProfile(
@@ -60,6 +78,31 @@ class _FailingProfileNotifier extends ProfileNotifier {
   @override
   Future<UserProfile?> build() async {
     throw ApiException(code: 'NETWORK_ERROR', message: AppStrings.networkError);
+  }
+}
+
+class _SlowProfileNotifier extends ProfileNotifier {
+  _SlowProfileNotifier(this._completer);
+
+  final Completer<UserProfile?> _completer;
+
+  @override
+  Future<UserProfile?> build() => _completer.future;
+}
+
+class _RefreshableLoyaltyProfileNotifier extends ProfileNotifier {
+  _RefreshableLoyaltyProfileNotifier(this._profile);
+
+  final UserProfile _profile;
+
+  @override
+  Future<UserProfile?> build() async => _profile;
+
+  @override
+  Future<void> refresh() async {
+    state = const AsyncLoading<UserProfile?>().copyWithPrevious(state);
+    await Future<void>.delayed(const Duration(milliseconds: 50));
+    state = AsyncData(_profile);
   }
 }
 
@@ -334,6 +377,59 @@ void main() {
     expect(find.text('Premium'), findsNothing);
   });
 
+  testWidgets('home shows profile skeletons while profile is loading', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(400, 2000);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    final profileCompleter = Completer<UserProfile?>();
+    addTearDown(() {
+      if (!profileCompleter.isCompleted) {
+        profileCompleter.complete(null);
+      }
+    });
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          apiClientProvider.overrideWithValue(MockApiClient()),
+          authSessionProvider.overrideWith(
+            () => _FakeAuthSessionNotifier(
+              AuthSession(
+                accessToken: 'mock.access.token.+79001111111',
+                refreshToken: 'r',
+                expiresAt: DateTime.utc(2099),
+                phone: '+79001111111',
+              ),
+            ),
+          ),
+          profileNotifierProvider.overrideWith(
+            () => _SlowProfileNotifier(profileCompleter),
+          ),
+        ],
+        child: MaterialApp(theme: AppTheme.light, home: const HomeScreen()),
+      ),
+    );
+    await tester.pump();
+
+    expect(
+      find.byKey(HomeLoyaltyStatusCardSkeleton.skeletonKey),
+      findsOneWidget,
+    );
+    expect(
+      find.byKey(HomeLemonGamificationCardSkeleton.skeletonKey),
+      findsOneWidget,
+    );
+    expect(find.text('Premium'), findsNothing);
+    expect(find.text(AppStrings.homeLemonGamificationTitle), findsNothing);
+
+    // Дождаться mock-задержек (уведомления и т.п.), не дожидаясь профиля.
+    await tester.pump(const Duration(milliseconds: 200));
+  });
+
   testWidgets('home hides loyalty card when profile fails to load', (
     tester,
   ) async {
@@ -365,6 +461,115 @@ void main() {
 
     expect(find.text('Premium'), findsNothing);
     expect(find.text(AppStrings.homeAuthButton), findsNothing);
+    expect(
+      find.byKey(HomeLoyaltyStatusCardSkeleton.skeletonKey),
+      findsNothing,
+    );
+  });
+
+  testWidgets('home shows lemon block with top spacing when loyalty hidden', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(400, 2000);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          apiClientProvider.overrideWithValue(MockApiClient()),
+          authSessionProvider.overrideWith(
+            () => _FakeAuthSessionNotifier(
+              AuthSession(
+                accessToken: 'mock.access.token.+79003333333',
+                refreshToken: 'r',
+                expiresAt: DateTime.utc(2099),
+                phone: '+79003333333',
+              ),
+            ),
+          ),
+          profileNotifierProvider.overrideWith(
+            _FakeLemonProfileWithoutStatusNotifier.new,
+          ),
+        ],
+        child: MaterialApp(theme: AppTheme.light, home: const HomeScreen()),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    final bannerBottom = tester.getBottomLeft(find.byType(BannerCarousel));
+    final lemonTop = tester.getTopLeft(
+      find.byKey(HomeLemonGamificationCard.cardKey),
+    );
+
+    expect(lemonTop.dy - bannerBottom.dy, greaterThanOrEqualTo(16));
+  });
+
+  testWidgets('home keeps profile content visible during profile refresh', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(400, 2000);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    const profile = UserProfile(
+      id: 'u1',
+      name: 'Покупатель',
+      phone: '+79001111111',
+      emailVerified: false,
+      pushEnabled: true,
+      discount: 10,
+      loyaltyStatus: LoyaltyStatus.premium,
+      card: '1234567890123456',
+    );
+    late _RefreshableLoyaltyProfileNotifier profileNotifier;
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          apiClientProvider.overrideWithValue(MockApiClient()),
+          authSessionProvider.overrideWith(
+            () => _FakeAuthSessionNotifier(
+              AuthSession(
+                accessToken: 'mock.access.token.+79001111111',
+                refreshToken: 'r',
+                expiresAt: DateTime.utc(2099),
+                phone: '+79001111111',
+              ),
+            ),
+          ),
+          profileNotifierProvider.overrideWith(() {
+            profileNotifier = _RefreshableLoyaltyProfileNotifier(profile);
+            return profileNotifier;
+          }),
+        ],
+        child: MaterialApp(theme: AppTheme.light, home: const HomeScreen()),
+      ),
+    );
+    await tester.pump(const Duration(seconds: 1));
+
+    expect(find.text('Premium'), findsOneWidget);
+
+    final refreshFuture = profileNotifier.refresh();
+    await tester.pump();
+
+    expect(find.text('Premium'), findsOneWidget);
+    expect(
+      find.byKey(HomeLoyaltyStatusCardSkeleton.skeletonKey),
+      findsNothing,
+    );
+    expect(
+      find.byKey(HomeLemonGamificationCardSkeleton.skeletonKey),
+      findsNothing,
+    );
+
+    await tester.pump(const Duration(milliseconds: 100));
+    await refreshFuture;
+    await tester.pump();
+
+    expect(find.text('Premium'), findsOneWidget);
   });
 
   testWidgets('home shows order load error and retry refetches provider', (

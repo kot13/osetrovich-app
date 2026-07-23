@@ -10,12 +10,14 @@ void main() {
       weightLabel: '0 кг',
       priceRub: 749,
       oldPriceRub: 0,
+      pricePerKgRub: 0,
       imageUrls: [],
       description: '',
       categoryIds: [13],
       sale: false,
       special: false,
       productOfWeek: false,
+      pieceProduct: false,
     );
 
     final line = CartLineItemView.fromProduct(product, 2);

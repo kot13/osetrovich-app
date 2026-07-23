@@ -12,6 +12,16 @@ void main() {
       expect(detail.imageUrls.length, 3);
       expect(detail.description, isNotEmpty);
       expect(detail.sale, isTrue);
+      expect(detail.pricePerKgRub, 2400);
+      expect(detail.pieceProduct, isFalse);
+    });
+
+    test('getProductById returns piece product fields', () async {
+      final client = MockApiClient();
+      final detail = await client.getProductById(1002);
+
+      expect(detail.pieceProduct, isTrue);
+      expect(detail.pricePerKgRub, 1800);
     });
 
     test('getProductById throws for unknown id', () async {

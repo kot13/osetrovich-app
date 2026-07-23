@@ -4,13 +4,14 @@ import 'package:go_router/go_router.dart';
 import 'package:osetrovich/core/analytics/analytics_providers.dart';
 import 'package:osetrovich/core/l10n/app_strings.dart';
 import 'package:osetrovich/core/theme/app_colors.dart';
-import 'package:osetrovich/core/utils/price_formatter.dart';
+import 'package:osetrovich/core/utils/product_price_display.dart';
 import 'package:osetrovich/core/widgets/empty_state.dart';
 import 'package:osetrovich/core/widgets/loading_indicator.dart';
 import 'package:osetrovich/features/cart/domain/cart_notifier.dart';
 import 'package:osetrovich/features/catalog/data/catalog_repository.dart';
 import 'package:osetrovich/features/catalog/domain/product.dart';
 import 'package:osetrovich/features/catalog/presentation/widgets/product_image_gallery.dart';
+import 'package:osetrovich/features/catalog/presentation/widgets/product_unit_price_row.dart';
 import 'package:osetrovich/features/catalog/presentation/widgets/quantity_price_bar.dart';
 
 final productDetailProvider = FutureProvider.family<ProductDetail, int>((
@@ -78,6 +79,15 @@ class _ProductDetailBody extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final prices = ProductCatalogPriceDisplay.resolve(
+      priceRub: product.priceRub,
+      oldPriceRub: product.oldPriceRub,
+      pricePerKgRub: product.pricePerKgRub,
+      weightLabel: product.weightLabel,
+      pieceProduct: product.pieceProduct,
+      special: product.special,
+    );
+
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
       child: Column(
@@ -101,14 +111,21 @@ class _ProductDetailBody extends StatelessWidget {
               fontSize: 14,
             ),
           ),
-          const SizedBox(height: 8),
-          Text(
-            formatPriceRub(product.priceRub),
-            style: const TextStyle(
-              color: AppColors.primary,
-              fontSize: 18,
-              fontWeight: FontWeight.w600,
+          if (prices.secondaryPriceLabel != null) ...[
+            const SizedBox(height: 4),
+            Text(
+              prices.secondaryPriceLabel!,
+              style: TextStyle(
+                color: AppColors.dark.withValues(alpha: 0.6),
+                fontSize: 14,
+              ),
             ),
+          ],
+          const SizedBox(height: 8),
+          ProductUnitPriceRow(
+            priceRub: prices.buttonPriceRub,
+            oldPriceRub: prices.buttonOldPriceRub,
+            priceWeightSuffix: prices.priceWeightSuffix,
           ),
           const SizedBox(height: 16),
           Text(
@@ -136,6 +153,14 @@ class _ProductDetailBar extends ConsumerWidget {
       cartNotifierProvider.select((cart) => cart[product.id] ?? 0),
     );
     final cart = ref.read(cartNotifierProvider.notifier);
+    final prices = ProductCatalogPriceDisplay.resolve(
+      priceRub: product.priceRub,
+      oldPriceRub: product.oldPriceRub,
+      pricePerKgRub: product.pricePerKgRub,
+      weightLabel: product.weightLabel,
+      pieceProduct: product.pieceProduct,
+      special: product.special,
+    );
 
     return SafeArea(
       child: Container(
@@ -154,7 +179,8 @@ class _ProductDetailBar extends ConsumerWidget {
             quantity > 0
                 ? QuantityPriceBar(
                   mode: QuantityPriceBarMode.detail,
-                  priceRub: product.priceRub,
+                  priceRub: prices.buttonPriceRub,
+                  oldPriceRub: prices.buttonOldPriceRub,
                   quantity: quantity,
                   onIncrement: () => cart.increment(product.id),
                   onDecrement: () => cart.decrement(product.id),
@@ -163,7 +189,8 @@ class _ProductDetailBar extends ConsumerWidget {
                   alignment: Alignment.centerLeft,
                   child: QuantityPriceBar(
                     mode: QuantityPriceBarMode.detail,
-                    priceRub: product.priceRub,
+                    priceRub: prices.buttonPriceRub,
+                    oldPriceRub: prices.buttonOldPriceRub,
                     quantity: quantity,
                     onIncrement: () => cart.increment(product.id),
                     onDecrement: () => cart.decrement(product.id),

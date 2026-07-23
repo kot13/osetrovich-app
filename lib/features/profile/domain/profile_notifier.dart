@@ -26,7 +26,7 @@ class ProfileNotifier extends AsyncNotifier<UserProfile?> {
   }
 
   Future<void> refresh() async {
-    state = const AsyncLoading();
+    state = const AsyncLoading<UserProfile?>().copyWithPrevious(state);
     state = await AsyncValue.guard(() async {
       final session = ref.read(authSessionProvider);
       if (session == null) return null;

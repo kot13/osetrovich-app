@@ -2,14 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:osetrovich/core/theme/app_colors.dart';
+import 'package:osetrovich/core/utils/product_price_display.dart';
 import 'package:osetrovich/core/widgets/safe_cached_network_image.dart';
 import 'package:osetrovich/features/cart/domain/cart_notifier.dart';
 import 'package:osetrovich/features/catalog/domain/product.dart';
 import 'package:osetrovich/features/catalog/presentation/widgets/product_promo_badges.dart';
 import 'package:osetrovich/features/catalog/presentation/widgets/quantity_price_bar.dart';
 
-/// Зарезервированная высота под название (2 строки) + вес — не отдаётся под фото.
-const double _kProductTextBlockHeight = 54;
+/// Зарезервированная высота под название (2 строки), вес и опционально цену/кг.
+const double _kProductTextBlockHeight = 76;
 
 class ProductCard extends ConsumerWidget {
   const ProductCard({super.key, required this.product});
@@ -22,6 +23,14 @@ class ProductCard extends ConsumerWidget {
       cartNotifierProvider.select((cart) => cart[product.id] ?? 0),
     );
     final cart = ref.read(cartNotifierProvider.notifier);
+    final prices = ProductCatalogPriceDisplay.resolve(
+      priceRub: product.priceRub,
+      oldPriceRub: product.oldPriceRub,
+      pricePerKgRub: product.pricePerKgRub,
+      weightLabel: product.weightLabel,
+      pieceProduct: product.pieceProduct,
+      special: product.special,
+    );
 
     return Material(
       borderRadius: BorderRadius.circular(12),
@@ -65,31 +74,45 @@ class ProductCard extends ConsumerWidget {
                     const SizedBox(height: 8),
                     SizedBox(
                       height: _kProductTextBlockHeight,
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            product.name,
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(
-                              color: AppColors.dark,
-                              fontWeight: FontWeight.w600,
-                              fontSize: 13,
-                              height: 1.2,
+                      child: ClipRect(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              product.name,
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(
+                                color: AppColors.dark,
+                                fontWeight: FontWeight.w600,
+                                fontSize: 13,
+                                height: 1.2,
+                              ),
                             ),
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            product.weightLabel,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: TextStyle(
-                              color: AppColors.dark.withValues(alpha: 0.6),
-                              fontSize: 12,
+                            const SizedBox(height: 4),
+                            Text(
+                              product.weightLabel,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                color: AppColors.dark.withValues(alpha: 0.6),
+                                fontSize: 12,
+                              ),
                             ),
-                          ),
-                        ],
+                            if (prices.secondaryPriceLabel != null) ...[
+                              const SizedBox(height: 2),
+                              Text(
+                                prices.secondaryPriceLabel!,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: TextStyle(
+                                  color: AppColors.dark.withValues(alpha: 0.6),
+                                  fontSize: 12,
+                                ),
+                              ),
+                            ],
+                          ],
+                        ),
                       ),
                     ),
                   ],
@@ -100,7 +123,8 @@ class ProductCard extends ConsumerWidget {
             Align(
               alignment: Alignment.centerLeft,
               child: QuantityPriceBar(
-                priceRub: product.priceRub,
+                priceRub: prices.buttonPriceRub,
+                oldPriceRub: prices.buttonOldPriceRub,
                 quantity: quantity,
                 onIncrement: () => cart.increment(product.id),
                 onDecrement: () => cart.decrement(product.id),

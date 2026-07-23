@@ -51,12 +51,14 @@ void main() {
         weightLabel: '500 г',
         priceRub: 100,
         oldPriceRub: 100,
+        pricePerKgRub: 0,
         imageUrls: ['https://example.com/1.jpg'],
         description: 'desc',
         categoryIds: [1],
         sale: false,
         special: false,
         productOfWeek: false,
+        pieceProduct: false,
       ),
     );
 
@@ -87,12 +89,14 @@ void main() {
         weightLabel: '500 г',
         priceRub: 100,
         oldPriceRub: 100,
+        pricePerKgRub: 0,
         imageUrls: ['https://example.com/1.jpg'],
         description: 'desc',
         categoryIds: [1],
         sale: false,
         special: false,
         productOfWeek: false,
+        pieceProduct: false,
       ),
     );
     cart.add(1001);

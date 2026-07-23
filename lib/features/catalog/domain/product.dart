@@ -5,11 +5,13 @@ class ProductSummary {
     required this.weightLabel,
     required this.priceRub,
     required this.oldPriceRub,
+    required this.pricePerKgRub,
     required this.imageUrl,
     required this.categoryIds,
     required this.sale,
     required this.special,
     required this.productOfWeek,
+    required this.pieceProduct,
   });
 
   factory ProductSummary.fromJson(Map<String, dynamic> json) {
@@ -19,12 +21,14 @@ class ProductSummary {
       weightLabel: json['weightLabel'] as String,
       priceRub: json['priceRub'] as int,
       oldPriceRub: json['oldPriceRub'] as int,
+      pricePerKgRub: json['pricePerKgRub'] as int,
       imageUrl: json['imageUrl'] as String,
       categoryIds:
           (json['categoryIds'] as List<dynamic>).map((e) => e as int).toList(),
       sale: json['sale'] as bool,
       special: json['special'] as bool,
       productOfWeek: json['productOfWeek'] as bool,
+      pieceProduct: json['pieceProduct'] as bool,
     );
   }
 
@@ -33,11 +37,13 @@ class ProductSummary {
   final String weightLabel;
   final int priceRub;
   final int oldPriceRub;
+  final int pricePerKgRub;
   final String imageUrl;
   final List<int> categoryIds;
   final bool sale;
   final bool special;
   final bool productOfWeek;
+  final bool pieceProduct;
 }
 
 class ProductDetail {
@@ -47,12 +53,14 @@ class ProductDetail {
     required this.weightLabel,
     required this.priceRub,
     required this.oldPriceRub,
+    required this.pricePerKgRub,
     required this.imageUrls,
     required this.description,
     required this.categoryIds,
     required this.sale,
     required this.special,
     required this.productOfWeek,
+    required this.pieceProduct,
   });
 
   factory ProductDetail.fromJson(Map<String, dynamic> json) {
@@ -76,6 +84,7 @@ class ProductDetail {
       weightLabel: json['weightLabel'] as String,
       priceRub: json['priceRub'] as int,
       oldPriceRub: json['oldPriceRub'] as int,
+      pricePerKgRub: json['pricePerKgRub'] as int,
       imageUrls: imageUrls,
       description: json['description'] as String,
       categoryIds:
@@ -83,6 +92,7 @@ class ProductDetail {
       sale: json['sale'] as bool,
       special: json['special'] as bool,
       productOfWeek: json['productOfWeek'] as bool,
+      pieceProduct: json['pieceProduct'] as bool,
     );
   }
 
@@ -91,12 +101,14 @@ class ProductDetail {
   final String weightLabel;
   final int priceRub;
   final int oldPriceRub;
+  final int pricePerKgRub;
   final List<String> imageUrls;
   final String description;
   final List<int> categoryIds;
   final bool sale;
   final bool special;
   final bool productOfWeek;
+  final bool pieceProduct;
 }
 
 class ProductListPage {

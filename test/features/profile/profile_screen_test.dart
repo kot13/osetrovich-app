@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:osetrovich/core/l10n/app_strings.dart';
 import 'package:osetrovich/core/network/api_exception.dart';
 import 'package:osetrovich/core/theme/app_theme.dart';
+import 'package:osetrovich/core/network/mock_api_client.dart';
 import 'package:osetrovich/core/network/providers.dart';
 import 'package:osetrovich/features/auth/data/auth_dto.dart';
 import 'package:osetrovich/features/auth/data/secure_token_storage.dart';
@@ -24,8 +25,30 @@ const _testProfile = UserProfile(
 );
 
 class _FakeProfileNotifier extends ProfileNotifier {
+  _FakeProfileNotifier(this._profile);
+
+  final UserProfile _profile;
+
   @override
-  Future<UserProfile?> build() async => _testProfile;
+  Future<UserProfile?> build() async => _profile;
+}
+
+class _SessionAwareProfileNotifier extends ProfileNotifier {
+  @override
+  Future<UserProfile?> build() async {
+    final session = ref.watch(authSessionProvider);
+    if (session == null) {
+      return null;
+    }
+    return UserProfile(
+      id: 'u-${session.phone}',
+      name: session.phone == '+79001111111' ? 'Алиса' : 'Борис',
+      phone: session.phone,
+      emailVerified: false,
+      pushEnabled: true,
+      discount: 0,
+    );
+  }
 }
 
 class _FakeAuthSessionNotifier extends AuthSessionNotifier {
@@ -86,7 +109,9 @@ void main() {
             authNotifier = AuthSessionNotifier();
             return authNotifier;
           }),
-          profileNotifierProvider.overrideWith(_FakeProfileNotifier.new),
+          profileNotifierProvider.overrideWith(
+            () => _FakeProfileNotifier(_testProfile),
+          ),
         ],
         child: MaterialApp(theme: AppTheme.light, home: const ProfileScreen()),
       ),
@@ -129,7 +154,9 @@ void main() {
               ),
             ),
           ),
-          profileNotifierProvider.overrideWith(_FakeProfileNotifier.new),
+          profileNotifierProvider.overrideWith(
+            () => _FakeProfileNotifier(_testProfile),
+          ),
         ],
         child: MaterialApp(theme: AppTheme.light, home: const ProfileScreen()),
       ),
@@ -148,6 +175,75 @@ void main() {
     expect(find.text(AppStrings.setPin), findsNothing);
     expect(find.byIcon(Icons.notifications_none), findsOneWidget);
     expect(find.text(AppStrings.appVersion('1.0.0')), findsOneWidget);
+  });
+
+  testWidgets('profile name updates after logout and login as another user', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(400, 1600);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    final storage = InMemoryTokenStorage();
+    late AuthSessionNotifier authNotifier;
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          apiClientProvider.overrideWithValue(MockApiClient()),
+          tokenStorageProvider.overrideWithValue(storage),
+          authSessionProvider.overrideWith(() {
+            authNotifier = AuthSessionNotifier();
+            return authNotifier;
+          }),
+          profileNotifierProvider.overrideWith(
+            _SessionAwareProfileNotifier.new,
+          ),
+        ],
+        child: MaterialApp(theme: AppTheme.light, home: const ProfileScreen()),
+      ),
+    );
+
+    await authNotifier.setSession(
+      tokens: const TokenResponse(
+        accessToken: 'mock.access.token.+79001111111',
+        refreshToken: 'r',
+        expiresIn: 3600,
+        tokenType: 'Bearer',
+      ),
+      phone: '+79001111111',
+    );
+    for (var i = 0; i < 20; i++) {
+      await tester.pump(const Duration(milliseconds: 100));
+      if (find.text(AppStrings.logout).evaluate().isNotEmpty) {
+        break;
+      }
+    }
+
+    expect(_nameFieldText(tester), 'Алиса');
+
+    await tester.tap(find.text(AppStrings.logout));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 200));
+
+    await authNotifier.setSession(
+      tokens: const TokenResponse(
+        accessToken: 'mock.access.token.+79002222222',
+        refreshToken: 'r2',
+        expiresIn: 3600,
+        tokenType: 'Bearer',
+      ),
+      phone: '+79002222222',
+    );
+    for (var i = 0; i < 20; i++) {
+      await tester.pump(const Duration(milliseconds: 100));
+      if (find.text(AppStrings.logout).evaluate().isNotEmpty) {
+        break;
+      }
+    }
+
+    expect(_nameFieldText(tester), 'Борис');
   });
 
   testWidgets('profile error state shows user-friendly message', (
@@ -179,4 +275,9 @@ void main() {
     expect(find.textContaining('DioException'), findsNothing);
     expect(find.textContaining('bad response'), findsNothing);
   });
+}
+
+String _nameFieldText(WidgetTester tester) {
+  final field = tester.widget<TextField>(find.byType(TextField));
+  return field.controller?.text ?? '';
 }

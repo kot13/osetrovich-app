@@ -6,8 +6,10 @@ import 'package:osetrovich/core/theme/app_colors.dart';
 import 'package:osetrovich/core/network/api_error_mapper.dart';
 import 'package:osetrovich/core/network/api_exception.dart';
 import 'package:osetrovich/core/widgets/empty_state.dart';
+import 'package:osetrovich/features/auth/domain/auth_session.dart';
 import 'package:osetrovich/features/auth/domain/auth_session_provider.dart';
 import 'package:osetrovich/features/profile/domain/profile_notifier.dart';
+import 'package:osetrovich/features/profile/domain/user_profile.dart';
 import 'package:osetrovich/features/profile/domain/push_preferences_service.dart';
 import 'package:osetrovich/features/profile/presentation/widgets/app_version_footer.dart';
 import 'package:osetrovich/features/profile/presentation/widgets/legal_support_section.dart';
@@ -26,6 +28,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   final _nameController = TextEditingController();
   bool _isSavingName = false;
   String? _pushError;
+  String? _profileIdForName;
 
   @override
   void dispose() {
@@ -37,6 +40,24 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   Widget build(BuildContext context) {
     final session = ref.watch(authSessionProvider);
     final profileAsync = ref.watch(profileNotifierProvider);
+
+    ref.listen<AuthSession?>(authSessionProvider, (previous, next) {
+      if (next == null) {
+        _profileIdForName = null;
+        _nameController.clear();
+      }
+    });
+
+    ref.listen<AsyncValue<UserProfile?>>(profileNotifierProvider, (
+      previous,
+      next,
+    ) {
+      final profile = next.valueOrNull;
+      if (profile == null) {
+        return;
+      }
+      _syncNameController(profile);
+    });
 
     if (session == null) {
       return Scaffold(
@@ -88,9 +109,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             return const Center(child: CircularProgressIndicator());
           }
 
-          if (_nameController.text.isEmpty) {
-            _nameController.text = profile.name;
-          }
+          _syncNameController(profile);
 
           return ListView(
             children: [
@@ -204,9 +223,21 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     );
   }
 
+  void _syncNameController(UserProfile profile) {
+    if (_profileIdForName == profile.id) {
+      return;
+    }
+    _profileIdForName = profile.id;
+    _nameController.text = profile.name;
+  }
+
   Future<void> _logout(BuildContext context) async {
     await ref.read(authRepositoryProvider).logout();
     await ref.read(authSessionProvider.notifier).clearSession();
     ref.read(profileNotifierProvider.notifier).clear();
+    setState(() {
+      _profileIdForName = null;
+      _nameController.clear();
+    });
   }
 }

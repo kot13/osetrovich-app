@@ -1,0 +1,159 @@
+openapi: 3.0.3
+info:
+  title: Osetrovich Mobile API
+  description: |
+    Дельта контракта каталога для фичи 019-piece-product-pricing.
+    Полная спецификация — `openapi/openapi.yaml` в корне репозитория.
+    OpenAPI в корне уже содержит поля `pricePerKgRub` и `pieceProduct`;
+    этот файл фиксирует ожидания клиента для реализации.
+  version: 0.8.0
+
+servers:
+  - url: https://trout.osetrovich.ru/v1
+    description: Production
+
+tags:
+  - name: catalog
+    description: Каталог (штучный товар, цена за кг, старая цена)
+
+paths:
+  /catalog/products:
+    get:
+      tags: [catalog]
+      summary: Список товаров (ProductSummary с pricePerKgRub, pieceProduct)
+      parameters:
+        - name: categoryId
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductListResponse'
+
+  /catalog/products/{id}:
+    get:
+      tags: [catalog]
+      summary: Деталь товара
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductDetail'
+
+  /home/weekly-products:
+    get:
+      tags: [catalog]
+      summary: Товары недели (те же поля ProductSummary)
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [items]
+                properties:
+                  items:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ProductSummary'
+
+components:
+  schemas:
+    ProductSummary:
+      type: object
+      required:
+        - id
+        - name
+        - weightLabel
+        - priceRub
+        - oldPriceRub
+        - pricePerKgRub
+        - imageUrl
+        - categoryIds
+        - sale
+        - special
+        - productOfWeek
+        - pieceProduct
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        weightLabel:
+          type: string
+          description: Отображаемый вес, например «0.5 кг»
+        priceRub:
+          type: integer
+          minimum: 0
+          description: Текущая цена за единицу; при special=true — спеццена
+        oldPriceRub:
+          type: integer
+          minimum: 0
+          description: |
+            Старая цена; при special=true — обычная цена.
+            Клиент показывает зачёркнутой на кнопке «добавить», если oldPriceRub > priceRub.
+        pricePerKgRub:
+          type: integer
+          minimum: 0
+          description: |
+            Цена за килограмм из ERP.
+            Клиент показывает при значении > 0 на карточке и детальном экране.
+        imageUrl:
+          type: string
+          format: uri
+        categoryIds:
+          type: array
+          items:
+            type: integer
+        sale:
+          type: boolean
+        special:
+          type: boolean
+        productOfWeek:
+          type: boolean
+        pieceProduct:
+          type: boolean
+          description: Штучный товар — заказ поштучно (UI-бейдж вне scope фичи 019)
+
+    ProductDetail:
+      allOf:
+        - $ref: '#/components/schemas/ProductSummary'
+        - type: object
+          required: [imageUrls, description]
+          properties:
+            imageUrls:
+              type: array
+              minItems: 1
+              items:
+                type: string
+                format: uri
+            description:
+              type: string
+
+    ProductListResponse:
+      type: object
+      required: [items, total, hasMore, offset, limit]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProductSummary'
+        total:
+          type: integer
+        hasMore:
+          type: boolean
+        offset:
+          type: integer
+        limit:
+          type: integer

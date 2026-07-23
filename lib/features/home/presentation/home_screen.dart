@@ -9,6 +9,7 @@ import 'package:osetrovich/features/home/domain/home_profile_slot_ui_state.dart'
 import 'package:osetrovich/features/home/presentation/banner_carousel.dart';
 import 'package:osetrovich/features/home/presentation/home_order_history_section.dart';
 import 'package:osetrovich/features/home/presentation/home_lemon_gamification_card.dart';
+import 'package:osetrovich/features/home/presentation/home_lemon_gamification_card_skeleton.dart';
 import 'package:osetrovich/features/home/presentation/home_profile_slot.dart';
 import 'package:osetrovich/features/home/domain/home_lemon_gamification_ui_model.dart';
 import 'package:osetrovich/features/home/presentation/home_weekly_products_section.dart';
@@ -31,6 +32,14 @@ class HomeScreen extends ConsumerWidget {
       isAuthenticated: isAuthenticated,
       profile: profileAsync ?? const AsyncData(null),
     );
+    final showProfileSkeleton =
+        isAuthenticated &&
+        profileAsync != null &&
+        profileAsync.isLoading &&
+        !profileAsync.hasValue;
+
+    final lemonTopPadding =
+        profileSlotState.mode == HomeProfileSlotMode.hidden ? 16.0 : 0.0;
 
     final showOrderSection =
         isAuthenticated &&
@@ -74,14 +83,22 @@ class HomeScreen extends ConsumerWidget {
               mode: profileSlotState.mode,
               profile: profileSlotState.profile,
             ),
-            if (isAuthenticated &&
+            if (showProfileSkeleton)
+              Padding(
+                padding: EdgeInsets.only(top: lemonTopPadding),
+                child: const HomeLemonGamificationCardSkeleton(),
+              )
+            else if (isAuthenticated &&
                 profileAsync != null &&
                 profileAsync.hasValue &&
                 !profileAsync.hasError &&
                 profileAsync.requireValue != null)
-              HomeLemonGamificationCard(
-                model: buildHomeLemonGamificationUiModel(
-                  profileAsync.requireValue!.lemons,
+              Padding(
+                padding: EdgeInsets.only(top: lemonTopPadding),
+                child: HomeLemonGamificationCard(
+                  model: buildHomeLemonGamificationUiModel(
+                    profileAsync.requireValue!.lemons,
+                  ),
                 ),
               ),
             Padding(

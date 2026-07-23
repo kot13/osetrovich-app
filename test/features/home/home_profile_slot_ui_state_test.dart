@@ -36,10 +36,32 @@ void main() {
     expect(state.profile, isNull);
   });
 
-  test('authenticated loading maps to hidden', () {
+  test('authenticated loading maps to loading skeleton', () {
     final state = buildHomeProfileSlotUiState(
       isAuthenticated: true,
       profile: const AsyncLoading(),
+    );
+
+    expect(state.mode, HomeProfileSlotMode.loading);
+    expect(state.profile, isNull);
+  });
+
+  test('authenticated reload keeps loyalty card from previous value', () {
+    const previous = AsyncData(_profileWithStatus);
+    final state = buildHomeProfileSlotUiState(
+      isAuthenticated: true,
+      profile: const AsyncLoading<UserProfile?>().copyWithPrevious(previous),
+    );
+
+    expect(state.mode, HomeProfileSlotMode.loyalty);
+    expect(state.profile, _profileWithStatus);
+  });
+
+  test('authenticated reload without loyalty keeps hidden slot', () {
+    const previous = AsyncData(_profileWithoutStatus);
+    final state = buildHomeProfileSlotUiState(
+      isAuthenticated: true,
+      profile: const AsyncLoading<UserProfile?>().copyWithPrevious(previous),
     );
 
     expect(state.mode, HomeProfileSlotMode.hidden);

@@ -2,7 +2,7 @@ openapi: 3.0.3
 info:
   title: Osetrovich Mobile API
   description: REST API мобильного приложения osetrovich.ru (фаза order-lemon-gamification)
-  version: 0.12.6
+  version: 0.12.8
 
 servers:
   - url: https://api.osetrovich.ru/v1
@@ -994,7 +994,7 @@ components:
 
     ProductSummary:
       type: object
-      required: [id, name, weightLabel, priceRub, oldPriceRub, imageUrl, categoryIds, sale, special, productOfWeek]
+      required: [id, name, weightLabel, priceRub, oldPriceRub, pricePerKgRub, imageUrl, categoryIds, sale, special, productOfWeek, pieceProduct]
       properties:
         id:
           type: integer
@@ -1014,6 +1014,11 @@ components:
           minimum: 0
           description: Старая цена в рублях; при special=true — обычная цена товара
           example: 450
+        pricePerKgRub:
+          type: integer
+          minimum: 0
+          description: Цена за килограмм в рублях из ERP
+          example: 2400
         imageUrl:
           type: string
           format: uri
@@ -1032,10 +1037,13 @@ components:
         productOfWeek:
           type: boolean
           description: Признак «Товар недели» из ERP
+        pieceProduct:
+          type: boolean
+          description: Признак «Штучный товар» из ERP — заказ поштучно, а не по весу
 
     ProductDetail:
       type: object
-      required: [id, name, weightLabel, priceRub, oldPriceRub, imageUrls, description, categoryIds, sale, special, productOfWeek]
+      required: [id, name, weightLabel, priceRub, oldPriceRub, pricePerKgRub, imageUrls, description, categoryIds, sale, special, productOfWeek, pieceProduct]
       properties:
         id:
           type: integer
@@ -1052,6 +1060,10 @@ components:
           type: integer
           minimum: 0
           example: 450
+        pricePerKgRub:
+          type: integer
+          minimum: 0
+          example: 2400
         imageUrls:
           type: array
           minItems: 1
@@ -1071,6 +1083,8 @@ components:
         special:
           type: boolean
         productOfWeek:
+          type: boolean
+        pieceProduct:
           type: boolean
 
     ProductListResponse:
