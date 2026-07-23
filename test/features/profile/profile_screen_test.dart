@@ -12,6 +12,7 @@ import 'package:osetrovich/features/auth/domain/auth_session_provider.dart';
 import 'package:osetrovich/features/profile/domain/profile_notifier.dart';
 import 'package:osetrovich/features/profile/domain/user_profile.dart';
 import 'package:osetrovich/features/profile/presentation/profile_screen.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 
 const _testProfile = UserProfile(
   id: 'u1',
@@ -44,6 +45,18 @@ class _FailingProfileNotifier extends ProfileNotifier {
 }
 
 void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
+
+  setUp(() {
+    PackageInfo.setMockInitialValues(
+      appName: 'osetrovich',
+      packageName: 'ru.osetrovich.osetrovich',
+      version: '1.0.0',
+      buildNumber: '1',
+      buildSignature: '',
+    );
+  });
+
   testWidgets('profile guest shows auth required and legal section', (
     tester,
   ) async {
@@ -57,6 +70,9 @@ void main() {
     expect(find.text(AppStrings.signIn), findsOneWidget);
     expect(find.text(AppStrings.contactUs), findsOneWidget);
     expect(find.text(AppStrings.privacyPolicy), findsOneWidget);
+    expect(find.byIcon(Icons.notifications_none), findsOneWidget);
+    await tester.pumpAndSettle();
+    expect(find.text(AppStrings.appVersion('1.0.0')), findsOneWidget);
   });
 
   testWidgets('profile after clearSession shows auth required', (tester) async {
@@ -125,10 +141,13 @@ void main() {
         break;
       }
     }
+    await tester.pumpAndSettle();
 
     expect(find.text(AppStrings.pushNotifications), findsOneWidget);
     expect(find.text(AppStrings.logout), findsOneWidget);
     expect(find.text(AppStrings.setPin), findsNothing);
+    expect(find.byIcon(Icons.notifications_none), findsOneWidget);
+    expect(find.text(AppStrings.appVersion('1.0.0')), findsOneWidget);
   });
 
   testWidgets('profile error state shows user-friendly message', (

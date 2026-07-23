@@ -8,6 +8,7 @@ import 'package:osetrovich/core/network/providers.dart';
 import 'package:osetrovich/core/router/app_router.dart';
 import 'package:osetrovich/core/theme/app_theme.dart';
 import 'package:osetrovich/features/cart/domain/cart_notifier.dart';
+import 'package:osetrovich/features/notifications/domain/unread_count_notifier.dart';
 
 Widget _buildTestApp(WidgetRef ref) {
   final router = ref.watch(routerProvider);
@@ -94,6 +95,57 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.byType(Badge), findsNothing);
+  });
+
+  testWidgets('cart notifications flow keeps cart tab active', (tester) async {
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          apiClientProvider.overrideWithValue(MockApiClient()),
+          appBootstrapProvider.overrideWith((ref) async {}),
+        ],
+        child: const _TestAppHost(),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text(AppStrings.tabCart));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byIcon(Icons.notifications_none));
+    await tester.pumpAndSettle();
+
+    expect(find.text(AppStrings.notificationsTitle), findsOneWidget);
+    expect(find.text(AppStrings.tabCart), findsWidgets);
+
+    await tester.tap(find.byIcon(Icons.arrow_back));
+    await tester.pumpAndSettle();
+
+    expect(find.text(AppStrings.cartEmpty), findsOneWidget);
+    expect(find.text(AppStrings.tabCart), findsWidgets);
+  });
+
+  testWidgets('notification badge is consistent across home and catalog tabs', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          apiClientProvider.overrideWithValue(MockApiClient()),
+          appBootstrapProvider.overrideWith((ref) async {}),
+          unreadCountProvider.overrideWith((ref) => 4),
+        ],
+        child: const _TestAppHost(),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('4'), findsOneWidget);
+
+    await tester.tap(find.text(AppStrings.tabCatalog));
+    await tester.pumpAndSettle();
+
+    expect(find.text('4'), findsOneWidget);
   });
 }
 

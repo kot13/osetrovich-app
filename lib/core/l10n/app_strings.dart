@@ -105,6 +105,7 @@ abstract final class AppStrings {
   static const emailVerified = 'Подтверждён';
   static const emailNotVerified = 'Не подтверждён';
   static const logout = 'Выйти';
+  static String appVersion(String version) => 'Версия $version';
   static const changePhone = 'Сменить телефон';
   static const changeEmail = 'Подтвердить email';
   static const securitySection = 'Безопасность';

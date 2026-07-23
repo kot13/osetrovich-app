@@ -92,7 +92,9 @@ ProviderScope _scoped(Widget child, {ApiClient? apiClient}) {
 }
 
 void main() {
-  testWidgets('shows not found when notification id is missing', (tester) async {
+  testWidgets('shows not found when notification id is missing', (
+    tester,
+  ) async {
     await tester.pumpWidget(
       _scoped(
         MaterialApp(

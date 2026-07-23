@@ -23,17 +23,20 @@ class DeepLinkResolver {
     }
 
     final host = uri.host;
-    final segments = uri.pathSegments.where((segment) => segment.isNotEmpty).toList();
+    final segments =
+        uri.pathSegments.where((segment) => segment.isNotEmpty).toList();
 
     return switch (host) {
-      'home' => segments.isEmpty
-          ? const DeepLinkTarget(path: '/home')
-          : DeepLinkTarget.fallback,
+      'home' =>
+        segments.isEmpty
+            ? const DeepLinkTarget(path: '/home')
+            : DeepLinkTarget.fallback,
       'catalog' => _resolveCatalog(segments),
       'promotions' => _resolvePromotions(segments),
-      'profile' => segments.isEmpty
-          ? const DeepLinkTarget(path: '/profile')
-          : DeepLinkTarget.fallback,
+      'profile' =>
+        segments.isEmpty
+            ? const DeepLinkTarget(path: '/profile')
+            : DeepLinkTarget.fallback,
       'notifications' => _resolveNotifications(segments),
       _ => DeepLinkTarget.fallback,
     };
@@ -79,6 +82,7 @@ class DeepLinkResolver {
   }
 
   DeepLinkTarget _resolveNotifications(List<String> segments) {
+    // In-app bell from other tabs uses branch-local routes; deeplinks stay on /home.
     if (segments.isEmpty) {
       return const DeepLinkTarget(path: '/home/notifications');
     }

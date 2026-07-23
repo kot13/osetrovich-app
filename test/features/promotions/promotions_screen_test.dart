@@ -36,6 +36,7 @@ void main() {
     expect(allChip.selected, isTrue);
     expect(find.byType(PromotionArticleCard), findsWidgets);
     expect(find.text(AppStrings.nothingFound), findsNothing);
+    expect(find.byIcon(Icons.notifications_none), findsOneWidget);
   });
 
   testWidgets('promotions screen switches to news and shows empty or list', (

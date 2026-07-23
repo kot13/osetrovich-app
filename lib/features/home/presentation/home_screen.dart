@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:osetrovich/core/l10n/app_strings.dart';
 import 'package:osetrovich/core/widgets/loading_indicator.dart';
 import 'package:osetrovich/features/auth/domain/auth_session_provider.dart';
@@ -14,6 +13,7 @@ import 'package:osetrovich/features/home/presentation/home_profile_slot.dart';
 import 'package:osetrovich/features/home/domain/home_lemon_gamification_ui_model.dart';
 import 'package:osetrovich/features/home/presentation/home_weekly_products_section.dart';
 import 'package:osetrovich/features/notifications/domain/notifications_notifier.dart';
+import 'package:osetrovich/features/notifications/presentation/widgets/notification_bell_action.dart';
 import 'package:osetrovich/features/profile/domain/profile_notifier.dart';
 
 class HomeScreen extends ConsumerWidget {
@@ -24,7 +24,6 @@ class HomeScreen extends ConsumerWidget {
     ref.watch(notificationsNotifierProvider);
     final bannersAsync = ref.watch(bannersProvider);
     final currentOrderAsync = ref.watch(currentOrderProvider);
-    final unreadCount = ref.watch(unreadCountProvider);
     final isAuthenticated = ref.watch(isAuthenticatedProvider);
     final profileAsync =
         isAuthenticated ? ref.watch(profileNotifierProvider) : null;
@@ -43,44 +42,7 @@ class HomeScreen extends ConsumerWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text(AppStrings.tabHome),
-        actions: [
-          Padding(
-            padding: const EdgeInsets.only(right: 8),
-            child: Stack(
-              clipBehavior: Clip.none,
-              children: [
-                IconButton(
-                  icon: const Icon(Icons.notifications_none),
-                  onPressed: () => context.push('/home/notifications'),
-                ),
-                if (unreadCount > 0)
-                  Positioned(
-                    right: 6,
-                    top: 6,
-                    child: Container(
-                      padding: const EdgeInsets.all(4),
-                      decoration: const BoxDecoration(
-                        color: Colors.red,
-                        shape: BoxShape.circle,
-                      ),
-                      constraints: const BoxConstraints(
-                        minWidth: 18,
-                        minHeight: 18,
-                      ),
-                      child: Text(
-                        '$unreadCount',
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 10,
-                        ),
-                        textAlign: TextAlign.center,
-                      ),
-                    ),
-                  ),
-              ],
-            ),
-          ),
-        ],
+        actions: const [NotificationBellAction()],
       ),
       body: RefreshIndicator(
         onRefresh: () => _refreshHome(ref),

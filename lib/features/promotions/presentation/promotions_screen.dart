@@ -8,6 +8,7 @@ import 'package:osetrovich/features/promotions/domain/promotions_notifier.dart';
 import 'package:osetrovich/features/promotions/domain/selected_type_provider.dart';
 import 'package:osetrovich/features/promotions/presentation/widgets/promotion_article_card.dart';
 import 'package:osetrovich/features/promotions/presentation/widgets/promotion_type_chips.dart';
+import 'package:osetrovich/features/notifications/presentation/widgets/notification_bell_action.dart';
 
 class PromotionsScreen extends ConsumerStatefulWidget {
   const PromotionsScreen({super.key});
@@ -37,7 +38,10 @@ class _PromotionsScreenState extends ConsumerState<PromotionsScreen> {
     });
 
     return Scaffold(
-      appBar: AppBar(title: const Text(AppStrings.tabPromotions)),
+      appBar: AppBar(
+        title: const Text(AppStrings.tabPromotions),
+        actions: const [NotificationBellAction()],
+      ),
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [

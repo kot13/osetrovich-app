@@ -1,0 +1,108 @@
+# Контракт навигации: уведомления с корневых экранов Tab Bar
+
+**Версия**: 1.0  
+**Фича**: 018-tabbar-notifications-bell  
+**Дата**: 2026-07-22
+
+Описывает маршруты in-app навигации к разделу «Уведомления» с каждой корневой вкладки.
+REST API не затрагивается.
+
+## Корневые вкладки (tab roots)
+
+```yaml
+tab_roots:
+  - id: home
+    path: /home
+    label: Главная
+  - id: catalog
+    path: /catalog
+    label: Каталог
+  - id: promotions
+    path: /promotions
+    label: Акции
+  - id: cart
+    path: /cart
+    label: Корзина
+  - id: profile
+    path: /profile
+    label: Профиль
+```
+
+## Маршруты уведомлений по ветке
+
+Для каждого `tab_root.path` `{root}`:
+
+| Действие | Маршрут | Экран |
+|----------|---------|-------|
+| Tap колокольчик | `{root}/notifications` | `NotificationsListScreen` |
+| Tap элемент списка | `{root}/notifications/{id}` | `NotificationDetailScreen` |
+| Back со списка | `pop` → `{root}` | корневой экран вкладки |
+| Back с детали | `pop` → `{root}/notifications` | список уведомлений |
+
+### Примеры
+
+```yaml
+examples:
+  - from: /catalog
+    action: tap_bell
+    navigates_to: /catalog/notifications
+    tab_bar_active: catalog
+
+  - from: /cart/notifications
+    action: back
+    navigates_to: /cart
+    tab_bar_active: cart
+
+  - from: /profile/notifications/42
+    action: back
+    navigates_to: /profile/notifications
+    tab_bar_active: profile
+```
+
+## Хелпер навигации (клиент)
+
+```yaml
+open_notifications_list:
+  description: >
+    Определить tab root из текущего GoRouter location и выполнить push
+    на {root}/notifications.
+  input: BuildContext (текущий маршрут внутри shell)
+  output: push {root}/notifications
+  rules:
+    - matched_location starts with /catalog → /catalog/notifications
+    - matched_location starts with /promotions → /promotions/notifications
+    - matched_location starts with /cart → /cart/notifications
+    - matched_location starts with /profile → /profile/notifications
+    - default (home branch) → /home/notifications
+```
+
+## Диплинки (без изменений)
+
+Вне scope фичи 018; остаются на ветке `/home`:
+
+```yaml
+deeplink_routes_unchanged:
+  - osetrovich://notifications → /home/notifications
+  - osetrovich://notifications/{id} → /home/notifications/{id}
+```
+
+## Исключения (колокольчик не показывается)
+
+```yaml
+excluded_routes:
+  - pattern: /catalog/product/*
+  - pattern: /promotions/article/*
+  - pattern: /*/notifications/*
+  - pattern: /auth/*
+  - pattern: /profile/change-phone/*
+  - pattern: /profile/email/*
+```
+
+## Acceptance mapping
+
+| Spec FR | Контрактное правило |
+|---------|---------------------|
+| FR-001 | bell на всех `tab_roots` |
+| FR-004 | `tap_bell` → `{root}/notifications` |
+| FR-005 | `back` со списка → `{root}` |
+| FR-006 | `tab_bar_active` не меняется при открытии из `{root}` |

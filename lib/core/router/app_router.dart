@@ -20,6 +20,22 @@ import 'package:osetrovich/features/shell/presentation/main_shell.dart';
 
 final _rootNavigatorKey = GlobalKey<NavigatorState>();
 
+List<RouteBase> _notificationRoutes() => [
+  GoRoute(
+    path: 'notifications',
+    builder: (context, state) => const NotificationsListScreen(),
+    routes: [
+      GoRoute(
+        path: ':id',
+        builder: (context, state) {
+          final id = state.pathParameters['id']!;
+          return NotificationDetailScreen(notificationId: id);
+        },
+      ),
+    ],
+  ),
+];
+
 final routerProvider = Provider<GoRouter>((ref) {
   return GoRouter(
     navigatorKey: _rootNavigatorKey,
@@ -65,22 +81,7 @@ final routerProvider = Provider<GoRouter>((ref) {
               GoRoute(
                 path: '/home',
                 builder: (context, state) => const HomeScreen(),
-                routes: [
-                  GoRoute(
-                    path: 'notifications',
-                    builder:
-                        (context, state) => const NotificationsListScreen(),
-                    routes: [
-                      GoRoute(
-                        path: ':id',
-                        builder: (context, state) {
-                          final id = state.pathParameters['id']!;
-                          return NotificationDetailScreen(notificationId: id);
-                        },
-                      ),
-                    ],
-                  ),
-                ],
+                routes: _notificationRoutes(),
               ),
             ],
           ),
@@ -97,6 +98,7 @@ final routerProvider = Provider<GoRouter>((ref) {
                       return ProductDetailScreen(productId: id);
                     },
                   ),
+                  ..._notificationRoutes(),
                 ],
               ),
             ],
@@ -114,6 +116,7 @@ final routerProvider = Provider<GoRouter>((ref) {
                       return PromotionDetailScreen(articleId: id);
                     },
                   ),
+                  ..._notificationRoutes(),
                 ],
               ),
             ],
@@ -123,6 +126,7 @@ final routerProvider = Provider<GoRouter>((ref) {
               GoRoute(
                 path: '/cart',
                 builder: (context, state) => const CartScreen(),
+                routes: _notificationRoutes(),
               ),
             ],
           ),
@@ -131,6 +135,7 @@ final routerProvider = Provider<GoRouter>((ref) {
               GoRoute(
                 path: '/profile',
                 builder: (context, state) => const ProfileScreen(),
+                routes: _notificationRoutes(),
               ),
             ],
           ),

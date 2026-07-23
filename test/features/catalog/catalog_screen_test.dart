@@ -28,6 +28,7 @@ void main() {
     expect(find.text('Все'), findsOneWidget);
     expect(find.byType(GridView), findsOneWidget);
     expect(find.text(AppStrings.nothingFound), findsNothing);
+    expect(find.byIcon(Icons.notifications_none), findsOneWidget);
   });
 
   testWidgets('catalog shows empty state for category without products', (

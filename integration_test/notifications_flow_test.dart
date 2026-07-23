@@ -69,4 +69,46 @@ void main() {
     expect(find.text('2'), findsOneWidget);
     expect(mockClient.registeredPushToken, isNotNull);
   });
+
+  testWidgets('notifications flow from promotions keeps promotions tab', (
+    tester,
+  ) async {
+    final mockClient = MockApiClient();
+    await mockClient.verifySmsCode('+79001234567', MockApiClient.validCode);
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          apiClientProvider.overrideWithValue(mockClient),
+          authSessionProvider.overrideWith(
+            () => _FakeAuthSessionNotifier(
+              AuthSession(
+                accessToken: 'mock.access.token.+79001234567',
+                refreshToken: 'r',
+                expiresAt: AuthSession.neverExpiresAt,
+                phone: '+79001234567',
+              ),
+            ),
+          ),
+        ],
+        child: const App(),
+      ),
+    );
+    await tester.pumpAndSettle(const Duration(seconds: 3));
+
+    await tester.tap(find.text(AppStrings.tabPromotions));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byIcon(Icons.notifications_none));
+    await tester.pumpAndSettle();
+
+    expect(find.text(AppStrings.notificationsTitle), findsOneWidget);
+    expect(find.text(AppStrings.tabPromotions), findsWidgets);
+
+    await tester.tap(find.byIcon(Icons.arrow_back));
+    await tester.pumpAndSettle();
+
+    expect(find.text(AppStrings.chipAll), findsOneWidget);
+    expect(find.text(AppStrings.tabPromotions), findsWidgets);
+  });
 }

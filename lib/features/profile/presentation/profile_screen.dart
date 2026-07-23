@@ -9,8 +9,10 @@ import 'package:osetrovich/core/widgets/empty_state.dart';
 import 'package:osetrovich/features/auth/domain/auth_session_provider.dart';
 import 'package:osetrovich/features/profile/domain/profile_notifier.dart';
 import 'package:osetrovich/features/profile/domain/push_preferences_service.dart';
+import 'package:osetrovich/features/profile/presentation/widgets/app_version_footer.dart';
 import 'package:osetrovich/features/profile/presentation/widgets/legal_support_section.dart';
 import 'package:osetrovich/features/profile/presentation/widgets/profile_field_tile.dart';
+import 'package:osetrovich/features/notifications/presentation/widgets/notification_bell_action.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 class ProfileScreen extends ConsumerStatefulWidget {
@@ -38,7 +40,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
 
     if (session == null) {
       return Scaffold(
-        appBar: AppBar(title: const Text(AppStrings.tabProfile)),
+        appBar: AppBar(
+          title: const Text(AppStrings.tabProfile),
+          actions: const [NotificationBellAction()],
+        ),
         body: ListView(
           children: [
             EmptyState(
@@ -47,13 +52,17 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               onAction: () => context.push('/auth/phone'),
             ),
             const LegalSupportSection(),
+            const AppVersionFooter(),
           ],
         ),
       );
     }
 
     return Scaffold(
-      appBar: AppBar(title: const Text(AppStrings.tabProfile)),
+      appBar: AppBar(
+        title: const Text(AppStrings.tabProfile),
+        actions: const [NotificationBellAction()],
+      ),
       body: profileAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
         error:
@@ -187,6 +196,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                   child: const Text(AppStrings.logout),
                 ),
               ),
+              const AppVersionFooter(),
             ],
           );
         },

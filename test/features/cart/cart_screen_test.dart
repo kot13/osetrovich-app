@@ -102,6 +102,7 @@ void main() {
 
     expect(find.text(AppStrings.cartEmpty), findsOneWidget);
     expect(find.text(AppStrings.goToCatalog), findsOneWidget);
+    expect(find.byIcon(Icons.notifications_none), findsOneWidget);
   });
 
   testWidgets('filled cart shows list summary terms and checkout form', (
@@ -126,6 +127,7 @@ void main() {
     expect(find.text(AppStrings.cartCheckout), findsOneWidget);
     expect(find.text(AppStrings.cartApartmentLabel), findsOneWidget);
     expect(find.byType(TextField), findsNWidgets(3));
+    expect(find.byIcon(Icons.notifications_none), findsOneWidget);
   });
 
   testWidgets('filled cart updates summary when quantity changes', (

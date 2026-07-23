@@ -15,6 +15,7 @@ import 'package:osetrovich/features/cart/presentation/widgets/cart_line_tile.dar
 import 'package:osetrovich/features/cart/presentation/widgets/cart_order_summary.dart';
 import 'package:osetrovich/features/cart/presentation/widgets/checkout_form.dart';
 import 'package:osetrovich/features/cart/presentation/widgets/delivery_terms_card.dart';
+import 'package:osetrovich/features/notifications/presentation/widgets/notification_bell_action.dart';
 import 'package:osetrovich/features/profile/domain/profile_notifier.dart';
 
 class CartScreen extends ConsumerStatefulWidget {
@@ -182,7 +183,10 @@ class _CartScreenState extends ConsumerState<CartScreen> {
     }
 
     return Scaffold(
-      appBar: AppBar(title: const Text(AppStrings.tabCart)),
+      appBar: AppBar(
+        title: const Text(AppStrings.tabCart),
+        actions: const [NotificationBellAction()],
+      ),
       body:
           distinctCount == 0
               ? EmptyState(

@@ -8,6 +8,7 @@ import 'package:osetrovich/features/catalog/domain/categories_provider.dart';
 import 'package:osetrovich/features/catalog/domain/products_notifier.dart';
 import 'package:osetrovich/features/catalog/presentation/category_chips.dart';
 import 'package:osetrovich/features/catalog/presentation/widgets/product_grid.dart';
+import 'package:osetrovich/features/notifications/presentation/widgets/notification_bell_action.dart';
 
 class CatalogScreen extends ConsumerStatefulWidget {
   const CatalogScreen({super.key});
@@ -37,7 +38,10 @@ class _CatalogScreenState extends ConsumerState<CatalogScreen> {
     final productsState = ref.watch(productsNotifierProvider);
 
     return Scaffold(
-      appBar: AppBar(title: const Text(AppStrings.tabCatalog)),
+      appBar: AppBar(
+        title: const Text(AppStrings.tabCatalog),
+        actions: const [NotificationBellAction()],
+      ),
       body: categoriesAsync.when(
         loading: () => const LoadingIndicator(),
         error:
